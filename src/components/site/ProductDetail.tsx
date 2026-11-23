@@ -36,6 +36,27 @@ export function ProductDetail({ product, preview }: { product: Product; preview?
           <MarketplaceBadge name={mk.name} />
           <h1 className="text-2xl md:text-3xl">{product.name || "Sem nome"}</h1>
           <p className="text-muted-foreground">{product.shortDescription}</p>
+          {product.tags.length > 0 && (
+            <ul aria-label="Etiquetas" className="flex flex-wrap gap-2">
+              {product.tags.map((tag) => (
+                <li key={tag}>
+                  {preview ? (
+                    <span className="inline-block rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-navy">
+                      {tag}
+                    </span>
+                  ) : (
+                    <Link
+                      to="/busca"
+                      search={{ q: tag }}
+                      className="inline-block rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-navy transition hover:bg-accent"
+                    >
+                      {tag}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
           <PriceBlock product={product} detailed />
           <div
             className={

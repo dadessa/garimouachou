@@ -36,6 +36,7 @@ export interface Product extends PriceInfo {
   isFeatured: boolean;
   isWeeklyPick: boolean;
   publishedAt: string | null;
+  tags: string[];
 }
 
 export interface Banner {
@@ -80,11 +81,12 @@ export interface ProductRow {
   is_featured: boolean;
   is_weekly_pick: boolean;
   published_at: string | null;
+  tags: string[] | null;
   categories: { slug: string; name: string } | null;
   marketplaces: MarketplaceRow | null;
 }
 export const PRODUCT_SELECT =
-  "slug,name,short_description,affiliate_url,main_image_url,main_image_alt,current_price_cents,previous_price_cents,price_checked_at,price_source,is_featured,is_weekly_pick,published_at,categories!inner(slug,name),marketplaces!inner(slug,name,allowed_domains,allow_manual_price,price_max_age_hours,integration_status)";
+  "slug,name,short_description,affiliate_url,main_image_url,main_image_alt,current_price_cents,previous_price_cents,price_checked_at,price_source,is_featured,is_weekly_pick,published_at,tags,categories!inner(slug,name),marketplaces!inner(slug,name,allowed_domains,allow_manual_price,price_max_age_hours,integration_status)";
 
 export function toProduct(r: ProductRow): Product | null {
   if (!r.categories || !r.marketplaces) return null;
@@ -101,6 +103,7 @@ export function toProduct(r: ProductRow): Product | null {
     isFeatured: r.is_featured,
     isWeeklyPick: r.is_weekly_pick,
     publishedAt: r.published_at,
+    tags: r.tags ?? [],
     currentPrice: r.current_price_cents,
     previousPrice: r.previous_price_cents,
     priceCheckedAt: r.price_checked_at,

@@ -154,6 +154,7 @@ function ProductForm() {
         previousPrice: Number.isNaN(prevCents) ? null : prevCents,
         priceCheckedAt: f.checkedAt ? new Date(f.checkedAt).toISOString() : null,
         priceSource: initial?.price_source ?? "manual",
+        tags: [...new Set(f.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean))],
       },
     [f, mk, cat, priceCents, prevCents, initial?.price_source],
   );
