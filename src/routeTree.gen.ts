@@ -14,9 +14,11 @@ import { Route as AfiliadosRouteImport } from './routes/afiliados'
 import { Route as BuscaRouteImport } from './routes/busca'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OfertasRouteImport } from './routes/ofertas'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
 
@@ -45,6 +47,11 @@ const CookiesRoute = CookiesRouteImport.update({
   path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OfertasRoute = OfertasRouteImport.update({
   id: '/ofertas',
   path: '/ofertas',
@@ -60,6 +67,12 @@ const SobreRoute = SobreRouteImport.update({
   path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
   id: '/categoria/$slug',
   path: '/categoria/$slug',
@@ -77,9 +90,11 @@ export interface FileRoutesByFullPath {
   '/busca': typeof BuscaRoute
   '/contato': typeof ContatoRoute
   '/cookies': typeof CookiesRoute
+  '/mcp': typeof McpRoute
   '/ofertas': typeof OfertasRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/p/$slug': typeof PSlugRoute
 }
@@ -89,9 +104,11 @@ export interface FileRoutesByTo {
   '/busca': typeof BuscaRoute
   '/contato': typeof ContatoRoute
   '/cookies': typeof CookiesRoute
+  '/mcp': typeof McpRoute
   '/ofertas': typeof OfertasRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/p/$slug': typeof PSlugRoute
 }
@@ -102,9 +119,11 @@ export interface FileRoutesById {
   '/busca': typeof BuscaRoute
   '/contato': typeof ContatoRoute
   '/cookies': typeof CookiesRoute
+  '/mcp': typeof McpRoute
   '/ofertas': typeof OfertasRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/p/$slug': typeof PSlugRoute
 }
@@ -116,9 +135,11 @@ export interface FileRouteTypes {
     | '/busca'
     | '/contato'
     | '/cookies'
+    | '/mcp'
     | '/ofertas'
     | '/privacidade'
     | '/sobre'
+    | '/.well-known/oauth-protected-resource'
     | '/categoria/$slug'
     | '/p/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -128,9 +149,11 @@ export interface FileRouteTypes {
     | '/busca'
     | '/contato'
     | '/cookies'
+    | '/mcp'
     | '/ofertas'
     | '/privacidade'
     | '/sobre'
+    | '/.well-known/oauth-protected-resource'
     | '/categoria/$slug'
     | '/p/$slug'
   id:
@@ -140,9 +163,11 @@ export interface FileRouteTypes {
     | '/busca'
     | '/contato'
     | '/cookies'
+    | '/mcp'
     | '/ofertas'
     | '/privacidade'
     | '/sobre'
+    | '/.well-known/oauth-protected-resource'
     | '/categoria/$slug'
     | '/p/$slug'
   fileRoutesById: FileRoutesById
@@ -153,9 +178,11 @@ export interface RootRouteChildren {
   BuscaRoute: typeof BuscaRoute
   ContatoRoute: typeof ContatoRoute
   CookiesRoute: typeof CookiesRoute
+  McpRoute: typeof McpRoute
   OfertasRoute: typeof OfertasRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   SobreRoute: typeof SobreRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
   PSlugRoute: typeof PSlugRoute
 }
@@ -197,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ofertas': {
       id: '/ofertas'
       path: '/ofertas'
@@ -216,6 +250,13 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/categoria/$slug': {
@@ -241,9 +282,12 @@ const rootRouteChildren: RootRouteChildren = {
   BuscaRoute: BuscaRoute,
   ContatoRoute: ContatoRoute,
   CookiesRoute: CookiesRoute,
+  McpRoute: McpRoute,
   OfertasRoute: OfertasRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   SobreRoute: SobreRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
   PSlugRoute: PSlugRoute,
 }
