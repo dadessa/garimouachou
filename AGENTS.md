@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Each marketplace lives in src/lib/marketplaces/<slug>.ts behind the shared MarketplaceAdapter interface — future affiliate API integrations plug in per module.
+- Price display always goes through displayablePrice() in src/lib/price.ts — single source for freshness/manual-price rules.
+- Server-side logic (redirect /go, clicks, sitemap, OG tags) uses TanStack server functions/routes with SSR, not Supabase Edge Functions — SSR already serves meta tags to link-preview bots.
