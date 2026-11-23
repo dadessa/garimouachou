@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { absoluteUrl, SITE_URL } from "./site";
+import { absoluteUrl, INSTAGRAM_HANDLE, INSTAGRAM_URL, SITE_URL } from "./site";
 import { isAllowedAffiliateUrl } from "./marketplaces/types";
 import { shopee } from "./marketplaces/shopee";
+
+describe("Instagram oficial", () => {
+  it("aponta para @garimouachouoficial", () => {
+    expect(INSTAGRAM_URL).toBe("https://www.instagram.com/garimouachouoficial");
+    expect(INSTAGRAM_HANDLE).toBe("@garimouachouoficial");
+  });
+});
 
 describe("prévia de compartilhamento", () => {
   it("foto do painel vira endereço completo", () =>

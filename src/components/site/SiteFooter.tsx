@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Mail } from "lucide-react";
-import { INSTAGRAM_URL } from "@/lib/site";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/site";
 import logo from "@/assets/logo-negativa.png.asset.json";
 
 const links = [
@@ -55,7 +55,7 @@ export function SiteFooter() {
               className="mt-2 flex items-center gap-2 text-sm hover:underline"
             >
               <Instagram className="size-4" />
-              Instagram oficial
+              {INSTAGRAM_HANDLE}
             </a>
           )}
           <p className="mt-4 text-xs opacity-85">
