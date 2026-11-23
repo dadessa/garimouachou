@@ -7,6 +7,7 @@ import { CatIcon } from "@/components/site/icons";
 import { ProductGrid, ProductGridSkeleton } from "@/components/site/ProductCard";
 import { SearchForm } from "@/components/site/SiteHeader";
 import { Section } from "@/components/site/Section";
+import { InstagramCta } from "@/components/site/InstagramCta";
 import { categoriesQuery, homeQuery } from "@/lib/catalog/queries";
 
 export const Route = createFileRoute("/")({
@@ -109,6 +110,7 @@ function Home() {
           <ProductGrid products={latest} />
         </Section>
       )}
+      <InstagramCta />
     </>
   );
 }

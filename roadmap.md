@@ -6,4 +6,7 @@
 - [x] Validar senhas fortes na troca e recuperação; ativar rejeição de senhas vazadas
 - [ ] Configurar tamanho e caracteres obrigatórios no serviço de acesso — depende da usuária em Auth settings → Email
 - [x] Limitar tentativas de login — descartado pela usuária: só senha forte por enquanto
+- [x] Instagram oficial no rodapé (@garimouachouoficial)
+- [x] Chamada para seguir o Instagram na página inicial
+- [x] Botão de compartilhar cada produto (WhatsApp / menu nativo)
 - [ ] Etapas 3-5

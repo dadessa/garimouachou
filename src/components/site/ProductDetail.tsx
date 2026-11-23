@@ -4,6 +4,7 @@ import { MarketplaceBadge } from "./ProductCard";
 import { OfferButton } from "./OfferButton";
 import { PriceBlock } from "./PriceBlock";
 import { ProductImage } from "./ProductImage";
+import { ShareButtons } from "./ShareButtons";
 
 export function ProductDetail({ product, preview }: { product: Product; preview?: boolean }) {
   const mk = product.marketplace;
@@ -78,6 +79,7 @@ export function ProductDetail({ product, preview }: { product: Product; preview?
             </p>
             <p>Este link pode gerar comissão, sem custo extra para você.</p>
           </div>
+          {!preview && <ShareButtons product={product} />}
         </div>
       </div>
     </>
