@@ -5,5 +5,5 @@
 - [x] Troca de senha no painel e exigência no próximo acesso
 - [x] Validar senhas fortes na troca e recuperação; ativar rejeição de senhas vazadas
 - [ ] Configurar tamanho e caracteres obrigatórios no serviço de acesso — depende da usuária em Auth settings → Email
-- [ ] Limitar tentativas de login — aguarda autorização para proteção personalizada
+- [x] Limitar tentativas de login — descartado pela usuária: só senha forte por enquanto
 - [ ] Etapas 3-5
