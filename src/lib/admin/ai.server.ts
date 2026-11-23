@@ -51,6 +51,9 @@ export async function generateProductCopy(input: CopyInput) {
     },
   });
   const out = await result.output;
-  const tags = [...new Set(out.tags.map((t) => t.trim().toLowerCase()).filter(Boolean))].slice(0, 8);
+  const tags = [...new Set(out.tags.map((t) => t.trim().toLowerCase()).filter(Boolean))].slice(
+    0,
+    8,
+  );
   return { description: out.description.trim().slice(0, 400), tags };
 }

@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import {
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/categoria/$slug")({
         { name: "twitter:card", content: "summary" },
         ...(loaderData ? [] : [{ name: "robots", content: "noindex" }]),
       ],
-      links: [{ rel: "canonical", href: `https://garimouachou.com.br/categoria/${params.slug}` }],
+      links: [{ rel: "canonical", href: `${SITE_URL}/categoria/${params.slug}` }],
     };
   },
   pendingComponent: () => (

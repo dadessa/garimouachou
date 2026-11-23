@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { InstitutionalPage } from "@/components/site/InstitutionalPage";
 
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/afiliados")({
         content: "Como funcionam os links de afiliado do Garimou Achou!.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://garimouachou.com.br/afiliados" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/afiliados` }],
   }),
   component: () => (
     <InstitutionalPage title="Aviso de Afiliados">

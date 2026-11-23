@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { InstitutionalPage } from "@/components/site/InstitutionalPage";
 
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/sobre")({
       { property: "og:title", content: "Sobre o Garimou Achou! — Garimou Achou!" },
       { property: "og:description", content: "Quem somos e como garimpamos achadinhos." },
     ],
-    links: [{ rel: "canonical", href: "https://garimouachou.com.br/sobre" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/sobre` }],
   }),
   component: () => (
     <InstitutionalPage title="Sobre o Garimou Achou!">

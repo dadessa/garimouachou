@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { EmptyState, LoadError } from "@/components/site/EmptyState";
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/ofertas")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://garimouachou.com.br/ofertas" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/ofertas` }],
   }),
   pendingComponent: () => (
     <div className="mx-auto max-w-6xl px-4 py-8">

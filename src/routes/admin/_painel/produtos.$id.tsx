@@ -154,7 +154,14 @@ function ProductForm() {
         previousPrice: Number.isNaN(prevCents) ? null : prevCents,
         priceCheckedAt: f.checkedAt ? new Date(f.checkedAt).toISOString() : null,
         priceSource: initial?.price_source ?? "manual",
-        tags: [...new Set(f.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean))],
+        tags: [
+          ...new Set(
+            f.tags
+              .split(",")
+              .map((t) => t.trim().toLowerCase())
+              .filter(Boolean),
+          ),
+        ],
       },
     [f, mk, cat, priceCents, prevCents, initial?.price_source],
   );
@@ -204,7 +211,14 @@ function ProductForm() {
             : (initial?.price_checked_at ?? null),
       is_featured: f.featured,
       is_weekly_pick: f.weekly,
-      tags: [...new Set(f.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean))],
+      tags: [
+        ...new Set(
+          f.tags
+            .split(",")
+            .map((t) => t.trim().toLowerCase())
+            .filter(Boolean),
+        ),
+      ],
       status: nextStatus,
     };
     const res =
@@ -240,18 +254,33 @@ function ProductForm() {
   async function remove() {
     setBusy(true);
     try {
-      await removeImages("product-images", [f.imageUrl, initial?.main_image_url, ...replaced]);
+      // 1) Guarda as fotos ligadas ao produto antes de apagar a linha.
       const { data: extra } = await supabase
         .from("product_images")
         .select("url")
         .eq("product_id", id);
-      await removeImages(
-        "product-images",
-        (extra ?? []).map((x) => x.url),
-      );
+      const urls = [
+        f.imageUrl,
+        initial?.main_image_url,
+        ...replaced,
+        ...(extra ?? []).map((x) => x.url),
+      ];
+      // 2) Apaga o produto primeiro: se falhar, nenhuma foto é perdida.
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
+      // 3) Só então remove as fotos que nenhum outro produto usa.
+      const unique = [...new Set(urls.filter((u): u is string => !!u))];
+      const { data: inUse } = unique.length
+        ? await supabase.from("products").select("main_image_url").in("main_image_url", unique)
+        : { data: [] };
+      const used = new Set((inUse ?? []).map((r) => r.main_image_url));
+      removeImages(
+        "product-images",
+        unique.filter((u) => !used.has(u)),
+      ).catch(() => {});
       await qc.invalidateQueries({ queryKey: ["admin"] });
+      for (const k of ["home", "offers", "search", "product", "category"])
+        qc.invalidateQueries({ queryKey: [k] });
       toast.success("Produto excluído.");
       navigate({ to: "/admin/produtos" });
     } catch (e) {
@@ -339,7 +368,12 @@ function ProductForm() {
               value={f.details}
               onChange={(e) => set("details", e.target.value)}
             />
-            <Button type="button" variant="outline" disabled={genBusy || !f.name.trim()} onClick={onGenerate}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={genBusy || !f.name.trim()}
+              onClick={onGenerate}
+            >
               <Sparkles className="size-4" aria-hidden />
               {genBusy ? "Gerando…" : "Gerar descrição e etiquetas"}
             </Button>

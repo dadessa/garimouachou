@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { InstitutionalPage } from "@/components/site/InstitutionalPage";
 
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/cookies")({
         content: "Como o Garimou Achou! usa armazenamento no navegador.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://garimouachou.com.br/cookies" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/cookies` }],
   }),
   component: () => (
     <InstitutionalPage title="Política de Cookies">

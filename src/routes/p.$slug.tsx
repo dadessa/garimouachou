@@ -1,3 +1,4 @@
+import { SITE_URL, absoluteUrl } from "@/lib/site";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { LoadError } from "@/components/site/EmptyState";
 import { ProductGrid } from "@/components/site/ProductCard";
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/p/$slug")({
     const p = loaderData?.product;
     const t = p ? `${p.name} — Garimou Achou!` : "Produto não encontrado — Garimou Achou!";
     const d = p?.shortDescription || "Este achadinho não está disponível.";
-    const img = p?.imageUrl?.startsWith("https://") ? p.imageUrl : null;
+    const img = absoluteUrl(p?.imageUrl);
     return {
       meta: [
         { title: t },
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/p/$slug")({
           : []),
         ...(p ? [] : [{ name: "robots", content: "noindex" }]),
       ],
-      links: [{ rel: "canonical", href: `https://garimouachou.com.br/p/${params.slug}` }],
+      links: [{ rel: "canonical", href: `${SITE_URL}/p/${params.slug}` }],
     };
   },
   errorComponent: LoadError,

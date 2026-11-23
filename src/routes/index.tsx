@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BannerCarousel } from "@/components/site/BannerCarousel";
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://garimouachou.com.br/" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
   }),
   pendingComponent: () => (
     <div className="mx-auto max-w-6xl px-4 pt-10">

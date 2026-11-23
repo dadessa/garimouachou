@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { InstitutionalPage } from "@/components/site/InstitutionalPage";
 
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/privacidade")({
         content: "Quais dados coletamos e como os tratamos, conforme a LGPD.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://garimouachou.com.br/privacidade" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/privacidade` }],
   }),
   component: () => (
     <InstitutionalPage title="Política de Privacidade">
