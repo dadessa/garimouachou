@@ -6,6 +6,8 @@ import { oauthReturnPath } from "@/lib/oauth-return-path";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { passwordRequirement } from "@/lib/admin/password";
+import { passwordDestination } from "@/lib/admin/password-rules";
 
 export const Route = createFileRoute("/admin/login")({
   ssr: false,
@@ -51,7 +53,12 @@ function Login() {
         });
         return;
       }
-      navigate({ href: next, replace: true });
+      try {
+        const required = await passwordRequirement();
+        navigate({ href: passwordDestination(required, next), replace: true });
+      } catch {
+        setMsg({ ok: false, text: "Não foi possível conferir o acesso. Tente novamente." });
+      }
     } else {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/admin/redefinir-senha`,

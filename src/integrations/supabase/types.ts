@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_password_requirements: {
+        Row: {
+          exempt_session_id: string | null
+          requested_at: string | null
+          required: boolean
+          user_id: string
+        }
+        Insert: {
+          exempt_session_id?: string | null
+          requested_at?: string | null
+          required?: boolean
+          user_id: string
+        }
+        Update: {
+          exempt_session_id?: string | null
+          requested_at?: string | null
+          required?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           alt: string
@@ -291,6 +312,8 @@ export type Database = {
         Args: { _domains: string[]; _url: string }
         Returns: boolean
       }
+      password_change_required: { Args: never; Returns: boolean }
+      request_password_change: { Args: never; Returns: undefined }
       search_products: {
         Args: { q: string }
         Returns: {

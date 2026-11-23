@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -27,6 +28,7 @@ use the editor.
   `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
+
 <!-- LOVABLE:END -->
 
 - Each marketplace lives in src/lib/marketplaces/<slug>.ts behind the shared MarketplaceAdapter interface — future affiliate API integrations plug in per module.
@@ -37,3 +39,4 @@ use the editor.
 - Admin panel lives under src/routes/admin/_painel (client-only gate); writes use the browser client so RLS/has_role is the real protection.
 - Catalog images are stored in private buckets and served via /img/<bucket>/<file> — buckets can't be public on this account.
 - AI product copy (description + tags) is generated in src/lib/admin/ai.server.ts via Lovable AI Gateway behind an admin-checked server function — keeps the key server-side and forbids invented prices.
+- Password requirements live in a read-own table with a self-admin scheduling RPC; has_role blocks the next login session until an auth password-change trigger clears the requirement, so bypassing the UI cannot grant administrative writes.

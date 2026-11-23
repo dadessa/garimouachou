@@ -23,6 +23,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AdminPainelRouteImport } from './routes/admin/_painel'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminRedefinirSenhaRouteImport } from './routes/admin/redefinir-senha'
+import { Route as AdminTrocarSenhaRouteImport } from './routes/admin/trocar-senha'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as ImgSplatRouteImport } from './routes/img.$'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
@@ -105,6 +106,11 @@ const AdminRedefinirSenhaRoute = AdminRedefinirSenhaRouteImport.update({
   path: '/admin/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTrocarSenhaRoute = AdminTrocarSenhaRouteImport.update({
+  id: '/admin/trocar-senha',
+  path: '/admin/trocar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
   id: '/categoria/$slug',
   path: '/categoria/$slug',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminPainelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
+  '/admin/trocar-senha': typeof AdminTrocarSenhaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/img/$': typeof ImgSplatRoute
   '/p/$slug': typeof PSlugRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
+  '/admin/trocar-senha': typeof AdminTrocarSenhaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/img/$': typeof ImgSplatRoute
   '/p/$slug': typeof PSlugRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/admin/_painel': typeof AdminPainelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
+  '/admin/trocar-senha': typeof AdminTrocarSenhaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/img/$': typeof ImgSplatRoute
   '/p/$slug': typeof PSlugRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/login'
     | '/admin/redefinir-senha'
+    | '/admin/trocar-senha'
     | '/categoria/$slug'
     | '/img/$'
     | '/p/$slug'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/admin/login'
     | '/admin/redefinir-senha'
+    | '/admin/trocar-senha'
     | '/categoria/$slug'
     | '/img/$'
     | '/p/$slug'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/admin/_painel'
     | '/admin/login'
     | '/admin/redefinir-senha'
+    | '/admin/trocar-senha'
     | '/categoria/$slug'
     | '/img/$'
     | '/p/$slug'
@@ -330,6 +342,7 @@ export interface RootRouteChildren {
   AdminPainelRoute: typeof AdminPainelRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   AdminRedefinirSenhaRoute: typeof AdminRedefinirSenhaRoute
+  AdminTrocarSenhaRoute: typeof AdminTrocarSenhaRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
   ImgSplatRoute: typeof ImgSplatRoute
   PSlugRoute: typeof PSlugRoute
@@ -434,6 +447,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/redefinir-senha'
       fullPath: '/admin/redefinir-senha'
       preLoaderRoute: typeof AdminRedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/trocar-senha': {
+      id: '/admin/trocar-senha'
+      path: '/admin/trocar-senha'
+      fullPath: '/admin/trocar-senha'
+      preLoaderRoute: typeof AdminTrocarSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/categoria/$slug': {
@@ -547,6 +567,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPainelRoute: AdminPainelRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   AdminRedefinirSenhaRoute: AdminRedefinirSenhaRoute,
+  AdminTrocarSenhaRoute: AdminTrocarSenhaRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
   ImgSplatRoute: ImgSplatRoute,
   PSlugRoute: PSlugRoute,

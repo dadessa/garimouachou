@@ -5,6 +5,7 @@ import { useState } from "react";
 import logo from "@/assets/logo-horizontal.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { passwordRequirement, signOutAdmin } from "@/lib/admin/password";
 
 export const Route = createFileRoute("/admin/_painel")({
   // A sessão fica no navegador; a proteção real dos dados é feita pelo RLS e pelo storage.
@@ -12,12 +13,14 @@ export const Route = createFileRoute("/admin/_painel")({
   beforeLoad: async ({ location }) => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) throw redirect({ to: "/admin/login", search: { next: location.href } });
-    const { data: role } = await supabase
+    const { data: role, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
+    if (roleError) throw new Error("Não foi possível conferir o acesso ao painel.");
+    if (role && (await passwordRequirement())) throw redirect({ to: "/admin/trocar-senha" });
     return { email: data.user.email ?? "", isAdmin: !!role };
   },
   head: () => ({
@@ -32,15 +35,14 @@ const NAV = [
   { to: "/admin/categorias", label: "Categorias" },
   { to: "/admin/banners", label: "Banners" },
   { to: "/admin/marketplaces", label: "Marketplaces" },
+  { to: "/admin/trocar-senha", label: "Senha" },
 ] as const;
 
 function useSignOut() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   return async () => {
-    await qc.cancelQueries();
-    qc.removeQueries({ queryKey: ["admin"] });
-    await supabase.auth.signOut();
+    await signOutAdmin(qc);
     navigate({ to: "/admin/login", search: { next: "/admin" }, replace: true });
   };
 }
