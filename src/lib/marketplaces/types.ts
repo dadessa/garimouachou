@@ -10,6 +10,7 @@ export interface MarketplaceAdapter {
 
 /** Valida URL de afiliado: só https, hostname exato ou subdomínio de um domínio permitido. */
 export function isAllowedAffiliateUrl(raw: string, allowedDomains: string[]): boolean {
+  if (/[\s\\]/.test(raw)) return false;
   let url: URL;
   try {
     url = new URL(raw);

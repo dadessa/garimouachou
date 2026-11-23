@@ -24,3 +24,18 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Primeiro administrador (Etapa 2)
+
+Não há cadastro público (novos cadastros estão desativados no login do Lovable Cloud).
+
+1. No Lovable, abra **Cloud → Users** e clique em **Add user**: informe o e-mail e uma senha forte.
+2. Em **Cloud → Database → SQL**, rode (troque o e-mail):
+
+```sql
+insert into public.user_roles (user_id, role)
+select id, 'admin' from auth.users where email = 'SEU-EMAIL@exemplo.com'
+on conflict do nothing;
+```
+
+3. Entre em `/admin/login` com esse e-mail e senha.

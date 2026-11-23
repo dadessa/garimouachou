@@ -1,0 +1,1 @@
+CREATE POLICY "Admin lista imagens storage" ON storage.objects FOR SELECT TO authenticated USING (bucket_id IN ('product-images','banner-images') AND public.has_role(auth.uid(),'admin'));

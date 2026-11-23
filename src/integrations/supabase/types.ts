@@ -14,16 +14,285 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      banners: {
+        Row: {
+          alt: string
+          created_at: string
+          id: string
+          image_mobile_url: string | null
+          image_url: string
+          is_active: boolean
+          link_url: string | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          alt?: string
+          created_at?: string
+          id?: string
+          image_mobile_url?: string | null
+          image_url: string
+          is_active?: boolean
+          link_url?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          alt?: string
+          created_at?: string
+          id?: string
+          image_mobile_url?: string | null
+          image_url?: string
+          is_active?: boolean
+          link_url?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketplaces: {
+        Row: {
+          allow_manual_price: boolean
+          allowed_domains: string[]
+          created_at: string
+          id: string
+          integration_status: Database["public"]["Enums"]["integration_status"]
+          is_active: boolean
+          name: string
+          price_max_age_hours: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          allow_manual_price?: boolean
+          allowed_domains?: string[]
+          created_at?: string
+          id?: string
+          integration_status?: Database["public"]["Enums"]["integration_status"]
+          is_active?: boolean
+          name: string
+          price_max_age_hours?: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          allow_manual_price?: boolean
+          allowed_domains?: string[]
+          created_at?: string
+          id?: string
+          integration_status?: Database["public"]["Enums"]["integration_status"]
+          is_active?: boolean
+          name?: string
+          price_max_age_hours?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_images: {
+        Row: {
+          alt: string
+          created_at: string
+          id: string
+          product_id: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          alt?: string
+          created_at?: string
+          id?: string
+          product_id: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          alt?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          affiliate_url: string
+          category_id: string | null
+          created_at: string
+          current_price_cents: number | null
+          external_id: string | null
+          id: string
+          is_featured: boolean
+          is_weekly_pick: boolean
+          main_image_alt: string | null
+          main_image_url: string | null
+          marketplace_id: string | null
+          name: string
+          previous_price_cents: number | null
+          price_checked_at: string | null
+          price_source: Database["public"]["Enums"]["price_source"]
+          published_at: string | null
+          seo_description: string | null
+          seo_title: string | null
+          short_description: string
+          slug: string
+          source: Database["public"]["Enums"]["price_source"]
+          status: Database["public"]["Enums"]["product_status"]
+          updated_at: string
+        }
+        Insert: {
+          affiliate_url?: string
+          category_id?: string | null
+          created_at?: string
+          current_price_cents?: number | null
+          external_id?: string | null
+          id?: string
+          is_featured?: boolean
+          is_weekly_pick?: boolean
+          main_image_alt?: string | null
+          main_image_url?: string | null
+          marketplace_id?: string | null
+          name?: string
+          previous_price_cents?: number | null
+          price_checked_at?: string | null
+          price_source?: Database["public"]["Enums"]["price_source"]
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          short_description?: string
+          slug: string
+          source?: Database["public"]["Enums"]["price_source"]
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+        }
+        Update: {
+          affiliate_url?: string
+          category_id?: string | null
+          created_at?: string
+          current_price_cents?: number | null
+          external_id?: string | null
+          id?: string
+          is_featured?: boolean
+          is_weekly_pick?: boolean
+          main_image_alt?: string | null
+          main_image_url?: string | null
+          marketplace_id?: string | null
+          name?: string
+          previous_price_cents?: number | null
+          price_checked_at?: string | null
+          price_source?: Database["public"]["Enums"]["price_source"]
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          short_description?: string
+          slug?: string
+          source?: Database["public"]["Enums"]["price_source"]
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_marketplace_id_fkey"
+            columns: ["marketplace_id"]
+            isOneToOne: false
+            referencedRelation: "marketplaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_allowed_affiliate_url: {
+        Args: { _domains: string[]; _url: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
+      integration_status: "manual" | "planned" | "active"
+      price_source: "manual" | "api"
+      product_status: "draft" | "published" | "inactive"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +419,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+      integration_status: ["manual", "planned", "active"],
+      price_source: ["manual", "api"],
+      product_status: ["draft", "published", "inactive"],
+    },
   },
 } as const
