@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { X } from "lucide-react";
 import { marketplaces } from "@/lib/marketplaces";
 import { displayablePrice } from "@/lib/price";
 import { categoriesQuery } from "@/lib/catalog/queries";
@@ -38,6 +39,12 @@ export function applySort(items: Product[], ordem?: Ordem) {
   });
 }
 
+const ordemLabel: Record<Ordem, string> = {
+  recentes: "Mais recentes",
+  "menor-preco": "Menor preço",
+  "maior-preco": "Maior preço",
+};
+
 const sel = "h-10 rounded-full border-2 border-input bg-background px-3 text-sm font-semibold";
 function setKey(s: ListSearch, key: "cat" | "mk" | "ordem", v: string): ListSearch {
   const next: ListSearch = { ...s };
@@ -57,8 +64,28 @@ export function ProductFilters({
   showCategory?: boolean;
 }) {
   const { data: cats = [] } = useQuery(categoriesQuery);
+  const chips: { key: keyof ListSearch; label: string }[] = [];
+  if (search.q) chips.push({ key: "q", label: `Palavra: “${search.q}”` });
+  if (showCategory && search.cat)
+    chips.push({
+      key: "cat",
+      label: `Categoria: ${cats.find((c) => c.slug === search.cat)?.name ?? search.cat}`,
+    });
+  if (search.mk)
+    chips.push({
+      key: "mk",
+      label: `Loja: ${marketplaces.find((m) => m.slug === search.mk)?.name ?? search.mk}`,
+    });
+  if (search.ordem) chips.push({ key: "ordem", label: ordemLabel[search.ordem] });
+  const remove = (key: keyof ListSearch) => {
+    const next: ListSearch = { ...search };
+    delete next[key];
+    delete next.n;
+    onChange(next);
+  };
   return (
-    <div className="mb-6 flex flex-wrap gap-2">
+    <div className="mb-6">
+    <div className="flex flex-wrap gap-2">
       {showCategory && (
         <label className="sr-only" htmlFor="f-cat">
           Categoria
@@ -110,6 +137,30 @@ export function ProductFilters({
         <option value="menor-preco">Menor preço</option>
         <option value="maior-preco">Maior preço</option>
       </select>
+    </div>
+      {chips.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="Filtros ativos">
+          {chips.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => remove(c.key)}
+              aria-label={`Remover filtro ${c.label}`}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-bold text-accent-foreground"
+            >
+              {c.label}
+              <X className="size-3.5" aria-hidden="true" />
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => onChange({})}
+            className="min-h-9 px-2 text-xs font-bold text-navy underline"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      )}
     </div>
   );
 }

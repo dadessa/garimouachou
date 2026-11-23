@@ -5,8 +5,10 @@ import { categoriesQuery } from "@/lib/catalog/queries";
 
 export function EmptyState({
   title = "Nenhum achadinho por aqui ainda.",
+  onClear,
 }: {
   title?: string | undefined;
+  onClear?: (() => void) | undefined;
 }) {
   const { data: cats = [] } = useQuery(categoriesQuery);
   return (
@@ -14,8 +16,17 @@ export function EmptyState({
       <img src={mascote.url} alt="" width={210} height={197} className="w-24" />
       <p className="mt-3 font-bold">{title}</p>
       <p className="text-sm text-muted-foreground">
-        Tente outra palavra ou dê uma olhada nestas categorias:
+        Tente outra palavra, tire algum filtro ou dê uma olhada nestas categorias:
       </p>
+      {onClear && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="mt-4 h-11 rounded-full bg-navy px-6 text-sm font-bold text-secondary-foreground"
+        >
+          Limpar filtros
+        </button>
+      )}
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         {cats.map((c) => (
           <Link

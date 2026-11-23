@@ -8,7 +8,17 @@ import { categoriesQuery } from "@/lib/catalog/queries";
 import type { Category } from "@/lib/catalog/types";
 import { CatIcon } from "./icons";
 
-function SearchForm({ autoFocus, onDone }: { autoFocus?: boolean; onDone?: () => void }) {
+export function SearchForm({
+  autoFocus,
+  onDone,
+  id = "busca-site",
+  large,
+}: {
+  autoFocus?: boolean;
+  onDone?: () => void;
+  id?: string;
+  large?: boolean;
+}) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   return (
@@ -17,25 +27,25 @@ function SearchForm({ autoFocus, onDone }: { autoFocus?: boolean; onDone?: () =>
       className="relative w-full"
       onSubmit={(e) => {
         e.preventDefault();
-        navigate({ to: "/busca", search: { q } });
+        navigate({ to: "/busca", search: q.trim() ? { q: q.trim() } : {} });
         onDone?.();
       }}
     >
-      <label htmlFor="busca-site" className="sr-only">
+      <label htmlFor={id} className="sr-only">
         Buscar achadinhos
       </label>
       <input
-        id="busca-site"
+        id={id}
         autoFocus={autoFocus}
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="O que você procura?"
-        className="h-11 w-full rounded-full border-2 border-input bg-background pl-4 pr-12 text-sm font-medium placeholder:text-muted-foreground focus:border-navy focus:outline-none"
+        className={`${large ? "h-14 text-base" : "h-11 text-sm"} w-full rounded-full border-2 border-input bg-background pl-4 pr-14 font-medium placeholder:text-muted-foreground focus:border-navy focus:outline-none`}
       />
       <button
         type="submit"
         aria-label="Buscar"
-        className="absolute right-1 top-1 grid size-9 place-items-center rounded-full bg-navy text-secondary-foreground"
+        className={`absolute right-1 top-1 grid place-items-center ${large ? "size-12" : "size-9"} rounded-full bg-navy text-secondary-foreground`}
       >
         <Search className="size-4" />
       </button>

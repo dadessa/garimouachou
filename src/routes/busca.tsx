@@ -68,7 +68,16 @@ function SearchPage() {
           )}
         </>
       ) : (
-        <EmptyState title={search.q ? `Não achamos nada para “${search.q}”.` : undefined} />
+        <EmptyState
+          title={
+            search.q
+              ? `Não achamos nada para “${search.q}” com esses filtros.`
+              : "Nenhum achadinho com esses filtros."
+          }
+          onClear={
+            search.q || search.cat || search.mk ? () => navigate({ search: {} }) : undefined
+          }
+        />
       )}
     </div>
   );

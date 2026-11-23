@@ -5,6 +5,7 @@ import { BannerCarousel } from "@/components/site/BannerCarousel";
 import { ComingSoon, LoadError } from "@/components/site/EmptyState";
 import { CatIcon } from "@/components/site/icons";
 import { ProductGrid, ProductGridSkeleton } from "@/components/site/ProductCard";
+import { SearchForm } from "@/components/site/SiteHeader";
 import { Section } from "@/components/site/Section";
 import { categoriesQuery, homeQuery } from "@/lib/catalog/queries";
 
@@ -44,10 +45,27 @@ function Home() {
   } = useSuspenseQuery(homeQuery);
   const { data: categories } = useSuspenseQuery(categoriesQuery);
   const weekly = all.filter((p) => p.isWeeklyPick).slice(0, 4);
-  const featured = all.filter((p) => p.isFeatured).slice(0, 4);
+  const shown = new Set(weekly.map((p) => p.slug));
+  const featured = all.filter((p) => p.isFeatured && !shown.has(p.slug)).slice(0, 4);
+  featured.forEach((p) => shown.add(p.slug));
+  const latest = all.filter((p) => !shown.has(p.slug)).slice(0, 8);
   const cats = categories.filter((c) => all.some((p) => p.categorySlug === c.slug));
   return (
     <>
+      <section className="bg-yellow">
+        <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+          <h1 className="max-w-2xl text-2xl leading-tight text-navy md:text-4xl">
+            A gente garimpa os melhores achadinhos. Você aproveita.
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm font-semibold text-navy md:text-base">
+            Produtos escolhidos no Mercado Livre, Shopee e outras lojas. Você compra direto no site
+            da loja.
+          </p>
+          <div className="mt-5 max-w-xl">
+            <SearchForm id="busca-home" large />
+          </div>
+        </div>
+      </section>
       <BannerCarousel banners={banners} />
       {all.length === 0 && <ComingSoon />}
       {weekly.length > 0 && (
@@ -55,13 +73,8 @@ function Home() {
           <ProductGrid products={weekly} />
         </Section>
       )}
-      {featured.length > 0 && (
-        <Section title="Ofertas em Destaque">
-          <ProductGrid products={featured} />
-        </Section>
-      )}
       {cats.length > 0 && (
-        <Section title="Categorias Populares">
+        <Section title="Categorias">
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-7">
             {cats.map((c) => (
               <Link
@@ -79,16 +92,21 @@ function Home() {
           </div>
         </Section>
       )}
-      {all.length > 0 && (
+      {featured.length > 0 && (
+        <Section title="Ofertas em Destaque">
+          <ProductGrid products={featured} />
+        </Section>
+      )}
+      {latest.length > 0 && (
         <Section
-          title="Últimos Achadinhos"
+          title="Novidades"
           action={
             <Link to="/busca" search={{}} className="text-sm font-bold text-navy underline">
               Ver mais
             </Link>
           }
         >
-          <ProductGrid products={all.slice(0, 8)} />
+          <ProductGrid products={latest} />
         </Section>
       )}
     </>

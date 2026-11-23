@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Mail } from "lucide-react";
+import { INSTAGRAM_URL } from "@/lib/site";
 import logo from "@/assets/logo-negativa.png.asset.json";
 
 const links = [
@@ -46,15 +47,20 @@ export function SiteFooter() {
             <Mail className="size-4" />
             contato@garimouachou.com.br
           </a>
-          <a
-            href="https://instagram.com"
-            rel="noopener"
-            target="_blank"
-            className="mt-2 flex items-center gap-2 text-sm hover:underline"
-          >
-            <Instagram className="size-4" />
-            Instagram
-          </a>
+          {INSTAGRAM_URL && (
+            <a
+              href={INSTAGRAM_URL}
+              rel="noopener noreferrer"
+              target="_blank"
+              className="mt-2 flex items-center gap-2 text-sm hover:underline"
+            >
+              <Instagram className="size-4" />
+              Instagram oficial
+            </a>
+          )}
+          <p className="mt-4 text-xs opacity-85">
+            Você finaliza a compra no site do marketplace (Mercado Livre, Shopee e outros).
+          </p>
         </div>
       </div>
       <div className="border-t border-secondary-foreground/15">
