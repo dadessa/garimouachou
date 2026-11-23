@@ -32,4 +32,4 @@ use the editor.
 - Each marketplace lives in src/lib/marketplaces/<slug>.ts behind the shared MarketplaceAdapter interface — future affiliate API integrations plug in per module.
 - Price display always goes through displayablePrice() in src/lib/price.ts — single source for freshness/manual-price rules.
 - Server-side logic (redirect /go, clicks, sitemap, OG tags) uses TanStack server functions/routes with SSR, not Supabase Edge Functions — SSR already serves meta tags to link-preview bots.
-- Public MCP server lives in src/lib/mcp (anon client only, no prices returned) — exposes only what visitors already see.
+- MCP server lives in src/lib/mcp behind Supabase OAuth (consent at /.lovable/oauth/consent, login at /login); tools return no prices — avoids stale price exposure.

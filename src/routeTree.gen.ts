@@ -14,6 +14,7 @@ import { Route as AfiliadosRouteImport } from './routes/afiliados'
 import { Route as BuscaRouteImport } from './routes/busca'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OfertasRouteImport } from './routes/ofertas'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
@@ -21,6 +22,7 @@ import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -45,6 +47,11 @@ const ContatoRoute = ContatoRouteImport.update({
 const CookiesRoute = CookiesRouteImport.update({
   id: '/cookies',
   path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -83,6 +90,11 @@ const PSlugRoute = PSlugRouteImport.update({
   path: '/p/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -90,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/busca': typeof BuscaRoute
   '/contato': typeof ContatoRoute
   '/cookies': typeof CookiesRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/ofertas': typeof OfertasRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -97,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/p/$slug': typeof PSlugRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -104,6 +118,7 @@ export interface FileRoutesByTo {
   '/busca': typeof BuscaRoute
   '/contato': typeof ContatoRoute
   '/cookies': typeof CookiesRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/ofertas': typeof OfertasRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -111,6 +126,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/p/$slug': typeof PSlugRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -119,6 +135,7 @@ export interface FileRoutesById {
   '/busca': typeof BuscaRoute
   '/contato': typeof ContatoRoute
   '/cookies': typeof CookiesRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/ofertas': typeof OfertasRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -126,6 +143,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/p/$slug': typeof PSlugRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -135,6 +153,7 @@ export interface FileRouteTypes {
     | '/busca'
     | '/contato'
     | '/cookies'
+    | '/login'
     | '/mcp'
     | '/ofertas'
     | '/privacidade'
@@ -142,6 +161,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/categoria/$slug'
     | '/p/$slug'
+    | '/.lovable/oauth/consent'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -149,6 +169,7 @@ export interface FileRouteTypes {
     | '/busca'
     | '/contato'
     | '/cookies'
+    | '/login'
     | '/mcp'
     | '/ofertas'
     | '/privacidade'
@@ -156,6 +177,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/categoria/$slug'
     | '/p/$slug'
+    | '/.lovable/oauth/consent'
   id:
     | '__root__'
     | '/'
@@ -163,6 +185,7 @@ export interface FileRouteTypes {
     | '/busca'
     | '/contato'
     | '/cookies'
+    | '/login'
     | '/mcp'
     | '/ofertas'
     | '/privacidade'
@@ -170,6 +193,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/categoria/$slug'
     | '/p/$slug'
+    | '/.lovable/oauth/consent'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -178,6 +202,7 @@ export interface RootRouteChildren {
   BuscaRoute: typeof BuscaRoute
   ContatoRoute: typeof ContatoRoute
   CookiesRoute: typeof CookiesRoute
+  LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   OfertasRoute: typeof OfertasRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
@@ -185,6 +210,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
   PSlugRoute: typeof PSlugRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -222,6 +248,13 @@ declare module '@tanstack/react-router' {
       path: '/cookies'
       fullPath: '/cookies'
       preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -273,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -282,6 +322,7 @@ const rootRouteChildren: RootRouteChildren = {
   BuscaRoute: BuscaRoute,
   ContatoRoute: ContatoRoute,
   CookiesRoute: CookiesRoute,
+  LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   OfertasRoute: OfertasRoute,
   PrivacidadeRoute: PrivacidadeRoute,
@@ -290,6 +331,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
   PSlugRoute: PSlugRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
