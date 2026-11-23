@@ -1,7 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type Bucket = "product-images" | "banner-images";
-const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+const TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 export const MAX_BYTES = 5 * 1024 * 1024;
 
 export function imageProblem(file: File): string | null {
@@ -15,7 +19,9 @@ export async function uploadImage(bucket: Bucket, file: File): Promise<string> {
   const problem = imageProblem(file);
   if (problem) throw new Error(problem);
   const path = `${crypto.randomUUID()}.${TYPES[file.type]}`;
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type, upsert: false });
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(path, file, { contentType: file.type, upsert: false });
   if (error) throw new Error("Não foi possível enviar a imagem. Tente de novo.");
   return `/img/${bucket}/${path}`;
 }

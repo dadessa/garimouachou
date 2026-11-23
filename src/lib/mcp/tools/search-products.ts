@@ -5,11 +5,16 @@ import { supabaseAnon, SITE_URL } from "../supabase";
 export default defineTool({
   name: "search_products",
   title: "Buscar achados",
-  description: "Busca produtos publicados no Garimou Achou! por nome, com filtro opcional de categoria ou loja (slug).",
+  description:
+    "Busca produtos publicados no Garimou Achou! por nome, com filtro opcional de categoria ou loja (slug).",
   inputSchema: {
     query: z.string().max(100).optional().describe("Texto para buscar no nome do produto."),
     category: z.string().max(60).optional().describe("Slug da categoria."),
-    marketplace: z.string().max(60).optional().describe("Slug da loja (amazon, shopee, mercadolivre, magalu)."),
+    marketplace: z
+      .string()
+      .max(60)
+      .optional()
+      .describe("Slug da loja (amazon, shopee, mercadolivre, magalu)."),
     limit: z.number().int().min(1).max(30).optional().describe("Máximo de resultados (padrão 10)."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
@@ -17,7 +22,9 @@ export default defineTool({
     const sb = supabaseAnon();
     let q = sb
       .from("products")
-      .select("slug,name,short_description,main_image_url,categories!inner(slug,name),marketplaces!inner(slug,name)")
+      .select(
+        "slug,name,short_description,main_image_url,categories!inner(slug,name),marketplaces!inner(slug,name)",
+      )
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(limit ?? 10);
@@ -39,7 +46,12 @@ export default defineTool({
       };
     });
     return {
-      content: [{ type: "text", text: products.length ? JSON.stringify(products) : "Nenhum achado encontrado." }],
+      content: [
+        {
+          type: "text",
+          text: products.length ? JSON.stringify(products) : "Nenhum achado encontrado.",
+        },
+      ],
       structuredContent: { products },
     };
   },

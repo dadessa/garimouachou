@@ -25,13 +25,26 @@ function NotFoundComponent() {
     <div className="mx-auto flex max-w-md flex-col items-center px-4 py-16 text-center">
       <img src={mascote.url} alt="" width={210} height={197} className="w-36" />
       <h1 className="mt-4 text-3xl">Ops, não achamos isso!</h1>
-      <p className="mt-2 text-muted-foreground">A página não existe ou saiu do ar. Que tal garimpar de novo?</p>
+      <p className="mt-2 text-muted-foreground">
+        A página não existe ou saiu do ar. Que tal garimpar de novo?
+      </p>
       <form action="/busca" className="mt-6 flex w-full gap-2" role="search">
-        <label htmlFor="busca-404" className="sr-only">Buscar</label>
-        <input id="busca-404" name="q" placeholder="Buscar achadinhos" className="h-11 flex-1 rounded-full border-2 border-input px-4 text-sm" />
-        <button className="h-11 rounded-full bg-navy px-5 text-sm font-bold text-secondary-foreground">Buscar</button>
+        <label htmlFor="busca-404" className="sr-only">
+          Buscar
+        </label>
+        <input
+          id="busca-404"
+          name="q"
+          placeholder="Buscar achadinhos"
+          className="h-11 flex-1 rounded-full border-2 border-input px-4 text-sm"
+        />
+        <button className="h-11 rounded-full bg-navy px-5 text-sm font-bold text-secondary-foreground">
+          Buscar
+        </button>
       </form>
-      <Link to="/" className="mt-4 font-bold text-navy underline">Voltar ao início</Link>
+      <Link to="/" className="mt-4 font-bold text-navy underline">
+        Voltar ao início
+      </Link>
     </div>
   );
 }
@@ -83,7 +96,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Garimou Achou! — A gente garimpa. Você aproveita." },
-      { name: "description", content: "Curadoria de achadinhos e ofertas dos principais marketplaces do Brasil." },
+      {
+        name: "description",
+        content: "Curadoria de achadinhos e ofertas dos principais marketplaces do Brasil.",
+      },
       { property: "og:site_name", content: "Garimou Achou!" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "pt_BR" },
@@ -98,10 +114,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,700&display=swap",
+      },
     ],
   }),
-  loader: ({ context }) => context.queryClient.prefetchQuery(categoriesQuery),
+  loader: ({ context }) => context.queryClient.ensureQueryData(categoriesQuery).catch(() => []),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -124,6 +143,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const categories = Route.useLoaderData();
   const router = useRouter();
   const isAdmin = useRouterState({ select: (s) => s.location.pathname.startsWith("/admin") });
   useEffect(() => {
@@ -146,8 +166,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-full focus:bg-navy focus:px-4 focus:py-2 focus:text-secondary-foreground">Pular para o conteúdo</a>
-      <SiteHeader />
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-full focus:bg-navy focus:px-4 focus:py-2 focus:text-secondary-foreground"
+      >
+        Pular para o conteúdo
+      </a>
+      <SiteHeader categories={categories} />
       <main id="conteudo" className="min-h-[60vh]">
         <Outlet />
       </main>

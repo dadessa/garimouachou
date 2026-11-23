@@ -13,7 +13,10 @@ export const Route = createFileRoute("/sobre")({
   }),
   component: () => (
     <InstitutionalPage title="Sobre o Garimou Achou!">
-      <p>O Garimou Achou! garimpa produtos e ofertas nos marketplaces brasileiros. Não vendemos, não entregamos e não garantimos produtos: a compra acontece sempre no site do marketplace.</p>
+      <p>
+        O Garimou Achou! garimpa produtos e ofertas nos marketplaces brasileiros. Não vendemos, não
+        entregamos e não garantimos produtos: a compra acontece sempre no site do marketplace.
+      </p>
       <p className="text-sm text-muted-foreground">Texto completo será redigido na Etapa 5.</p>
     </InstitutionalPage>
   ),

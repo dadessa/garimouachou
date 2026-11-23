@@ -33,9 +33,21 @@ function ResetPassword() {
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) setReady(true);
     });
-    supabase.auth.getSession().then(({ data: s }) => { if (s.session) setReady(true); });
-    const t = setTimeout(() => setReady((r) => { if (!r) setMsg("Link inválido ou expirado. Peça um novo na tela de login."); return r; }), 4000);
-    return () => { data.subscription.unsubscribe(); clearTimeout(t); };
+    supabase.auth.getSession().then(({ data: s }) => {
+      if (s.session) setReady(true);
+    });
+    const t = setTimeout(
+      () =>
+        setReady((r) => {
+          if (!r) setMsg("Link inválido ou expirado. Peça um novo na tela de login.");
+          return r;
+        }),
+      4000,
+    );
+    return () => {
+      data.subscription.unsubscribe();
+      clearTimeout(t);
+    };
   }, []);
 
   async function submit(e: React.FormEvent) {
@@ -45,18 +57,55 @@ function ResetPassword() {
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
-    if (error) return setMsg(error.message.toLowerCase().includes("pwned") || error.message.toLowerCase().includes("weak") ? "Essa senha é fraca ou já vazou em outros sites. Escolha outra." : "Não foi possível salvar a nova senha. Peça um novo link.");
+    if (error)
+      return setMsg(
+        error.message.toLowerCase().includes("pwned") ||
+          error.message.toLowerCase().includes("weak")
+          ? "Essa senha é fraca ou já vazou em outros sites. Escolha outra."
+          : "Não foi possível salvar a nova senha. Peça um novo link.",
+      );
     navigate({ to: "/admin", replace: true });
   }
 
   return (
     <main className="grid min-h-screen place-items-center bg-muted px-4">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-3xl border border-border bg-card p-6 shadow-card">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-sm space-y-4 rounded-3xl border border-border bg-card p-6 shadow-card"
+      >
         <h1 className="text-xl font-extrabold text-navy">Criar nova senha</h1>
-        <div className="space-y-1.5"><Label htmlFor="nova">Nova senha</Label><Input id="nova" type="password" autoComplete="new-password" required disabled={!ready} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-        <div className="space-y-1.5"><Label htmlFor="conf">Repita a nova senha</Label><Input id="conf" type="password" autoComplete="new-password" required disabled={!ready} value={confirm} onChange={(e) => setConfirm(e.target.value)} /></div>
-        {msg && <p role="alert" className="text-sm text-destructive">{msg}</p>}
-        <Button type="submit" disabled={!ready || busy} className="w-full">{busy ? "Salvando..." : "Salvar nova senha"}</Button>
+        <div className="space-y-1.5">
+          <Label htmlFor="nova">Nova senha</Label>
+          <Input
+            id="nova"
+            type="password"
+            autoComplete="new-password"
+            required
+            disabled={!ready}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="conf">Repita a nova senha</Label>
+          <Input
+            id="conf"
+            type="password"
+            autoComplete="new-password"
+            required
+            disabled={!ready}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
+        </div>
+        {msg && (
+          <p role="alert" className="text-sm text-destructive">
+            {msg}
+          </p>
+        )}
+        <Button type="submit" disabled={!ready || busy} className="w-full">
+          {busy ? "Salvando..." : "Salvar nova senha"}
+        </Button>
       </form>
     </main>
   );

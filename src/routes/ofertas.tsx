@@ -9,7 +9,10 @@ export const Route = createFileRoute("/ofertas")({
   head: () => ({
     meta: [
       { title: "Ofertas em destaque — Garimou Achou!" },
-      { name: "description", content: "Os achadinhos em destaque, dos mais recentes aos mais antigos." },
+      {
+        name: "description",
+        content: "Os achadinhos em destaque, dos mais recentes aos mais antigos.",
+      },
       { property: "og:title", content: "Ofertas em destaque — Garimou Achou!" },
       { property: "og:description", content: "Os achadinhos em destaque garimpados para você." },
       { property: "og:type", content: "website" },
@@ -17,7 +20,11 @@ export const Route = createFileRoute("/ofertas")({
     ],
     links: [{ rel: "canonical", href: "https://garimouachou.com.br/ofertas" }],
   }),
-  pendingComponent: () => <div className="mx-auto max-w-6xl px-4 py-8"><ProductGridSkeleton /></div>,
+  pendingComponent: () => (
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <ProductGridSkeleton />
+    </div>
+  ),
   errorComponent: LoadError,
   component: Offers,
 });
@@ -27,7 +34,11 @@ function Offers() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="mb-6 text-2xl md:text-3xl">Ofertas</h1>
-      {data.length ? <ProductGrid products={data} /> : <EmptyState title="Nenhuma oferta em destaque no momento." />}
+      {data.length ? (
+        <ProductGrid products={data} />
+      ) : (
+        <EmptyState title="Nenhuma oferta em destaque no momento." />
+      )}
     </div>
   );
 }

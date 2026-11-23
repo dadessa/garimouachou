@@ -1,456 +1,444 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.18"
-  }
+    PostgrestVersion: "14.18";
+  };
   public: {
     Tables: {
       banners: {
         Row: {
-          alt: string
-          created_at: string
-          id: string
-          image_mobile_url: string | null
-          image_url: string
-          is_active: boolean
-          link_url: string | null
-          sort_order: number
-          title: string
-          updated_at: string
-        }
+          alt: string;
+          created_at: string;
+          id: string;
+          image_mobile_url: string | null;
+          image_url: string;
+          is_active: boolean;
+          link_url: string | null;
+          sort_order: number;
+          title: string;
+          updated_at: string;
+        };
         Insert: {
-          alt?: string
-          created_at?: string
-          id?: string
-          image_mobile_url?: string | null
-          image_url: string
-          is_active?: boolean
-          link_url?: string | null
-          sort_order?: number
-          title?: string
-          updated_at?: string
-        }
+          alt?: string;
+          created_at?: string;
+          id?: string;
+          image_mobile_url?: string | null;
+          image_url: string;
+          is_active?: boolean;
+          link_url?: string | null;
+          sort_order?: number;
+          title?: string;
+          updated_at?: string;
+        };
         Update: {
-          alt?: string
-          created_at?: string
-          id?: string
-          image_mobile_url?: string | null
-          image_url?: string
-          is_active?: boolean
-          link_url?: string | null
-          sort_order?: number
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          alt?: string;
+          created_at?: string;
+          id?: string;
+          image_mobile_url?: string | null;
+          image_url?: string;
+          is_active?: boolean;
+          link_url?: string | null;
+          sort_order?: number;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       categories: {
         Row: {
-          created_at: string
-          icon: string
-          id: string
-          is_active: boolean
-          name: string
-          slug: string
-          sort_order: number
-          updated_at: string
-        }
+          created_at: string;
+          icon: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          slug: string;
+          sort_order: number;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          icon?: string
-          id?: string
-          is_active?: boolean
-          name: string
-          slug: string
-          sort_order?: number
-          updated_at?: string
-        }
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          slug: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          icon?: string
-          id?: string
-          is_active?: boolean
-          name?: string
-          slug?: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          slug?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       marketplaces: {
         Row: {
-          allow_manual_price: boolean
-          allowed_domains: string[]
-          created_at: string
-          id: string
-          integration_status: Database["public"]["Enums"]["integration_status"]
-          is_active: boolean
-          name: string
-          price_max_age_hours: number
-          slug: string
-          updated_at: string
-        }
+          allow_manual_price: boolean;
+          allowed_domains: string[];
+          created_at: string;
+          id: string;
+          integration_status: Database["public"]["Enums"]["integration_status"];
+          is_active: boolean;
+          name: string;
+          price_max_age_hours: number;
+          slug: string;
+          updated_at: string;
+        };
         Insert: {
-          allow_manual_price?: boolean
-          allowed_domains?: string[]
-          created_at?: string
-          id?: string
-          integration_status?: Database["public"]["Enums"]["integration_status"]
-          is_active?: boolean
-          name: string
-          price_max_age_hours?: number
-          slug: string
-          updated_at?: string
-        }
+          allow_manual_price?: boolean;
+          allowed_domains?: string[];
+          created_at?: string;
+          id?: string;
+          integration_status?: Database["public"]["Enums"]["integration_status"];
+          is_active?: boolean;
+          name: string;
+          price_max_age_hours?: number;
+          slug: string;
+          updated_at?: string;
+        };
         Update: {
-          allow_manual_price?: boolean
-          allowed_domains?: string[]
-          created_at?: string
-          id?: string
-          integration_status?: Database["public"]["Enums"]["integration_status"]
-          is_active?: boolean
-          name?: string
-          price_max_age_hours?: number
-          slug?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          allow_manual_price?: boolean;
+          allowed_domains?: string[];
+          created_at?: string;
+          id?: string;
+          integration_status?: Database["public"]["Enums"]["integration_status"];
+          is_active?: boolean;
+          name?: string;
+          price_max_age_hours?: number;
+          slug?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       product_images: {
         Row: {
-          alt: string
-          created_at: string
-          id: string
-          product_id: string
-          sort_order: number
-          url: string
-        }
+          alt: string;
+          created_at: string;
+          id: string;
+          product_id: string;
+          sort_order: number;
+          url: string;
+        };
         Insert: {
-          alt?: string
-          created_at?: string
-          id?: string
-          product_id: string
-          sort_order?: number
-          url: string
-        }
+          alt?: string;
+          created_at?: string;
+          id?: string;
+          product_id: string;
+          sort_order?: number;
+          url: string;
+        };
         Update: {
-          alt?: string
-          created_at?: string
-          id?: string
-          product_id?: string
-          sort_order?: number
-          url?: string
-        }
+          alt?: string;
+          created_at?: string;
+          id?: string;
+          product_id?: string;
+          sort_order?: number;
+          url?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "product_images_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
+            foreignKeyName: "product_images_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       products: {
         Row: {
-          affiliate_url: string
-          category_id: string | null
-          created_at: string
-          current_price_cents: number | null
-          external_id: string | null
-          id: string
-          is_featured: boolean
-          is_weekly_pick: boolean
-          main_image_alt: string | null
-          main_image_url: string | null
-          marketplace_id: string | null
-          name: string
-          previous_price_cents: number | null
-          price_checked_at: string | null
-          price_source: Database["public"]["Enums"]["price_source"]
-          published_at: string | null
-          seo_description: string | null
-          seo_title: string | null
-          short_description: string
-          slug: string
-          source: Database["public"]["Enums"]["price_source"]
-          status: Database["public"]["Enums"]["product_status"]
-          updated_at: string
-        }
+          affiliate_url: string;
+          category_id: string | null;
+          created_at: string;
+          current_price_cents: number | null;
+          external_id: string | null;
+          id: string;
+          is_featured: boolean;
+          is_weekly_pick: boolean;
+          main_image_alt: string | null;
+          main_image_url: string | null;
+          marketplace_id: string | null;
+          name: string;
+          previous_price_cents: number | null;
+          price_checked_at: string | null;
+          price_source: Database["public"]["Enums"]["price_source"];
+          published_at: string | null;
+          seo_description: string | null;
+          seo_title: string | null;
+          short_description: string;
+          slug: string;
+          source: Database["public"]["Enums"]["price_source"];
+          status: Database["public"]["Enums"]["product_status"];
+          updated_at: string;
+        };
         Insert: {
-          affiliate_url?: string
-          category_id?: string | null
-          created_at?: string
-          current_price_cents?: number | null
-          external_id?: string | null
-          id?: string
-          is_featured?: boolean
-          is_weekly_pick?: boolean
-          main_image_alt?: string | null
-          main_image_url?: string | null
-          marketplace_id?: string | null
-          name?: string
-          previous_price_cents?: number | null
-          price_checked_at?: string | null
-          price_source?: Database["public"]["Enums"]["price_source"]
-          published_at?: string | null
-          seo_description?: string | null
-          seo_title?: string | null
-          short_description?: string
-          slug: string
-          source?: Database["public"]["Enums"]["price_source"]
-          status?: Database["public"]["Enums"]["product_status"]
-          updated_at?: string
-        }
+          affiliate_url?: string;
+          category_id?: string | null;
+          created_at?: string;
+          current_price_cents?: number | null;
+          external_id?: string | null;
+          id?: string;
+          is_featured?: boolean;
+          is_weekly_pick?: boolean;
+          main_image_alt?: string | null;
+          main_image_url?: string | null;
+          marketplace_id?: string | null;
+          name?: string;
+          previous_price_cents?: number | null;
+          price_checked_at?: string | null;
+          price_source?: Database["public"]["Enums"]["price_source"];
+          published_at?: string | null;
+          seo_description?: string | null;
+          seo_title?: string | null;
+          short_description?: string;
+          slug: string;
+          source?: Database["public"]["Enums"]["price_source"];
+          status?: Database["public"]["Enums"]["product_status"];
+          updated_at?: string;
+        };
         Update: {
-          affiliate_url?: string
-          category_id?: string | null
-          created_at?: string
-          current_price_cents?: number | null
-          external_id?: string | null
-          id?: string
-          is_featured?: boolean
-          is_weekly_pick?: boolean
-          main_image_alt?: string | null
-          main_image_url?: string | null
-          marketplace_id?: string | null
-          name?: string
-          previous_price_cents?: number | null
-          price_checked_at?: string | null
-          price_source?: Database["public"]["Enums"]["price_source"]
-          published_at?: string | null
-          seo_description?: string | null
-          seo_title?: string | null
-          short_description?: string
-          slug?: string
-          source?: Database["public"]["Enums"]["price_source"]
-          status?: Database["public"]["Enums"]["product_status"]
-          updated_at?: string
-        }
+          affiliate_url?: string;
+          category_id?: string | null;
+          created_at?: string;
+          current_price_cents?: number | null;
+          external_id?: string | null;
+          id?: string;
+          is_featured?: boolean;
+          is_weekly_pick?: boolean;
+          main_image_alt?: string | null;
+          main_image_url?: string | null;
+          marketplace_id?: string | null;
+          name?: string;
+          previous_price_cents?: number | null;
+          price_checked_at?: string | null;
+          price_source?: Database["public"]["Enums"]["price_source"];
+          published_at?: string | null;
+          seo_description?: string | null;
+          seo_title?: string | null;
+          short_description?: string;
+          slug?: string;
+          source?: Database["public"]["Enums"]["price_source"];
+          status?: Database["public"]["Enums"]["product_status"];
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "products_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
+            foreignKeyName: "products_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "products_marketplace_id_fkey"
-            columns: ["marketplace_id"]
-            isOneToOne: false
-            referencedRelation: "marketplaces"
-            referencedColumns: ["id"]
+            foreignKeyName: "products_marketplace_id_fkey";
+            columns: ["marketplace_id"];
+            isOneToOne: false;
+            referencedRelation: "marketplaces";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       user_roles: {
         Row: {
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
+          id: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
         Insert: {
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
+          id?: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
         Update: {
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-    }
+          id?: string;
+          role?: Database["public"]["Enums"]["app_role"];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
-      f_unaccent: { Args: { "": string }; Returns: string }
+      f_unaccent: { Args: { "": string }; Returns: string };
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+          _role: Database["public"]["Enums"]["app_role"];
+          _user_id: string;
+        };
+        Returns: boolean;
+      };
       is_allowed_affiliate_url: {
-        Args: { _domains: string[]; _url: string }
-        Returns: boolean
-      }
+        Args: { _domains: string[]; _url: string };
+        Returns: boolean;
+      };
       search_products: {
-        Args: { q: string }
+        Args: { q: string };
         Returns: {
-          affiliate_url: string
-          category_id: string | null
-          created_at: string
-          current_price_cents: number | null
-          external_id: string | null
-          id: string
-          is_featured: boolean
-          is_weekly_pick: boolean
-          main_image_alt: string | null
-          main_image_url: string | null
-          marketplace_id: string | null
-          name: string
-          previous_price_cents: number | null
-          price_checked_at: string | null
-          price_source: Database["public"]["Enums"]["price_source"]
-          published_at: string | null
-          seo_description: string | null
-          seo_title: string | null
-          short_description: string
-          slug: string
-          source: Database["public"]["Enums"]["price_source"]
-          status: Database["public"]["Enums"]["product_status"]
-          updated_at: string
-        }[]
+          affiliate_url: string;
+          category_id: string | null;
+          created_at: string;
+          current_price_cents: number | null;
+          external_id: string | null;
+          id: string;
+          is_featured: boolean;
+          is_weekly_pick: boolean;
+          main_image_alt: string | null;
+          main_image_url: string | null;
+          marketplace_id: string | null;
+          name: string;
+          previous_price_cents: number | null;
+          price_checked_at: string | null;
+          price_source: Database["public"]["Enums"]["price_source"];
+          published_at: string | null;
+          seo_description: string | null;
+          seo_title: string | null;
+          short_description: string;
+          slug: string;
+          source: Database["public"]["Enums"]["price_source"];
+          status: Database["public"]["Enums"]["product_status"];
+          updated_at: string;
+        }[];
         SetofOptions: {
-          from: "*"
-          to: "products"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
-    }
+          from: "*";
+          to: "products";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+    };
     Enums: {
-      app_role: "admin"
-      integration_status: "manual" | "planned" | "active"
-      price_source: "manual" | "api"
-      product_status: "draft" | "published" | "inactive"
-    }
+      app_role: "admin";
+      integration_status: "manual" | "planned" | "active";
+      price_source: "manual" | "api";
+      product_status: "draft" | "published" | "inactive";
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["CompositeTypes"] | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   public: {
@@ -461,4 +449,4 @@ export const Constants = {
       product_status: ["draft", "published", "inactive"],
     },
   },
-} as const
+} as const;

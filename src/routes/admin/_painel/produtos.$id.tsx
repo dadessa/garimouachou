@@ -2,7 +2,16 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +19,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ProductDetail } from "@/components/site/ProductDetail";
 import { supabase } from "@/integrations/supabase/client";
-import { adminCategories, adminMarketplaces, adminProduct, type ProductInsert, type ProductRow } from "@/lib/admin/api";
+import {
+  adminCategories,
+  adminMarketplaces,
+  adminProduct,
+  type ProductInsert,
+  type ProductRow,
+} from "@/lib/admin/api";
 import { friendlyError } from "@/lib/admin/errors";
 import { removeImages, uploadImage } from "@/lib/admin/storage";
 import { toMarketplace, type Product } from "@/lib/catalog/types";
@@ -20,17 +35,31 @@ import { parseReais, publishMissing, slugify } from "@/lib/publish-rules";
 
 export const Route = createFileRoute("/admin/_painel/produtos/$id")({
   loader: async ({ context, params }) => {
-    const [cats, mks] = await Promise.all([context.queryClient.ensureQueryData(adminCategories), context.queryClient.ensureQueryData(adminMarketplaces)]);
-    const product: ProductRow | null = params.id === "novo" ? null : ((await context.queryClient.ensureQueryData(adminProduct(params.id))) as ProductRow | null);
+    const [cats, mks] = await Promise.all([
+      context.queryClient.ensureQueryData(adminCategories),
+      context.queryClient.ensureQueryData(adminMarketplaces),
+    ]);
+    const product: ProductRow | null =
+      params.id === "novo"
+        ? null
+        : ((await context.queryClient.ensureQueryData(
+            adminProduct(params.id),
+          )) as ProductRow | null);
     if (params.id !== "novo" && !product) throw notFound();
     return { cats, mks, product };
   },
-  head: () => ({ meta: [{ title: "Produto — Painel Garimou Achou!" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({
+    meta: [
+      { title: "Produto — Painel Garimou Achou!" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: ProductForm,
 });
 
 const STATUS = { draft: "Rascunho", published: "Publicado", inactive: "Inativo" } as const;
-const centsToInput = (c: number | null) => (c == null ? "" : (c / 100).toFixed(2).replace(".", ","));
+const centsToInput = (c: number | null) =>
+  c == null ? "" : (c / 100).toFixed(2).replace(".", ",");
 const toLocalInput = (iso: string | null) => {
   if (!iso) return "";
   const d = new Date(iso);
@@ -47,11 +76,20 @@ function ProductForm() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [f, setF] = useState({
-    name: initial?.name ?? "", slug: initial?.slug ?? "", slugTouched: !!initial,
-    description: initial?.short_description ?? "", categoryId: initial?.category_id ?? "", marketplaceId: initial?.marketplace_id ?? "",
-    imageUrl: initial?.main_image_url ?? null as string | null, imageAlt: initial?.main_image_alt ?? "",
-    url: initial?.affiliate_url ?? "", price: centsToInput(initial?.current_price_cents ?? null), prev: centsToInput(initial?.previous_price_cents ?? null),
-    checkedAt: toLocalInput(initial?.price_checked_at ?? null), featured: initial?.is_featured ?? false, weekly: initial?.is_weekly_pick ?? false,
+    name: initial?.name ?? "",
+    slug: initial?.slug ?? "",
+    slugTouched: !!initial,
+    description: initial?.short_description ?? "",
+    categoryId: initial?.category_id ?? "",
+    marketplaceId: initial?.marketplace_id ?? "",
+    imageUrl: initial?.main_image_url ?? (null as string | null),
+    imageAlt: initial?.main_image_alt ?? "",
+    url: initial?.affiliate_url ?? "",
+    price: centsToInput(initial?.current_price_cents ?? null),
+    prev: centsToInput(initial?.previous_price_cents ?? null),
+    checkedAt: toLocalInput(initial?.price_checked_at ?? null),
+    featured: initial?.is_featured ?? false,
+    weekly: initial?.is_weekly_pick ?? false,
   });
   const [status, setStatus] = useState<ProductRow["status"]>(initial?.status ?? "draft");
   const [replaced, setReplaced] = useState<string[]>([]);
@@ -67,22 +105,51 @@ function ProductForm() {
   const domain = mk && f.url ? matchAffiliateDomain(f.url, mk.allowed_domains) : null;
   const priceCents = manualOk ? parseReais(f.price) : null;
   const prevCents = manualOk ? parseReais(f.prev) : null;
-  const priceErr = Number.isNaN(priceCents) || Number.isNaN(prevCents) ? "Use o formato 129,90."
-    : prevCents != null && (priceCents == null || prevCents <= priceCents) ? "O preço anterior precisa ser maior que o atual." : null;
-  const slugErr = f.slug && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(f.slug) ? "Use só letras minúsculas, números e hífens." : !f.slug ? "Informe o slug." : null;
+  const priceErr =
+    Number.isNaN(priceCents) || Number.isNaN(prevCents)
+      ? "Use o formato 129,90."
+      : prevCents != null && (priceCents == null || prevCents <= priceCents)
+        ? "O preço anterior precisa ser maior que o atual."
+        : null;
+  const slugErr =
+    f.slug && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(f.slug)
+      ? "Use só letras minúsculas, números e hífens."
+      : !f.slug
+        ? "Informe o slug."
+        : null;
   const missing = publishMissing({
-    name: f.name, mainImageUrl: f.imageUrl, mainImageAlt: f.imageAlt, affiliateUrl: f.url,
+    name: f.name,
+    mainImageUrl: f.imageUrl,
+    mainImageAlt: f.imageAlt,
+    affiliateUrl: f.url,
     category: cat ? { isActive: cat.is_active } : null,
-    marketplace: mk ? { isActive: mk.is_active, name: mk.name, allowedDomains: mk.allowed_domains } : null,
+    marketplace: mk
+      ? { isActive: mk.is_active, name: mk.name, allowedDomains: mk.allowed_domains }
+      : null,
   });
 
-  const preview: Product | null = useMemo(() => mk && {
-    slug: f.slug || "previa", name: f.name, shortDescription: f.description, categorySlug: cat?.slug ?? "", categoryName: cat?.name ?? "Sem categoria",
-    marketplace: toMarketplace(mk), affiliateUrl: f.url, imageUrl: f.imageUrl, imageAlt: f.imageAlt || f.name,
-    isFeatured: f.featured, isWeeklyPick: f.weekly, publishedAt: null,
-    currentPrice: Number.isNaN(priceCents) ? null : priceCents, previousPrice: Number.isNaN(prevCents) ? null : prevCents,
-    priceCheckedAt: f.checkedAt ? new Date(f.checkedAt).toISOString() : null, priceSource: initial?.price_source ?? "manual",
-  }, [f, mk, cat, priceCents, prevCents, initial?.price_source]);
+  const preview: Product | null = useMemo(
+    () =>
+      mk && {
+        slug: f.slug || "previa",
+        name: f.name,
+        shortDescription: f.description,
+        categorySlug: cat?.slug ?? "",
+        categoryName: cat?.name ?? "Sem categoria",
+        marketplace: toMarketplace(mk),
+        affiliateUrl: f.url,
+        imageUrl: f.imageUrl,
+        imageAlt: f.imageAlt || f.name,
+        isFeatured: f.featured,
+        isWeeklyPick: f.weekly,
+        publishedAt: null,
+        currentPrice: Number.isNaN(priceCents) ? null : priceCents,
+        previousPrice: Number.isNaN(prevCents) ? null : prevCents,
+        priceCheckedAt: f.checkedAt ? new Date(f.checkedAt).toISOString() : null,
+        priceSource: initial?.price_source ?? "manual",
+      },
+    [f, mk, cat, priceCents, prevCents, initial?.price_source],
+  );
 
   async function onImage(file: File | undefined) {
     if (!file) return;
@@ -100,37 +167,79 @@ function ProductForm() {
   }
 
   async function save(nextStatus: ProductRow["status"]) {
-    if (slugErr || priceErr) { toast.error(slugErr ?? priceErr ?? ""); return; }
-    if (nextStatus === "published" && missing.length) { setShowMissing(true); toast.error("Ainda falta preencher alguns itens para publicar."); return; }
+    if (slugErr || priceErr) {
+      toast.error(slugErr ?? priceErr ?? "");
+      return;
+    }
+    if (nextStatus === "published" && missing.length) {
+      setShowMissing(true);
+      toast.error("Ainda falta preencher alguns itens para publicar.");
+      return;
+    }
     setBusy(true);
     const payload: ProductInsert = {
-      name: f.name.trim(), slug: f.slug, short_description: f.description.trim(),
-      category_id: f.categoryId || null, marketplace_id: f.marketplaceId || null,
+      name: f.name.trim(),
+      slug: f.slug,
+      short_description: f.description.trim(),
+      category_id: f.categoryId || null,
+      marketplace_id: f.marketplaceId || null,
       affiliate_url: f.url, // gravada exatamente como foi colada
-      main_image_url: f.imageUrl, main_image_alt: f.imageAlt.trim() || null,
-      current_price_cents: priceCents, previous_price_cents: prevCents,
-      price_checked_at: manualOk && f.checkedAt ? new Date(f.checkedAt).toISOString() : manualOk ? null : initial?.price_checked_at ?? null,
-      is_featured: f.featured, is_weekly_pick: f.weekly, status: nextStatus,
+      main_image_url: f.imageUrl,
+      main_image_alt: f.imageAlt.trim() || null,
+      current_price_cents: priceCents,
+      previous_price_cents: prevCents,
+      price_checked_at:
+        manualOk && f.checkedAt
+          ? new Date(f.checkedAt).toISOString()
+          : manualOk
+            ? null
+            : (initial?.price_checked_at ?? null),
+      is_featured: f.featured,
+      is_weekly_pick: f.weekly,
+      status: nextStatus,
     };
-    const res = id === "novo"
-      ? await supabase.from("products").insert(payload).select("id").single()
-      : await supabase.from("products").update(payload).eq("id", id).select("id").single();
+    const res =
+      id === "novo"
+        ? await supabase.from("products").insert(payload).select("id").single()
+        : await supabase.from("products").update(payload).eq("id", id).select("id").single();
     setBusy(false);
-    if (res.error) { toast.error(friendlyError(res.error)); return; }
-    if (replaced.length) { removeImages("product-images", replaced).catch(() => {}); setReplaced([]); }
+    if (res.error) {
+      toast.error(friendlyError(res.error));
+      return;
+    }
+    if (replaced.length) {
+      removeImages("product-images", replaced).catch(() => {});
+      setReplaced([]);
+    }
     setStatus(nextStatus);
     await qc.invalidateQueries({ queryKey: ["admin"] });
-    qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["offers"] }); qc.invalidateQueries({ queryKey: ["search"] }); qc.invalidateQueries({ queryKey: ["product"] });
-    toast.success(nextStatus === "published" ? "Produto publicado!" : nextStatus === "inactive" ? "Produto desativado." : "Rascunho salvo.");
-    if (id === "novo") navigate({ to: "/admin/produtos/$id", params: { id: res.data.id }, replace: true });
+    qc.invalidateQueries({ queryKey: ["home"] });
+    qc.invalidateQueries({ queryKey: ["offers"] });
+    qc.invalidateQueries({ queryKey: ["search"] });
+    qc.invalidateQueries({ queryKey: ["product"] });
+    toast.success(
+      nextStatus === "published"
+        ? "Produto publicado!"
+        : nextStatus === "inactive"
+          ? "Produto desativado."
+          : "Rascunho salvo.",
+    );
+    if (id === "novo")
+      navigate({ to: "/admin/produtos/$id", params: { id: res.data.id }, replace: true });
   }
 
   async function remove() {
     setBusy(true);
     try {
       await removeImages("product-images", [f.imageUrl, initial?.main_image_url, ...replaced]);
-      const { data: extra } = await supabase.from("product_images").select("url").eq("product_id", id);
-      await removeImages("product-images", (extra ?? []).map((x) => x.url));
+      const { data: extra } = await supabase
+        .from("product_images")
+        .select("url")
+        .eq("product_id", id);
+      await removeImages(
+        "product-images",
+        (extra ?? []).map((x) => x.url),
+      );
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
       await qc.invalidateQueries({ queryKey: ["admin"] });
@@ -146,37 +255,93 @@ function ProductForm() {
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Link to="/admin/produtos" className="text-sm font-bold text-navy underline">← Produtos</Link>
-        <h1 className="text-2xl font-extrabold text-navy">{id === "novo" ? "Novo produto" : "Editar produto"}</h1>
+        <Link to="/admin/produtos" className="text-sm font-bold text-navy underline">
+          ← Produtos
+        </Link>
+        <h1 className="text-2xl font-extrabold text-navy">
+          {id === "novo" ? "Novo produto" : "Editar produto"}
+        </h1>
         <span className="rounded-full bg-card px-3 py-1 text-xs font-bold">{STATUS[status]}</span>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <form className="space-y-5 rounded-2xl border border-border bg-card p-4 md:p-6" onSubmit={(e) => { e.preventDefault(); save(status === "published" ? "published" : "draft"); }}>
+        <form
+          className="space-y-5 rounded-2xl border border-border bg-card p-4 md:p-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            save(status === "published" ? "published" : "draft");
+          }}
+        >
           <div className={field}>
             <Label htmlFor="nome">Nome</Label>
-            <Input id="nome" value={f.name} maxLength={150} onChange={(e) => setF((s) => ({ ...s, name: e.target.value, slug: s.slugTouched ? s.slug : slugify(e.target.value) }))} />
+            <Input
+              id="nome"
+              value={f.name}
+              maxLength={150}
+              onChange={(e) =>
+                setF((s) => ({
+                  ...s,
+                  name: e.target.value,
+                  slug: s.slugTouched ? s.slug : slugify(e.target.value),
+                }))
+              }
+            />
           </div>
           <div className={field}>
             <Label htmlFor="slug">Endereço (slug)</Label>
-            <Input id="slug" value={f.slug} maxLength={100} onChange={(e) => setF((s) => ({ ...s, slug: e.target.value, slugTouched: true }))} />
-            <p className={`text-xs ${slugErr ? "text-destructive" : "text-muted-foreground"}`}>{slugErr ?? `garimouachou.com.br/p/${f.slug}`}</p>
+            <Input
+              id="slug"
+              value={f.slug}
+              maxLength={100}
+              onChange={(e) => setF((s) => ({ ...s, slug: e.target.value, slugTouched: true }))}
+            />
+            <p className={`text-xs ${slugErr ? "text-destructive" : "text-muted-foreground"}`}>
+              {slugErr ?? `garimouachou.com.br/p/${f.slug}`}
+            </p>
           </div>
           <div className={field}>
             <Label htmlFor="desc">Descrição curta</Label>
-            <Textarea id="desc" rows={3} maxLength={400} value={f.description} onChange={(e) => set("description", e.target.value)} />
+            <Textarea
+              id="desc"
+              rows={3}
+              maxLength={400}
+              value={f.description}
+              onChange={(e) => set("description", e.target.value)}
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className={field}>
               <Label htmlFor="cat">Categoria</Label>
-              <select id="cat" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={f.categoryId} onChange={(e) => set("categoryId", e.target.value)}>
-                <option value="">Escolha…</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.name}{c.is_active ? "" : " (desativada)"}</option>)}
+              <select
+                id="cat"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={f.categoryId}
+                onChange={(e) => set("categoryId", e.target.value)}
+              >
+                <option value="">Escolha…</option>
+                {cats.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                    {c.is_active ? "" : " (desativada)"}
+                  </option>
+                ))}
               </select>
             </div>
             <div className={field}>
               <Label htmlFor="mk">Marketplace</Label>
-              <select id="mk" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={f.marketplaceId} onChange={(e) => set("marketplaceId", e.target.value)}>
-                <option value="">Escolha…</option>{mks.map((m) => <option key={m.id} value={m.id}>{m.name}{m.is_active ? "" : " (desativado)"}</option>)}
+              <select
+                id="mk"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={f.marketplaceId}
+                onChange={(e) => set("marketplaceId", e.target.value)}
+              >
+                <option value="">Escolha…</option>
+                {mks.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                    {m.is_active ? "" : " (desativado)"}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -184,79 +349,219 @@ function ProductForm() {
           <fieldset className="space-y-3 rounded-xl border border-border p-3">
             <legend className="px-1 text-sm font-bold">Imagem principal</legend>
             <div className="flex items-center gap-3">
-              <div className="size-24 shrink-0 overflow-hidden rounded-xl bg-muted">{f.imageUrl && <img src={f.imageUrl} alt="" className="size-full object-contain" />}</div>
+              <div className="size-24 shrink-0 overflow-hidden rounded-xl bg-muted">
+                {f.imageUrl && <img src={f.imageUrl} alt="" className="size-full object-contain" />}
+              </div>
               <div className="space-y-2">
-                <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" id="img" onChange={(e) => onImage(e.target.files?.[0])} />
-                <Button type="button" variant="outline" disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? "Enviando..." : f.imageUrl ? "Trocar imagem" : "Enviar imagem"}</Button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  id="img"
+                  onChange={(e) => onImage(e.target.files?.[0])}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={uploading}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  {uploading ? "Enviando..." : f.imageUrl ? "Trocar imagem" : "Enviar imagem"}
+                </Button>
                 <p className="text-xs text-muted-foreground">JPG, PNG ou WebP, até 5 MB.</p>
               </div>
             </div>
             <div className={field}>
               <Label htmlFor="alt">Texto alternativo (obrigatório)</Label>
-              <Input id="alt" maxLength={200} placeholder="Ex.: Garrafa térmica azul de 500 ml" value={f.imageAlt} onChange={(e) => set("imageAlt", e.target.value)} />
+              <Input
+                id="alt"
+                maxLength={200}
+                placeholder="Ex.: Garrafa térmica azul de 500 ml"
+                value={f.imageAlt}
+                onChange={(e) => set("imageAlt", e.target.value)}
+              />
             </div>
           </fieldset>
 
           <div className={field}>
             <Label htmlFor="url">URL oficial de afiliado</Label>
-            <Input id="url" inputMode="url" spellCheck={false} value={f.url} onChange={(e) => set("url", e.target.value.trim())} placeholder="https://..." />
+            <Input
+              id="url"
+              inputMode="url"
+              spellCheck={false}
+              value={f.url}
+              onChange={(e) => set("url", e.target.value.trim())}
+              placeholder="https://..."
+            />
             {f.url && (
               <p className={`text-xs font-semibold ${domain ? "text-navy" : "text-destructive"}`}>
-                {!mk ? "Escolha o marketplace para validar o link." : domain ? `✓ Domínio reconhecido: ${domain}` : `Link não aceito. Precisa ser https e de: ${mk.allowed_domains.join(", ")}.`}
+                {!mk
+                  ? "Escolha o marketplace para validar o link."
+                  : domain
+                    ? `✓ Domínio reconhecido: ${domain}`
+                    : `Link não aceito. Precisa ser https e de: ${mk.allowed_domains.join(", ")}.`}
               </p>
             )}
           </div>
 
           <fieldset className="space-y-3 rounded-xl border border-border p-3" disabled={!manualOk}>
             <legend className="px-1 text-sm font-bold">Preço (opcional)</legend>
-            {!manualOk && <p className="text-xs font-semibold text-muted-foreground">As regras da {mk?.name} não permitem preço digitado à mão. O preço fica oculto no site até existir uma integração oficial.</p>}
+            {!manualOk && (
+              <p className="text-xs font-semibold text-muted-foreground">
+                As regras da {mk?.name} não permitem preço digitado à mão. O preço fica oculto no
+                site até existir uma integração oficial.
+              </p>
+            )}
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className={field}><Label htmlFor="preco">Preço atual (R$)</Label><Input id="preco" inputMode="decimal" placeholder="129,90" value={f.price} onChange={(e) => set("price", e.target.value)} /></div>
-              <div className={field}><Label htmlFor="ant">Preço anterior (R$)</Label><Input id="ant" inputMode="decimal" placeholder="159,90" value={f.prev} onChange={(e) => set("prev", e.target.value)} /></div>
+              <div className={field}>
+                <Label htmlFor="preco">Preço atual (R$)</Label>
+                <Input
+                  id="preco"
+                  inputMode="decimal"
+                  placeholder="129,90"
+                  value={f.price}
+                  onChange={(e) => set("price", e.target.value)}
+                />
+              </div>
+              <div className={field}>
+                <Label htmlFor="ant">Preço anterior (R$)</Label>
+                <Input
+                  id="ant"
+                  inputMode="decimal"
+                  placeholder="159,90"
+                  value={f.prev}
+                  onChange={(e) => set("prev", e.target.value)}
+                />
+              </div>
             </div>
             {priceErr && <p className="text-xs text-destructive">{priceErr}</p>}
             <div className="flex flex-wrap items-end gap-3">
-              <div className={field}><Label htmlFor="verif">Verificado em</Label><Input id="verif" type="datetime-local" value={f.checkedAt} onChange={(e) => set("checkedAt", e.target.value)} /></div>
-              <Button type="button" variant="outline" onClick={() => set("checkedAt", toLocalInput(new Date().toISOString()))}>Confirmar preço agora</Button>
+              <div className={field}>
+                <Label htmlFor="verif">Verificado em</Label>
+                <Input
+                  id="verif"
+                  type="datetime-local"
+                  value={f.checkedAt}
+                  onChange={(e) => set("checkedAt", e.target.value)}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => set("checkedAt", toLocalInput(new Date().toISOString()))}
+              >
+                Confirmar preço agora
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">O preço só aparece no site por {mk?.price_max_age_hours ?? 24} h depois da verificação.</p>
+            <p className="text-xs text-muted-foreground">
+              O preço só aparece no site por {mk?.price_max_age_hours ?? 24} h depois da
+              verificação.
+            </p>
           </fieldset>
 
           <div className="flex flex-wrap gap-5">
-            <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={f.featured} onChange={(e) => set("featured", e.target.checked)} />Destaque (aparece em Ofertas)</label>
-            <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={f.weekly} onChange={(e) => set("weekly", e.target.checked)} />Achadinho da semana</label>
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={f.featured}
+                onChange={(e) => set("featured", e.target.checked)}
+              />
+              Destaque (aparece em Ofertas)
+            </label>
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={f.weekly}
+                onChange={(e) => set("weekly", e.target.checked)}
+              />
+              Achadinho da semana
+            </label>
           </div>
 
           {(showMissing || status !== "published") && missing.length > 0 && (
             <div className="rounded-xl bg-muted p-3 text-sm" role="status">
               <p className="font-bold">Falta para publicar:</p>
-              <ul className="ml-5 list-disc">{missing.map((m) => <li key={m}>{m}</li>)}</ul>
+              <ul className="ml-5 list-disc">
+                {missing.map((m) => (
+                  <li key={m}>{m}</li>
+                ))}
+              </ul>
             </div>
           )}
 
           <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-            {status === "published"
-              ? <Button type="submit" disabled={busy}>Salvar alterações</Button>
-              : <Button type="button" variant="outline" disabled={busy} onClick={() => save("draft")}>Salvar rascunho</Button>}
-            {status !== "published" && <Button type="button" disabled={busy} onClick={() => save("published")}>Publicar</Button>}
-            {status === "published" && <Button type="button" variant="outline" disabled={busy} onClick={() => setConfirm("deactivate")}>Desativar</Button>}
-            {id !== "novo" && <Button type="button" variant="destructive" disabled={busy} onClick={() => setConfirm("delete")} className="ml-auto">Excluir</Button>}
+            {status === "published" ? (
+              <Button type="submit" disabled={busy}>
+                Salvar alterações
+              </Button>
+            ) : (
+              <Button type="button" variant="outline" disabled={busy} onClick={() => save("draft")}>
+                Salvar rascunho
+              </Button>
+            )}
+            {status !== "published" && (
+              <Button type="button" disabled={busy} onClick={() => save("published")}>
+                Publicar
+              </Button>
+            )}
+            {status === "published" && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy}
+                onClick={() => setConfirm("deactivate")}
+              >
+                Desativar
+              </Button>
+            )}
+            {id !== "novo" && (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={busy}
+                onClick={() => setConfirm("delete")}
+                className="ml-auto"
+              >
+                Excluir
+              </Button>
+            )}
           </div>
         </form>
 
         <aside className="space-y-3">
           <h2 className="text-sm font-extrabold text-navy">Pré-visualização do card</h2>
-          {preview ? <div className="max-w-[220px]"><ProductCard product={preview} preview /></div> : <p className="text-sm text-muted-foreground">Escolha o marketplace para ver a prévia.</p>}
-          {preview?.currentPrice != null && !manualOk && <p className="text-xs text-muted-foreground">Preço oculto: {formatBRL(preview.currentPrice)} não será exibido.</p>}
+          {preview ? (
+            <div className="max-w-[220px]">
+              <ProductCard product={preview} preview />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Escolha o marketplace para ver a prévia.
+            </p>
+          )}
+          {preview?.currentPrice != null && !manualOk && (
+            <p className="text-xs text-muted-foreground">
+              Preço oculto: {formatBRL(preview.currentPrice)} não será exibido.
+            </p>
+          )}
         </aside>
       </div>
 
       {preview && (
         <section className="mt-8">
-          <h2 className="mb-2 text-sm font-extrabold text-navy">Pré-visualização da página do produto</h2>
+          <h2 className="mb-2 text-sm font-extrabold text-navy">
+            Pré-visualização da página do produto
+          </h2>
           <div className="relative overflow-hidden rounded-2xl border border-border bg-background p-4">
-            {status !== "published" && <div className="absolute inset-x-0 top-0 bg-yellow py-1 text-center text-xs font-extrabold text-navy">Rascunho — visível só no painel</div>}
-            <div className="pt-6"><ProductDetail product={preview} preview /></div>
+            {status !== "published" && (
+              <div className="absolute inset-x-0 top-0 bg-yellow py-1 text-center text-xs font-extrabold text-navy">
+                Rascunho — visível só no painel
+              </div>
+            )}
+            <div className="pt-6">
+              <ProductDetail product={preview} preview />
+            </div>
           </div>
         </section>
       )}
@@ -264,14 +569,20 @@ function ProductForm() {
       <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{confirm === "delete" ? "Excluir este produto?" : "Desativar este produto?"}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {confirm === "delete" ? "Excluir este produto?" : "Desativar este produto?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {confirm === "delete" ? "O produto e as imagens dele serão apagados de vez. Não dá para desfazer." : "Ele sai do site na hora. Você pode publicar de novo depois."}
+              {confirm === "delete"
+                ? "O produto e as imagens dele serão apagados de vez. Não dá para desfazer."
+                : "Ele sai do site na hora. Você pode publicar de novo depois."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => (confirm === "delete" ? remove() : save("inactive"))}>{confirm === "delete" ? "Excluir" : "Desativar"}</AlertDialogAction>
+            <AlertDialogAction onClick={() => (confirm === "delete" ? remove() : save("inactive"))}>
+              {confirm === "delete" ? "Excluir" : "Desativar"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

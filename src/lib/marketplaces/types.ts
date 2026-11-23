@@ -27,4 +27,5 @@ export function matchAffiliateDomain(raw: string, allowedDomains: string[]): str
   return doms.find((d) => host === d) ?? doms.find((d) => host.endsWith(`.${d}`)) ?? null;
 }
 
-export const isAllowedAffiliateUrl = (raw: string, allowedDomains: string[]) => matchAffiliateDomain(raw, allowedDomains) !== null;
+export const isAllowedAffiliateUrl = (raw: string, allowedDomains: string[]) =>
+  matchAffiliateDomain(raw, allowedDomains) !== null;

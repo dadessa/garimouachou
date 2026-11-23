@@ -13,7 +13,8 @@ export function displayablePrice(p: PriceInfo, mk: MarketplaceAdapter, now = new
   if (p.priceSource !== "api" && !mk.allowManualPrice) return null;
   const ageH = (now.getTime() - new Date(p.priceCheckedAt).getTime()) / 36e5;
   if (ageH < 0 || ageH > mk.priceMaxAgeHours) return null;
-  const previous = p.previousPrice != null && p.previousPrice > p.currentPrice ? p.previousPrice : null;
+  const previous =
+    p.previousPrice != null && p.previousPrice > p.currentPrice ? p.previousPrice : null;
   return { current: p.currentPrice, previous, checkedAt: new Date(p.priceCheckedAt) };
 }
 

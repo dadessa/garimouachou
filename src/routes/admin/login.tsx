@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/admin/login")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>) => ({ next: oauthReturnPath(s["next"] ?? "/admin") }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: oauthReturnPath(s["next"] ?? "/admin"),
+  }),
   head: () => ({
     meta: [
       { title: "Entrar no painel — Garimou Achou!" },
@@ -41,14 +43,31 @@ function Login() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
       if (error) {
-        setMsg({ ok: false, text: error.message.includes("Email not confirmed") ? "Confirme seu e-mail antes de entrar." : "E-mail ou senha incorretos." });
+        setMsg({
+          ok: false,
+          text: error.message.includes("Email not confirmed")
+            ? "Confirme seu e-mail antes de entrar."
+            : "E-mail ou senha incorretos.",
+        });
         return;
       }
       navigate({ href: next, replace: true });
     } else {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/admin/redefinir-senha` });
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin/redefinir-senha`,
+      });
       setBusy(false);
-      setMsg(error ? { ok: false, text: "Não foi possível enviar o e-mail agora. Tente de novo em alguns minutos." } : { ok: true, text: "Se este e-mail tiver acesso, você vai receber um link para criar uma nova senha." });
+      setMsg(
+        error
+          ? {
+              ok: false,
+              text: "Não foi possível enviar o e-mail agora. Tente de novo em alguns minutos.",
+            }
+          : {
+              ok: true,
+              text: "Se este e-mail tiver acesso, você vai receber um link para criar uma nova senha.",
+            },
+      );
     }
   }
 
@@ -56,16 +75,54 @@ function Login() {
     <main className="grid min-h-screen place-items-center bg-muted px-4">
       <div className="w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-card">
         <img src={logo.url} alt="Garimou Achou!" className="mx-auto mb-4 h-14 w-auto" />
-        <h1 className="mb-5 text-center text-xl font-extrabold text-navy">{mode === "login" ? "Entrar no painel" : "Recuperar senha"}</h1>
+        <h1 className="mb-5 text-center text-xl font-extrabold text-navy">
+          {mode === "login" ? "Entrar no painel" : "Recuperar senha"}
+        </h1>
         <form onSubmit={submit} className="space-y-4">
-          <div className="space-y-1.5"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+          <div className="space-y-1.5">
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
           {mode === "login" && (
-            <div className="space-y-1.5"><Label htmlFor="senha">Senha</Label><Input id="senha" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+            <div className="space-y-1.5">
+              <Label htmlFor="senha">Senha</Label>
+              <Input
+                id="senha"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
           )}
-          {msg && <p role={msg.ok ? "status" : "alert"} className={`text-sm ${msg.ok ? "text-navy" : "text-destructive"}`}>{msg.text}</p>}
-          <Button type="submit" disabled={busy} className="w-full">{busy ? "Aguarde..." : mode === "login" ? "Entrar" : "Enviar link"}</Button>
+          {msg && (
+            <p
+              role={msg.ok ? "status" : "alert"}
+              className={`text-sm ${msg.ok ? "text-navy" : "text-destructive"}`}
+            >
+              {msg.text}
+            </p>
+          )}
+          <Button type="submit" disabled={busy} className="w-full">
+            {busy ? "Aguarde..." : mode === "login" ? "Entrar" : "Enviar link"}
+          </Button>
         </form>
-        <button type="button" onClick={() => { setMode(mode === "login" ? "forgot" : "login"); setMsg(null); }} className="mt-4 w-full text-center text-sm font-bold text-navy underline">
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "login" ? "forgot" : "login");
+            setMsg(null);
+          }}
+          className="mt-4 w-full text-center text-sm font-bold text-navy underline"
+        >
           {mode === "login" ? "Esqueci minha senha" : "Voltar para o login"}
         </button>
       </div>

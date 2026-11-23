@@ -8,9 +8,20 @@ export default defineTool({
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async () => {
-    const { data, error } = await supabaseAnon().from("categories").select("slug,name").eq("is_active", true).order("sort_order");
+    const { data, error } = await supabaseAnon()
+      .from("categories")
+      .select("slug,name")
+      .eq("is_active", true)
+      .order("sort_order");
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    const categories = (data ?? []).map((c) => ({ slug: c.slug, name: c.name, url: `${SITE_URL}/categoria/${c.slug}` }));
-    return { content: [{ type: "text", text: JSON.stringify(categories) }], structuredContent: { categories } };
+    const categories = (data ?? []).map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      url: `${SITE_URL}/categoria/${c.slug}`,
+    }));
+    return {
+      content: [{ type: "text", text: JSON.stringify(categories) }],
+      structuredContent: { categories },
+    };
   },
 });

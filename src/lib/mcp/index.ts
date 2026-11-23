@@ -13,6 +13,7 @@ export default defineMcp({
   name: "garimou-achou",
   title: "Garimou Achou",
   version: "0.1.0",
-  instructions: "Ferramentas do Garimou Achou! para buscar achados publicados, categorias e lojas. Preços não são retornados; consulte a página do produto.",
+  instructions:
+    "Ferramentas do Garimou Achou! para buscar achados publicados, categorias e lojas. Preços não são retornados; consulte a página do produto.",
   tools: [searchProducts, listCategories, listStores],
 });

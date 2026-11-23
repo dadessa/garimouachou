@@ -33,3 +33,6 @@ use the editor.
 - Price display always goes through displayablePrice() in src/lib/price.ts — single source for freshness/manual-price rules.
 - Server-side logic (redirect /go, clicks, sitemap, OG tags) uses TanStack server functions/routes with SSR, not Supabase Edge Functions — SSR already serves meta tags to link-preview bots.
 - MCP server lives in src/lib/mcp behind Supabase OAuth (consent at /.lovable/oauth/consent, login at /login); tools return no prices — avoids stale price exposure.
+- Public catalog reads go through src/lib/catalog/catalog.functions.ts (server functions, publishable key, RLS) — one place for what visitors see.
+- Admin panel lives under src/routes/admin/_painel (client-only gate); writes use the browser client so RLS/has_role is the real protection.
+- Catalog images are stored in private buckets and served via /img/<bucket>/<file> — buckets can't be public on this account.

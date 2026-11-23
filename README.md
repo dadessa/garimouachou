@@ -39,3 +39,8 @@ on conflict do nothing;
 ```
 
 3. Entre em `/admin/login` com esse e-mail e senha.
+
+## Painel (Etapa 2 Parte B)
+- Login: `/admin/login` (com "Esqueci minha senha"). Nova senha: `/admin/redefinir-senha`.
+- Sem cadastro público: novos cadastros estão desativados no Lovable Cloud.
+- Fotos ficam em pastas privadas e o site as mostra pelo endereço `/img/...`.

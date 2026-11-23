@@ -17,9 +17,18 @@ export const Route = createFileRoute("/p/$slug")({
     const img = p?.imageUrl?.startsWith("https://") ? p.imageUrl : null;
     return {
       meta: [
-        { title: t }, { name: "description", content: d }, { property: "og:title", content: t }, { property: "og:description", content: d },
-        { property: "og:type", content: "product" }, { name: "twitter:card", content: "summary_large_image" },
-        ...(img ? [{ property: "og:image", content: img }, { name: "twitter:image", content: img }] : []),
+        { title: t },
+        { name: "description", content: d },
+        { property: "og:title", content: t },
+        { property: "og:description", content: d },
+        { property: "og:type", content: "product" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(img
+          ? [
+              { property: "og:image", content: img },
+              { name: "twitter:image", content: img },
+            ]
+          : []),
         ...(p ? [] : [{ name: "robots", content: "noindex" }]),
       ],
       links: [{ rel: "canonical", href: `https://garimouachou.com.br/p/${params.slug}` }],

@@ -8,9 +8,16 @@ export default defineTool({
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async () => {
-    const { data, error } = await supabaseAnon().from("marketplaces").select("slug,name").eq("is_active", true).order("name");
+    const { data, error } = await supabaseAnon()
+      .from("marketplaces")
+      .select("slug,name")
+      .eq("is_active", true)
+      .order("name");
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     const stores = (data ?? []).map((m) => ({ slug: m.slug, name: m.name }));
-    return { content: [{ type: "text", text: JSON.stringify(stores) }], structuredContent: { stores } };
+    return {
+      content: [{ type: "text", text: JSON.stringify(stores) }],
+      structuredContent: { stores },
+    };
   },
 });
