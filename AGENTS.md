@@ -36,3 +36,4 @@ use the editor.
 - Public catalog reads go through src/lib/catalog/catalog.functions.ts (server functions, publishable key, RLS) — one place for what visitors see.
 - Admin panel lives under src/routes/admin/_painel (client-only gate); writes use the browser client so RLS/has_role is the real protection.
 - Catalog images are stored in private buckets and served via /img/<bucket>/<file> — buckets can't be public on this account.
+- AI product copy (description + tags) is generated in src/lib/admin/ai.server.ts via Lovable AI Gateway behind an admin-checked server function — keeps the key server-side and forbids invented prices.

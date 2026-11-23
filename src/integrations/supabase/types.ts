@@ -184,6 +184,7 @@ export type Database = {
           slug: string
           source: Database["public"]["Enums"]["price_source"]
           status: Database["public"]["Enums"]["product_status"]
+          tags: string[]
           updated_at: string
         }
         Insert: {
@@ -209,6 +210,7 @@ export type Database = {
           slug: string
           source?: Database["public"]["Enums"]["price_source"]
           status?: Database["public"]["Enums"]["product_status"]
+          tags?: string[]
           updated_at?: string
         }
         Update: {
@@ -234,6 +236,7 @@ export type Database = {
           slug?: string
           source?: Database["public"]["Enums"]["price_source"]
           status?: Database["public"]["Enums"]["product_status"]
+          tags?: string[]
           updated_at?: string
         }
         Relationships: [
@@ -313,6 +316,7 @@ export type Database = {
           slug: string
           source: Database["public"]["Enums"]["price_source"]
           status: Database["public"]["Enums"]["product_status"]
+          tags: string[]
           updated_at: string
         }[]
         SetofOptions: {

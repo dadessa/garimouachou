@@ -31,6 +31,9 @@ import { removeImages, uploadImage } from "@/lib/admin/storage";
 import { toMarketplace, type Product } from "@/lib/catalog/types";
 import { matchAffiliateDomain } from "@/lib/marketplaces/types";
 import { formatBRL } from "@/lib/price";
+import { useServerFn } from "@tanstack/react-start";
+import { Sparkles } from "lucide-react";
+import { generateCopy } from "@/lib/admin/ai.functions";
 import { parseReais, publishMissing, slugify } from "@/lib/publish-rules";
 
 export const Route = createFileRoute("/admin/_painel/produtos/$id")({
@@ -90,7 +93,11 @@ function ProductForm() {
     checkedAt: toLocalInput(initial?.price_checked_at ?? null),
     featured: initial?.is_featured ?? false,
     weekly: initial?.is_weekly_pick ?? false,
+    tags: (initial?.tags ?? []).join(", "),
+    details: "",
   });
+  const genFn = useServerFn(generateCopy);
+  const [genBusy, setGenBusy] = useState(false);
   const [status, setStatus] = useState<ProductRow["status"]>(initial?.status ?? "draft");
   const [replaced, setReplaced] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -196,6 +203,7 @@ function ProductForm() {
             : (initial?.price_checked_at ?? null),
       is_featured: f.featured,
       is_weekly_pick: f.weekly,
+      tags: [...new Set(f.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean))],
       status: nextStatus,
     };
     const res =
@@ -251,6 +259,24 @@ function ProductForm() {
     }
   }
 
+  async function onGenerate() {
+    setGenBusy(true);
+    try {
+      const r = await genFn({
+        data: { name: f.name, category: cat?.name ?? "", affiliateUrl: f.url, details: f.details },
+      });
+      if (r.error) toast.error(r.error);
+      else {
+        setF((s) => ({ ...s, description: r.description, tags: r.tags.join(", ") }));
+        toast.success("Descrição e etiquetas geradas. Revise antes de salvar.");
+      }
+    } catch {
+      toast.error("Não foi possível gerar agora. Tente de novo.");
+    } finally {
+      setGenBusy(false);
+    }
+  }
+
   const field = "space-y-1.5";
   return (
     <>
@@ -299,6 +325,25 @@ function ProductForm() {
               {slugErr ?? `garimouachou.com.br/p/${f.slug}`}
             </p>
           </div>
+          <fieldset className="space-y-3 rounded-xl border border-border bg-muted/40 p-3">
+            <legend className="px-1 text-sm font-bold">Gerar com IA</legend>
+            <p className="text-xs text-muted-foreground">
+              Preencha nome, categoria e link, conte os detalhes do produto e a IA sugere a
+              descrição e as etiquetas. Ela não inventa preço, desconto nem avaliação.
+            </p>
+            <Textarea
+              id="details"
+              aria-label="Detalhes do produto para a IA"
+              placeholder="Ex.: látex, 16 polegadas, cor platino, pacote com 12, ideal para festas"
+              value={f.details}
+              onChange={(e) => set("details", e.target.value)}
+            />
+            <Button type="button" variant="outline" disabled={genBusy || !f.name.trim()} onClick={onGenerate}>
+              <Sparkles className="size-4" aria-hidden />
+              {genBusy ? "Gerando…" : "Gerar descrição e etiquetas"}
+            </Button>
+          </fieldset>
+
           <div className={field}>
             <Label htmlFor="desc">Descrição curta</Label>
             <Textarea
@@ -307,6 +352,15 @@ function ProductForm() {
               maxLength={400}
               value={f.description}
               onChange={(e) => set("description", e.target.value)}
+            />
+          </div>
+          <div className={field}>
+            <Label htmlFor="tags">Etiquetas (separadas por vírgula)</Label>
+            <Input
+              id="tags"
+              value={f.tags}
+              onChange={(e) => set("tags", e.target.value)}
+              placeholder="festa, aniversário, decoração"
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
