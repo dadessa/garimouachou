@@ -1,40 +1,40 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import achadinhos from "@/assets/destaque-achadinhos.png.asset.json";
-import capa from "@/assets/destaque-capa.png.asset.json";
-import ofertas from "@/assets/destaque-ofertas.png.asset.json";
-import { BannerCarousel, type Banner } from "@/components/site/BannerCarousel";
+import { BannerCarousel } from "@/components/site/BannerCarousel";
+import { ComingSoon, LoadError } from "@/components/site/EmptyState";
 import { CatIcon } from "@/components/site/icons";
-import { ProductGrid } from "@/components/site/ProductCard";
+import { ProductGrid, ProductGridSkeleton } from "@/components/site/ProductCard";
 import { Section } from "@/components/site/Section";
-import { activeCategories, publishedProducts } from "@/lib/sample-data";
+import { categoriesQuery, homeQuery } from "@/lib/catalog/queries";
 
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(homeQuery), context.queryClient.ensureQueryData(categoriesQuery)]),
   head: () => ({
     meta: [
       { title: "Garimou Achou! — Achadinhos e ofertas garimpadas" },
       { name: "description", content: "A gente garimpa os melhores achadinhos da Amazon, Shopee, Mercado Livre e Magalu. Você aproveita." },
       { property: "og:title", content: "Garimou Achou! — Achadinhos e ofertas garimpadas" },
       { property: "og:description", content: "A gente garimpa. Você aproveita." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://garimouachou.com.br/" }],
   }),
+  pendingComponent: () => <div className="mx-auto max-w-6xl px-4 pt-10"><ProductGridSkeleton /></div>,
+  errorComponent: LoadError,
   component: Home,
 });
 
-const banners: Banner[] = [
-  { id: "capa", image: capa.url, alt: "Garimou Achou! A gente garimpa. Você aproveita.", width: 532, height: 153 },
-  { id: "achadinhos", image: achadinhos.url, alt: "Achadinhos da Semana", width: 290, height: 90 },
-  { id: "ofertas", image: ofertas.url, alt: "Ofertas imperdíveis", width: 268, height: 90 },
-];
-
 function Home() {
-  const all = publishedProducts();
+  const { data: { banners, products: all } } = useSuspenseQuery(homeQuery);
+  const { data: categories } = useSuspenseQuery(categoriesQuery);
   const weekly = all.filter((p) => p.isWeeklyPick).slice(0, 4);
   const featured = all.filter((p) => p.isFeatured).slice(0, 4);
-  const cats = activeCategories().filter((c) => all.some((p) => p.categorySlug === c.slug));
+  const cats = categories.filter((c) => all.some((p) => p.categorySlug === c.slug));
   return (
     <>
       <BannerCarousel banners={banners} />
+      {all.length === 0 && <ComingSoon />}
       {weekly.length > 0 && <Section title="Achadinhos da Semana"><ProductGrid products={weekly} /></Section>}
       {featured.length > 0 && <Section title="Ofertas em Destaque"><ProductGrid products={featured} /></Section>}
       {cats.length > 0 && (
@@ -50,7 +50,7 @@ function Home() {
         </Section>
       )}
       {all.length > 0 && (
-        <Section title="Últimos Achadinhos" action={<Link to="/ofertas" className="text-sm font-bold text-navy underline">Ver mais</Link>}>
+        <Section title="Últimos Achadinhos" action={<Link to="/busca" search={{}} className="text-sm font-bold text-navy underline">Ver mais</Link>}>
           <ProductGrid products={all.slice(0, 8)} />
         </Section>
       )}

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   beforeLoad: async ({ search, location }) => {
     if (!search.authorization_id) throw new Error("Pedido de autorização inválido.");
     const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/login", search: { next: location.pathname + location.searchStr } });
+    if (!data.session) throw redirect({ to: "/admin/login", search: { next: location.pathname + location.searchStr } });
   },
   loader: async ({ location }) => {
     const id = new URLSearchParams(location.search).get("authorization_id") ?? "";

@@ -20,9 +20,19 @@ import { Route as OfertasRouteImport } from './routes/ofertas'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AdminPainelRouteImport } from './routes/admin/_painel'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminRedefinirSenhaRouteImport } from './routes/admin/redefinir-senha'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
+import { Route as ImgSplatRouteImport } from './routes/img.$'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AdminPainelIndexRouteImport } from './routes/admin/_painel/index'
+import { Route as AdminPainelBannersRouteImport } from './routes/admin/_painel/banners'
+import { Route as AdminPainelCategoriasRouteImport } from './routes/admin/_painel/categorias'
+import { Route as AdminPainelMarketplacesRouteImport } from './routes/admin/_painel/marketplaces'
+import { Route as AdminPainelProdutosIndexRouteImport } from './routes/admin/_painel/produtos.index'
+import { Route as AdminPainelProdutosIdRouteImport } from './routes/admin/_painel/produtos.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -80,9 +90,29 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminPainelRoute = AdminPainelRouteImport.update({
+  id: '/admin/_painel',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRedefinirSenhaRoute = AdminRedefinirSenhaRouteImport.update({
+  id: '/admin/redefinir-senha',
+  path: '/admin/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
   id: '/categoria/$slug',
   path: '/categoria/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImgSplatRoute = ImgSplatRouteImport.update({
+  id: '/img/$',
+  path: '/img/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PSlugRoute = PSlugRouteImport.update({
@@ -94,6 +124,37 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPainelIndexRoute = AdminPainelIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
+const AdminPainelBannersRoute = AdminPainelBannersRouteImport.update({
+  id: '/banners',
+  path: '/banners',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
+const AdminPainelCategoriasRoute = AdminPainelCategoriasRouteImport.update({
+  id: '/categorias',
+  path: '/categorias',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
+const AdminPainelMarketplacesRoute = AdminPainelMarketplacesRouteImport.update({
+  id: '/marketplaces',
+  path: '/marketplaces',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
+const AdminPainelProdutosIndexRoute =
+  AdminPainelProdutosIndexRouteImport.update({
+    id: '/produtos/',
+    path: '/produtos/',
+    getParentRoute: () => AdminPainelRoute,
+  } as any)
+const AdminPainelProdutosIdRoute = AdminPainelProdutosIdRouteImport.update({
+  id: '/produtos/$id',
+  path: '/produtos/$id',
+  getParentRoute: () => AdminPainelRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -108,9 +169,19 @@ export interface FileRoutesByFullPath {
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin': typeof AdminPainelRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/img/$': typeof ImgSplatRoute
   '/p/$slug': typeof PSlugRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/admin/banners': typeof AdminPainelBannersRoute
+  '/admin/categorias': typeof AdminPainelCategoriasRoute
+  '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/admin/': typeof AdminPainelIndexRoute
+  '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
+  '/admin/produtos/': typeof AdminPainelProdutosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -124,9 +195,18 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/img/$': typeof ImgSplatRoute
   '/p/$slug': typeof PSlugRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/admin/banners': typeof AdminPainelBannersRoute
+  '/admin/categorias': typeof AdminPainelCategoriasRoute
+  '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/admin': typeof AdminPainelIndexRoute
+  '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
+  '/admin/produtos': typeof AdminPainelProdutosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -141,9 +221,19 @@ export interface FileRoutesById {
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin/_painel': typeof AdminPainelRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/redefinir-senha': typeof AdminRedefinirSenhaRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/img/$': typeof ImgSplatRoute
   '/p/$slug': typeof PSlugRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/admin/_painel/banners': typeof AdminPainelBannersRoute
+  '/admin/_painel/categorias': typeof AdminPainelCategoriasRoute
+  '/admin/_painel/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/admin/_painel/': typeof AdminPainelIndexRoute
+  '/admin/_painel/produtos/$id': typeof AdminPainelProdutosIdRoute
+  '/admin/_painel/produtos/': typeof AdminPainelProdutosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,9 +249,19 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/sobre'
     | '/.well-known/oauth-protected-resource'
+    | '/admin'
+    | '/admin/login'
+    | '/admin/redefinir-senha'
     | '/categoria/$slug'
+    | '/img/$'
     | '/p/$slug'
     | '/.lovable/oauth/consent'
+    | '/admin/banners'
+    | '/admin/categorias'
+    | '/admin/marketplaces'
+    | '/admin/'
+    | '/admin/produtos/$id'
+    | '/admin/produtos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,9 +275,18 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/sobre'
     | '/.well-known/oauth-protected-resource'
+    | '/admin/login'
+    | '/admin/redefinir-senha'
     | '/categoria/$slug'
+    | '/img/$'
     | '/p/$slug'
     | '/.lovable/oauth/consent'
+    | '/admin/banners'
+    | '/admin/categorias'
+    | '/admin/marketplaces'
+    | '/admin'
+    | '/admin/produtos/$id'
+    | '/admin/produtos'
   id:
     | '__root__'
     | '/'
@@ -191,9 +300,19 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/sobre'
     | '/.well-known/oauth-protected-resource'
+    | '/admin/_painel'
+    | '/admin/login'
+    | '/admin/redefinir-senha'
     | '/categoria/$slug'
+    | '/img/$'
     | '/p/$slug'
     | '/.lovable/oauth/consent'
+    | '/admin/_painel/banners'
+    | '/admin/_painel/categorias'
+    | '/admin/_painel/marketplaces'
+    | '/admin/_painel/'
+    | '/admin/_painel/produtos/$id'
+    | '/admin/_painel/produtos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -208,7 +327,11 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   SobreRoute: typeof SobreRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  AdminPainelRoute: typeof AdminPainelRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminRedefinirSenhaRoute: typeof AdminRedefinirSenhaRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
+  ImgSplatRoute: typeof ImgSplatRoute
   PSlugRoute: typeof PSlugRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
@@ -292,11 +415,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/_painel': {
+      id: '/admin/_painel'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminPainelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/redefinir-senha': {
+      id: '/admin/redefinir-senha'
+      path: '/admin/redefinir-senha'
+      fullPath: '/admin/redefinir-senha'
+      preLoaderRoute: typeof AdminRedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categoria/$slug': {
       id: '/categoria/$slug'
       path: '/categoria/$slug'
       fullPath: '/categoria/$slug'
       preLoaderRoute: typeof CategoriaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/img/$': {
+      id: '/img/$'
+      path: '/img/$'
+      fullPath: '/img/$'
+      preLoaderRoute: typeof ImgSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/p/$slug': {
@@ -313,8 +464,72 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/_painel/': {
+      id: '/admin/_painel/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminPainelIndexRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
+    '/admin/_painel/banners': {
+      id: '/admin/_painel/banners'
+      path: '/banners'
+      fullPath: '/admin/banners'
+      preLoaderRoute: typeof AdminPainelBannersRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
+    '/admin/_painel/categorias': {
+      id: '/admin/_painel/categorias'
+      path: '/categorias'
+      fullPath: '/admin/categorias'
+      preLoaderRoute: typeof AdminPainelCategoriasRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
+    '/admin/_painel/marketplaces': {
+      id: '/admin/_painel/marketplaces'
+      path: '/marketplaces'
+      fullPath: '/admin/marketplaces'
+      preLoaderRoute: typeof AdminPainelMarketplacesRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
+    '/admin/_painel/produtos/': {
+      id: '/admin/_painel/produtos/'
+      path: '/produtos'
+      fullPath: '/admin/produtos/'
+      preLoaderRoute: typeof AdminPainelProdutosIndexRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
+    '/admin/_painel/produtos/$id': {
+      id: '/admin/_painel/produtos/$id'
+      path: '/produtos/$id'
+      fullPath: '/admin/produtos/$id'
+      preLoaderRoute: typeof AdminPainelProdutosIdRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
   }
 }
+
+interface AdminPainelRouteChildren {
+  AdminPainelBannersRoute: typeof AdminPainelBannersRoute
+  AdminPainelCategoriasRoute: typeof AdminPainelCategoriasRoute
+  AdminPainelMarketplacesRoute: typeof AdminPainelMarketplacesRoute
+  AdminPainelIndexRoute: typeof AdminPainelIndexRoute
+  AdminPainelProdutosIdRoute: typeof AdminPainelProdutosIdRoute
+  AdminPainelProdutosIndexRoute: typeof AdminPainelProdutosIndexRoute
+}
+
+const AdminPainelRouteChildren: AdminPainelRouteChildren = {
+  AdminPainelBannersRoute: AdminPainelBannersRoute,
+  AdminPainelCategoriasRoute: AdminPainelCategoriasRoute,
+  AdminPainelMarketplacesRoute: AdminPainelMarketplacesRoute,
+  AdminPainelIndexRoute: AdminPainelIndexRoute,
+  AdminPainelProdutosIdRoute: AdminPainelProdutosIdRoute,
+  AdminPainelProdutosIndexRoute: AdminPainelProdutosIndexRoute,
+}
+
+const AdminPainelRouteWithChildren = AdminPainelRoute._addFileChildren(
+  AdminPainelRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -329,7 +544,11 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  AdminPainelRoute: AdminPainelRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminRedefinirSenhaRoute: AdminRedefinirSenhaRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
+  ImgSplatRoute: ImgSplatRoute,
   PSlugRoute: PSlugRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }

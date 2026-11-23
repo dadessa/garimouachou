@@ -3,7 +3,8 @@ import { Grid2x2, House, Menu, Search, Tag, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo-horizontal.png.asset.json";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { activeCategories } from "@/lib/sample-data";
+import { useQuery } from "@tanstack/react-query";
+import { categoriesQuery } from "@/lib/catalog/queries";
 import { CatIcon } from "./icons";
 
 function SearchForm({ autoFocus, onDone }: { autoFocus?: boolean; onDone?: () => void }) {
@@ -45,7 +46,7 @@ export function SiteHeader() {
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
-  const cats = activeCategories();
+  const { data: cats = [] } = useQuery(categoriesQuery);
 
   return (
     <header className={`sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur transition-shadow ${scrolled ? "shadow-card" : ""}`}>

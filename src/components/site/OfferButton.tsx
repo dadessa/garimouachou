@@ -1,15 +1,18 @@
 import { ExternalLink } from "lucide-react";
-import type { Product } from "@/lib/sample-data";
+import { isAllowedAffiliateUrl } from "@/lib/marketplaces/types";
+import type { Product } from "@/lib/catalog/types";
 
-/** Na Etapa 4 vira link para /go/:slug. Sem URL de afiliado, fica desativado. */
+/** Provisório até a Etapa 3 (/go/:slug): aponta direto para o link salvo, sem alterar nada. */
 export function OfferButton({ product, label = "Ver oferta", className = "" }: { product: Product; label?: string; className?: string }) {
-  const base = `inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-extrabold transition ${className}`;
-  if (!product.affiliateUrl) {
-    return <span aria-disabled="true" title="Produto de exemplo, sem link" className={`${base} cursor-not-allowed bg-primary/40 text-primary-foreground`}>{label}</span>;
-  }
+  if (!isAllowedAffiliateUrl(product.affiliateUrl, product.marketplace.allowedDomains)) return null;
   return (
-    <a href={`/go/${product.slug}`} rel="sponsored nofollow noopener" className={`${base} bg-primary text-primary-foreground shadow-card hover:brightness-110`}>
-      {label}<ExternalLink className="size-4" />
+    <a
+      href={product.affiliateUrl}
+      target="_blank"
+      rel="sponsored nofollow noopener"
+      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-extrabold text-primary-foreground shadow-card transition hover:brightness-110 ${className}`}
+    >
+      {label}<ExternalLink className="size-4" aria-hidden />
     </a>
   );
 }

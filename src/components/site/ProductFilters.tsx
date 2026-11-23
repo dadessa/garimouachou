@@ -1,6 +1,8 @@
-import { marketplaces, getMarketplace } from "@/lib/marketplaces";
+import { useQuery } from "@tanstack/react-query";
+import { marketplaces } from "@/lib/marketplaces";
 import { displayablePrice } from "@/lib/price";
-import { activeCategories, type Product } from "@/lib/sample-data";
+import { categoriesQuery } from "@/lib/catalog/queries";
+import type { Product } from "@/lib/catalog/types";
 
 export type Ordem = "recentes" | "menor-preco" | "maior-preco";
 export interface ListSearch { q?: string; cat?: string; mk?: string; ordem?: Ordem; n?: number }
@@ -19,10 +21,7 @@ export function validateListSearch(s: Record<string, unknown>): ListSearch {
 /** Ordenação por preço só entre preços exibíveis; os demais vão ao final. */
 export function applySort(items: Product[], ordem?: Ordem) {
   if (!ordem || ordem === "recentes") return items;
-  const price = (p: Product) => {
-    const mk = getMarketplace(p.marketplaceSlug);
-    return mk ? displayablePrice(p, mk)?.current ?? null : null;
-  };
+  const price = (p: Product) => displayablePrice(p, p.marketplace)?.current ?? null;
   return [...items].sort((a, b) => {
     const pa = price(a), pb = price(b);
     if (pa == null && pb == null) return 0;
@@ -42,6 +41,7 @@ function setKey(s: ListSearch, key: "cat" | "mk" | "ordem", v: string): ListSear
 }
 
 export function ProductFilters({ search, onChange, showCategory }: { search: ListSearch; onChange: (s: ListSearch) => void; showCategory?: boolean }) {
+  const { data: cats = [] } = useQuery(categoriesQuery);
   return (
     <div className="mb-6 flex flex-wrap gap-2">
       {showCategory && (
@@ -50,7 +50,7 @@ export function ProductFilters({ search, onChange, showCategory }: { search: Lis
       {showCategory && (
         <select id="f-cat" className={sel} value={search.cat ?? ""} onChange={(e) => onChange(setKey(search, "cat", e.target.value))}>
           <option value="">Todas as categorias</option>
-          {activeCategories().map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+          {cats.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
         </select>
       )}
       <label className="sr-only" htmlFor="f-mk">Marketplace</label>

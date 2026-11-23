@@ -276,6 +276,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      f_unaccent: { Args: { "": string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -286,6 +287,40 @@ export type Database = {
       is_allowed_affiliate_url: {
         Args: { _domains: string[]; _url: string }
         Returns: boolean
+      }
+      search_products: {
+        Args: { q: string }
+        Returns: {
+          affiliate_url: string
+          category_id: string | null
+          created_at: string
+          current_price_cents: number | null
+          external_id: string | null
+          id: string
+          is_featured: boolean
+          is_weekly_pick: boolean
+          main_image_alt: string | null
+          main_image_url: string | null
+          marketplace_id: string | null
+          name: string
+          previous_price_cents: number | null
+          price_checked_at: string | null
+          price_source: Database["public"]["Enums"]["price_source"]
+          published_at: string | null
+          seo_description: string | null
+          seo_title: string | null
+          short_description: string
+          slug: string
+          source: Database["public"]["Enums"]["price_source"]
+          status: Database["public"]["Enums"]["product_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "products"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
     }
     Enums: {

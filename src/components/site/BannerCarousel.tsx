@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-
-export interface Banner { id: string; image: string; mobileImage?: string; alt: string; width: number; height: number }
+import type { Banner } from "@/lib/catalog/types";
 
 export function BannerCarousel({ banners }: { banners: Banner[] }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -20,7 +19,11 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
         {banners.map((b, i) => (
           <picture key={b.id} className="w-full shrink-0 snap-center">
             {b.mobileImage && <source media="(max-width: 640px)" srcSet={b.mobileImage} />}
-            <img src={b.image} alt={b.alt} width={b.width} height={b.height} loading={i === 0 ? "eager" : "lazy"} className="h-auto w-full object-cover" />
+            {b.link ? (
+              <a href={b.link}><img src={b.image} alt={b.alt} loading={i === 0 ? "eager" : "lazy"} className="h-auto w-full object-cover" /></a>
+            ) : (
+              <img src={b.image} alt={b.alt} loading={i === 0 ? "eager" : "lazy"} className="h-auto w-full object-cover" />
+            )}
           </picture>
         ))}
       </div>
