@@ -4,6 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  MIN_PASSWORD_LENGTH,
+  PASSWORD_REQUIREMENTS,
+  strongPasswordValidation,
+} from "@/lib/admin/password-rules";
 
 export const Route = createFileRoute("/admin/redefinir-senha")({
   ssr: false,
@@ -52,7 +57,8 @@ function ResetPassword() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) return setMsg("A senha precisa ter pelo menos 8 caracteres.");
+    const invalid = strongPasswordValidation(password);
+    if (invalid) return setMsg(invalid);
     if (password !== confirm) return setMsg("As senhas não são iguais.");
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
@@ -80,17 +86,23 @@ function ResetPassword() {
             id="nova"
             type="password"
             autoComplete="new-password"
+            minLength={MIN_PASSWORD_LENGTH}
+            aria-describedby="regras-senha"
             required
             disabled={!ready}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <p id="regras-senha" className="text-sm text-muted-foreground">
+            {PASSWORD_REQUIREMENTS}
+          </p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="conf">Repita a nova senha</Label>
           <Input
             id="conf"
             type="password"
+            minLength={MIN_PASSWORD_LENGTH}
             autoComplete="new-password"
             required
             disabled={!ready}

@@ -4,7 +4,11 @@ import { useState } from "react";
 import { KeyRound, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { passwordRequirement, signOutAdmin } from "@/lib/admin/password";
-import { passwordValidation } from "@/lib/admin/password-rules";
+import {
+  MIN_PASSWORD_LENGTH,
+  PASSWORD_REQUIREMENTS,
+  passwordValidation,
+} from "@/lib/admin/password-rules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -167,11 +171,15 @@ function ChangePassword() {
                 type="password"
                 autoComplete="new-password"
                 required
-                minLength={8}
+                minLength={MIN_PASSWORD_LENGTH}
+                aria-describedby="regras-senha"
                 disabled={busy}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <p id="regras-senha" className="text-sm text-muted-foreground">
+                {PASSWORD_REQUIREMENTS}
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="confirmar-senha">Confirme a nova senha</Label>
@@ -180,7 +188,7 @@ function ChangePassword() {
                 type="password"
                 autoComplete="new-password"
                 required
-                minLength={8}
+                minLength={MIN_PASSWORD_LENGTH}
                 disabled={busy}
                 value={confirmation}
                 onChange={(e) => setConfirmation(e.target.value)}
