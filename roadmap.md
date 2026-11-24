@@ -13,3 +13,5 @@
 
 - [x] Etapa 3: inteligência comercial (eventos, Desempenho, links UTM)
 - [ ] Sprint de estabilização técnica: analisar o que falta ajustar
+- [ ] Integração Mercado Livre — aguardando ID e chave secreta do aplicativo (usuária)
+- [ ] Integração Shopee Afiliados — adiada pela usuária; precisa de App ID e App Secret
