@@ -297,7 +297,7 @@ export function OfferPaste({
                 ? prev
                 : null,
           },
-          opts,
+          { ...opts, allowIncomplete: c.allowIncomplete },
           {
             mks,
             cats,

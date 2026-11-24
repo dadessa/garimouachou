@@ -20,9 +20,22 @@ type GenCopy = (a: {
 export async function importOneWith(
   supabase: SupabaseClient<Database>,
   d: ImportDraft,
-  opts: { publish: boolean; defaultCategoryId: string | null; useAi: boolean },
+  opts: {
+    publish: boolean;
+    defaultCategoryId: string | null;
+    useAi: boolean;
+    /** Só quando a administradora pediu explicitamente salvar sem nome. */
+    allowIncomplete?: boolean;
+  },
   deps: { mks: MarketplaceRow[]; cats: CategoryRow[]; genCopy: GenCopy },
 ): Promise<ImportResult> {
+  if (!d.name.trim() && !opts.allowIncomplete)
+    return {
+      status: "error",
+      message:
+        "Nome do produto não identificado: nada foi salvo. Informe o nome ou use “Links e ofertas” para tentar de novo.",
+    };
+
   const mk = detectMarketplace(d.affiliateUrl, deps.mks);
   if (!mk) return { status: "error", message: "O link não é de nenhuma loja cadastrada (https)." };
 

@@ -26,3 +26,23 @@ describe("importPrice", () => {
     });
   });
 });
+
+describe("importOneWith sem nome", () => {
+  it("não salva nada quando só o link foi identificado", async () => {
+    const { importOneWith } = await import("./importer-core");
+    const sb = {
+      from: () => {
+        throw new Error("não deveria acessar o banco");
+      },
+    } as never;
+    const r = await importOneWith(
+      sb,
+      emptyDraft("https://s.shopee.com.br/x"),
+      { publish: false, defaultCategoryId: null, useAi: false },
+      { mks: [], cats: [], genCopy: async () => ({ error: null, description: "", tags: [] }) },
+    );
+    expect(r.status).toBe("error");
+    expect(r.productId).toBeUndefined();
+    expect(r.message).toContain("nada foi salvo");
+  });
+});
