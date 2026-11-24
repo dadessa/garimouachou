@@ -67,6 +67,29 @@ function Home() {
           </div>
         </div>
       </section>
+      {cats.length > 0 && (
+        <nav aria-label="Categorias" className="border-b border-border bg-card">
+          <div className="mx-auto max-w-6xl px-4 py-3">
+            <h2 className="sr-only">Categorias</h2>
+            <ul className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-[repeat(auto-fit,minmax(120px,1fr))] md:overflow-visible md:px-0 md:pb-0">
+              {cats.map((c) => (
+                <li key={c.slug} className="shrink-0 snap-start">
+                  <Link
+                    to="/categoria/$slug"
+                    params={{ slug: c.slug }}
+                    className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-sm font-bold text-navy transition hover:-translate-y-0.5 hover:border-navy hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2 active:translate-y-0 active:bg-yellow"
+                  >
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent">
+                      <CatIcon icon={c.icon} className="size-4" />
+                    </span>
+                    <span className="whitespace-nowrap">{c.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+      )}
       {all.length === 0 && <ComingSoon />}
       {weekly.length > 0 && (
         <Section title="Achadinhos da Semana">
@@ -88,25 +111,6 @@ function Home() {
           }
         >
           <ProductGrid products={latest} />
-        </Section>
-      )}
-      {cats.length > 0 && (
-        <Section title="Categorias">
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-7 md:gap-3">
-            {cats.map((c) => (
-              <Link
-                key={c.slug}
-                to="/categoria/$slug"
-                params={{ slug: c.slug }}
-                className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-card p-2.5 text-center text-xs font-bold shadow-card transition hover:-translate-y-0.5 hover:bg-accent"
-              >
-                <span className="grid size-10 place-items-center rounded-full bg-accent text-navy">
-                  <CatIcon icon={c.icon} className="size-5" />
-                </span>
-                {c.name}
-              </Link>
-            ))}
-          </div>
         </Section>
       )}
       <BannerCarousel banners={banners} />
