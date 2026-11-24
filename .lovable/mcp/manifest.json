@@ -12,7 +12,7 @@
   "mcp": {
     "server": {
       "name": "garimou-achou",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "title": "Garimou Achou"
     },
     "tools": [
@@ -88,6 +88,385 @@
           "additionalProperties": false
         },
         "outputSchema": null
+      },
+      {
+        "name": "get_integration_status",
+        "title": "Situação das lojas",
+        "description": "Mostra se cada loja tem credencial salva e se a conexão foi validada com consulta real.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "rank_opportunities",
+        "title": "Ranking de oportunidades",
+        "description": "Ranking do Radar (mesmo score da tela) com visão e filtros; ofertas vencidas ficam de fora.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "view": {
+              "type": "string",
+              "enum": [
+                "melhores",
+                "crescimento",
+                "vendidos",
+                "procurados",
+                "comissao",
+                "extra",
+                "sazonais",
+                "financeiro",
+                "novos"
+              ]
+            },
+            "marketplace": {
+              "type": "string",
+              "maxLength": 30
+            },
+            "category": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "keyword": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "max_price_reais": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "min_commission_pct": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "only_new": {
+              "type": "boolean"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "get_best_sellers",
+        "title": "Mais vendidos",
+        "description": "Oportunidades com mais vendas informadas pela loja (vendas, não buscas).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "marketplace": {
+              "description": "Slug da loja, ex.: shopee.",
+              "type": "string",
+              "maxLength": 30
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "get_commission_rates",
+        "title": "Maiores comissões",
+        "description": "Oportunidades com maior comissão estimada por venda.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "marketplace": {
+              "description": "Slug da loja, ex.: shopee.",
+              "type": "string",
+              "maxLength": 30
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "get_market_trends",
+        "title": "Tendências",
+        "description": "Oportunidades com procura crescente e termos mais buscados no site.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "search_marketplace_offers",
+        "title": "Buscar ofertas",
+        "description": "Busca ofertas por palavra-chave: ao vivo na Shopee quando conectada (salva no Radar), senão nos dados do Radar.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "keyword": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 60
+            }
+          },
+          "required": [
+            "keyword"
+          ],
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "compare_offers",
+        "title": "Comparar lojas",
+        "description": "Compara score médio, comissão média e melhor oferta por loja.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "get_catalog",
+        "title": "Catálogo",
+        "description": "Resumo do catálogo com cliques e visualizações dos últimos 30 dias.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "get_analytics",
+        "title": "Desempenho do site",
+        "description": "Relatório de desempenho dos últimos N dias (cliques não são vendas).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 90
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "check_expired_offers",
+        "title": "Ofertas vencidas",
+        "description": "Lista oportunidades com dados vencidos.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "prepare_import",
+        "title": "Preparar importação",
+        "description": "Gera prévia e um token de aprovação (15 min, uso único) para incluir oportunidades. Não cadastra nada.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "opportunity_ids": {
+              "minItems": 1,
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "publish": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "opportunity_ids"
+          ],
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "confirm_import",
+        "title": "Confirmar importação",
+        "description": "Confirma uma importação preparada. Use SOMENTE depois que a administradora aprovar explicitamente a prévia.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "minLength": 20,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "token"
+          ],
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "generate_campaign",
+        "title": "Gerar campanha",
+        "description": "Gera legendas, textos de WhatsApp, roteiros, stories, hashtags, links UTM e calendário. Nada é publicado.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "product_ids": {
+              "minItems": 1,
+              "maxItems": 8,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "theme": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "product_ids"
+          ],
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
+      },
+      {
+        "name": "daily_sales_plan",
+        "title": "Plano diário",
+        "description": "Plano de divulgação do dia com dados reais do Radar e do catálogo.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null,
+        "conditional": true
       }
     ]
   }

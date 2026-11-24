@@ -35,6 +35,33 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_audit: {
+        Row: {
+          action: string
+          channel: string
+          created_at: string
+          detail: Json
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          channel: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          channel?: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           category_id: string | null
@@ -183,6 +210,114 @@ export type Database = {
           slug?: string
           sort_order?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      commercial_preferences: {
+        Row: {
+          channel: string
+          daily_count: number
+          daily_plan_enabled: boolean
+          id: number
+          max_price_cents: number | null
+          min_commission_pct: number | null
+          min_price_cents: number | null
+          monthly_goal_cents: number | null
+          preferred_marketplaces: string[]
+          priority_categories: string[]
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          daily_count?: number
+          daily_plan_enabled?: boolean
+          id?: number
+          max_price_cents?: number | null
+          min_commission_pct?: number | null
+          min_price_cents?: number | null
+          monthly_goal_cents?: number | null
+          preferred_marketplaces?: string[]
+          priority_categories?: string[]
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          daily_count?: number
+          daily_plan_enabled?: boolean
+          id?: number
+          max_price_cents?: number | null
+          min_commission_pct?: number | null
+          min_price_cents?: number | null
+          monthly_goal_cents?: number | null
+          preferred_marketplaces?: string[]
+          priority_categories?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      daily_plans: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          plan: Json
+          status: string
+          trigger: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          plan?: Json
+          status: string
+          trigger: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          plan?: Json
+          status?: string
+          trigger?: string
+        }
+        Relationships: []
+      }
+      import_approvals: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          opportunity_ids: string[]
+          preview: Json
+          publish: boolean
+          result: Json | null
+          token_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          opportunity_ids: string[]
+          preview?: Json
+          publish?: boolean
+          result?: Json | null
+          token_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          opportunity_ids?: string[]
+          preview?: Json
+          publish?: boolean
+          result?: Json | null
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
