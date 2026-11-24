@@ -40,9 +40,7 @@ export function ProductCard({ product, preview }: { product: Product; preview?: 
           {hasPrice ? (
             <PriceBlock product={product} />
           ) : (
-            <p className="text-xs font-semibold text-muted-foreground">
-              Confira o preço na {product.marketplace.name}
-            </p>
+            <p className="text-xs font-semibold text-muted-foreground">Confira o preço na loja</p>
           )}
         </div>
         <div className="mt-auto pt-1">
