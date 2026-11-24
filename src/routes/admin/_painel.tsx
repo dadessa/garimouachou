@@ -92,9 +92,6 @@ function Painel() {
             className="h-10 w-auto rounded-lg bg-background px-1"
           />
           <span className="text-sm font-extrabold">Painel</span>
-          <nav className="ml-4 hidden gap-1 md:flex" aria-label="Painel">
-            {links}
-          </nav>
           <div className="ml-auto flex items-center gap-2">
             <a
               href="/"
@@ -121,6 +118,12 @@ function Painel() {
             </button>
           </div>
         </div>
+        <nav
+          className="mx-auto hidden max-w-6xl gap-1 overflow-x-auto px-4 pb-2 md:flex [&>a]:shrink-0 [&>a]:whitespace-nowrap"
+          aria-label="Painel"
+        >
+          {links}
+        </nav>
         {open && (
           <nav className="flex flex-col gap-1 px-4 pb-3 md:hidden" aria-label="Painel">
             {links}

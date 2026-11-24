@@ -1,6 +1,6 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -371,140 +371,178 @@ function ProductForm() {
   }
 
   const field = "space-y-1.5";
+  const selectCls = "h-11 w-full rounded-md border border-input bg-background px-3 text-sm";
+  const publicUrl = `/p/${f.slug}`;
+  const checks = [
+    { label: "Nome", ok: !!f.name.trim() },
+    { label: "Categoria ativa", ok: !!cat?.is_active },
+    { label: "Marketplace ativo", ok: !!mk?.is_active },
+    { label: "Link de afiliada aceito", ok: !!domain },
+    { label: "Imagem principal", ok: !!f.imageUrl },
+    { label: "Texto alternativo", ok: !!f.imageAlt.trim() },
+    { label: "Endereço válido", ok: !slugErr },
+  ];
+  const discount =
+    priceCents && prevCents && !Number.isNaN(priceCents) && !Number.isNaN(prevCents) && prevCents > priceCents
+      ? Math.round((1 - priceCents / prevCents) * 100)
+      : null;
+  const statusTone =
+    status === "published"
+      ? "bg-yellow text-navy"
+      : status === "inactive"
+        ? "bg-muted text-muted-foreground"
+        : "bg-navy/10 text-navy";
+
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Link to="/admin/produtos" className="text-sm font-bold text-navy underline">
-          ← Produtos
-        </Link>
-        <h1 className="text-2xl font-extrabold text-navy">
-          {id === "novo" ? "Novo produto" : "Editar produto"}
-        </h1>
-        <span className="rounded-full bg-card px-3 py-1 text-xs font-bold">{STATUS[status]}</span>
+      <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="min-w-0">
+          <Link to="/admin/produtos" className="text-xs font-bold text-navy underline">
+            ← Produtos
+          </Link>
+          <h1 className="truncate text-xl font-extrabold text-navy md:text-2xl">
+            {id === "novo" ? "Novo produto" : f.name || "Editar produto"}
+          </h1>
+        </div>
+        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-extrabold ${statusTone}`}>
+          {STATUS[status]}
+        </span>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <form
-          className="space-y-5 rounded-2xl border border-border bg-card p-4 md:p-6"
+          id="product-form"
+          className="min-w-0 space-y-5 [&_input:not([type=checkbox])]:h-11"
           onSubmit={(e) => {
             e.preventDefault();
             save(status === "published" ? "published" : "draft");
           }}
         >
-          <div className={field}>
-            <Label htmlFor="nome">Nome</Label>
-            <Input
-              id="nome"
-              value={f.name}
-              maxLength={150}
-              onChange={(e) =>
-                setF((s) => ({
-                  ...s,
-                  name: e.target.value,
-                  slug: s.slugTouched ? s.slug : slugify(e.target.value),
-                }))
-              }
-            />
-          </div>
-          <div className={field}>
-            <Label htmlFor="slug">Endereço (slug)</Label>
-            <Input
-              id="slug"
-              value={f.slug}
-              maxLength={100}
-              onChange={(e) => setF((s) => ({ ...s, slug: e.target.value, slugTouched: true }))}
-            />
-            <p className={`text-xs ${slugErr ? "text-destructive" : "text-muted-foreground"}`}>
-              {slugErr ?? `garimouachou.com.br/p/${f.slug}`}
-            </p>
-          </div>
-          <fieldset className="space-y-3 rounded-xl border border-border bg-muted/40 p-3">
-            <legend className="px-1 text-sm font-bold">Gerar com IA</legend>
-            <p className="text-xs text-muted-foreground">
-              Preencha nome, categoria e link, conte os detalhes do produto e a IA sugere a
-              descrição e as etiquetas. Ela não inventa preço, desconto nem avaliação.
-            </p>
-            <Textarea
-              id="details"
-              aria-label="Detalhes do produto para a IA"
-              placeholder="Ex.: látex, 16 polegadas, cor platino, pacote com 12, ideal para festas"
-              value={f.details}
-              onChange={(e) => set("details", e.target.value)}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={genBusy || !f.name.trim()}
-              onClick={onGenerate}
-            >
-              <Sparkles className="size-4" aria-hidden />
-              {genBusy ? "Gerando…" : "Gerar descrição e etiquetas"}
-            </Button>
-          </fieldset>
-
-          <div className={field}>
-            <Label htmlFor="desc">Descrição curta</Label>
-            <Textarea
-              id="desc"
-              rows={3}
-              maxLength={400}
-              value={f.description}
-              onChange={(e) => set("description", e.target.value)}
-            />
-          </div>
-          <div className={field}>
-            <Label htmlFor="tags">Etiquetas (separadas por vírgula)</Label>
-            <Input
-              id="tags"
-              value={f.tags}
-              onChange={(e) => set("tags", e.target.value)}
-              placeholder="festa, aniversário, decoração"
-            />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <FormCard n={1} title="Informações básicas">
             <div className={field}>
-              <Label htmlFor="cat">Categoria</Label>
-              <select
-                id="cat"
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={f.categoryId}
-                onChange={(e) => set("categoryId", e.target.value)}
+              <Label htmlFor="nome">Nome</Label>
+              <Input
+                id="nome"
+                value={f.name}
+                maxLength={150}
+                onChange={(e) =>
+                  setF((s) => ({
+                    ...s,
+                    name: e.target.value,
+                    slug: s.slugTouched ? s.slug : slugify(e.target.value),
+                  }))
+                }
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className={field}>
+                <Label htmlFor="cat">Categoria</Label>
+                <select
+                  id="cat"
+                  className={selectCls}
+                  value={f.categoryId}
+                  onChange={(e) => set("categoryId", e.target.value)}
+                >
+                  <option value="">Escolha…</option>
+                  {cats.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                      {c.is_active ? "" : " (desativada)"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={field}>
+                <Label htmlFor="mk">Marketplace</Label>
+                <select
+                  id="mk"
+                  className={selectCls}
+                  value={f.marketplaceId}
+                  onChange={(e) => set("marketplaceId", e.target.value)}
+                >
+                  <option value="">Escolha…</option>
+                  {mks.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                      {m.is_active ? "" : " (desativado)"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-5">
+              <label className="flex items-center gap-2 text-sm font-semibold">
+                <input
+                  type="checkbox"
+                  checked={f.featured}
+                  onChange={(e) => set("featured", e.target.checked)}
+                />
+                Destaque (aparece em Ofertas)
+              </label>
+              <label className="flex items-center gap-2 text-sm font-semibold">
+                <input
+                  type="checkbox"
+                  checked={f.weekly}
+                  onChange={(e) => set("weekly", e.target.checked)}
+                />
+                Achadinho da semana
+              </label>
+            </div>
+          </FormCard>
+
+          <FormCard n={2} title="Conteúdo comercial">
+            <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-3">
+              <p className="text-sm font-bold">Gerar com IA</p>
+              <p className="text-xs text-muted-foreground">
+                Preencha nome, categoria e link, conte os detalhes do produto e a IA sugere a
+                descrição e as etiquetas. Ela não inventa preço, desconto nem avaliação.
+              </p>
+              <Textarea
+                id="details"
+                rows={2}
+                aria-label="Detalhes do produto para a IA"
+                placeholder="Ex.: látex, 16 polegadas, cor platino, pacote com 12, ideal para festas"
+                value={f.details}
+                onChange={(e) => set("details", e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={genBusy || !f.name.trim()}
+                onClick={onGenerate}
               >
-                <option value="">Escolha…</option>
-                {cats.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                    {c.is_active ? "" : " (desativada)"}
-                  </option>
-                ))}
-              </select>
+                <Sparkles className="size-4" aria-hidden />
+                {genBusy ? "Gerando…" : "Gerar descrição e etiquetas"}
+              </Button>
             </div>
             <div className={field}>
-              <Label htmlFor="mk">Marketplace</Label>
-              <select
-                id="mk"
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={f.marketplaceId}
-                onChange={(e) => set("marketplaceId", e.target.value)}
-              >
-                <option value="">Escolha…</option>
-                {mks.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                    {m.is_active ? "" : " (desativado)"}
-                  </option>
-                ))}
-              </select>
+              <Label htmlFor="desc">Descrição curta</Label>
+              <Textarea
+                id="desc"
+                rows={3}
+                maxLength={400}
+                value={f.description}
+                onChange={(e) => set("description", e.target.value)}
+              />
             </div>
-          </div>
+            <div className={field}>
+              <Label htmlFor="tags">Etiquetas (separadas por vírgula)</Label>
+              <Input
+                id="tags"
+                value={f.tags}
+                onChange={(e) => set("tags", e.target.value)}
+                placeholder="festa, aniversário, decoração"
+              />
+            </div>
+          </FormCard>
 
-          <fieldset className="space-y-3 rounded-xl border border-border p-3">
-            <legend className="px-1 text-sm font-bold">Imagem principal</legend>
-            <div className="flex items-center gap-3">
-              <div className="size-24 shrink-0 overflow-hidden rounded-xl bg-muted">
+          <FormCard n={3} title="Mídia">
+            <div className="flex items-center gap-4">
+              <div className="size-24 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
                 <AdminImg src={f.imageUrl} alt="" className="size-full object-contain" />
               </div>
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <input
                   ref={fileRef}
                   type="file"
@@ -516,12 +554,15 @@ function ProductForm() {
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   disabled={uploading}
                   onClick={() => fileRef.current?.click()}
                 >
                   {uploading ? "Enviando..." : f.imageUrl ? "Trocar imagem" : "Enviar imagem"}
                 </Button>
-                <p className="text-xs text-muted-foreground">JPG, PNG ou WebP, até 5 MB.</p>
+                <p className="text-xs text-muted-foreground">
+                  Imagem principal · JPG, PNG ou WebP, até 5 MB.
+                </p>
               </div>
             </div>
             <div className={field}>
@@ -534,122 +575,118 @@ function ProductForm() {
                 onChange={(e) => set("imageAlt", e.target.value)}
               />
             </div>
-          </fieldset>
+          </FormCard>
 
-          <div className={field}>
-            <Label htmlFor="url">URL oficial de afiliado</Label>
-            <Input
-              id="url"
-              inputMode="url"
-              spellCheck={false}
-              value={f.url}
-              onChange={(e) => set("url", e.target.value.trim())}
-              placeholder="https://..."
-            />
-            {f.url && (
-              <p className={`text-xs font-semibold ${domain ? "text-navy" : "text-destructive"}`}>
-                {!mk
-                  ? "Escolha o marketplace para validar o link."
-                  : domain
-                    ? `✓ Domínio reconhecido: ${domain}`
-                    : `Link não aceito. Precisa ser https e de: ${mk.allowed_domains.join(", ")}.`}
-              </p>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={lookBusy || !f.url}
-              onClick={lookup}
-            >
-              {lookBusy ? "Buscando…" : "Buscar informações pelo link"}
-            </Button>
-            {lookNotes.length > 0 && (
-              <ul className="list-disc pl-5 text-xs text-destructive">
-                {lookNotes.map((n) => (
-                  <li key={n}>{n}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <fieldset className="space-y-3 rounded-xl border border-border p-3" disabled={!manualOk}>
-            <legend className="px-1 text-sm font-bold">Preço (opcional)</legend>
-            {!manualOk && (
-              <p className="text-xs font-semibold text-muted-foreground">
-                As regras da {mk?.name} não permitem preço digitado à mão. O preço fica oculto no
-                site até existir uma integração oficial.
-              </p>
-            )}
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className={field}>
-                <Label htmlFor="preco">Preço atual (R$)</Label>
-                <Input
-                  id="preco"
-                  inputMode="decimal"
-                  placeholder="129,90"
-                  value={f.price}
-                  onChange={(e) => set("price", e.target.value)}
-                />
-              </div>
-              <div className={field}>
-                <Label htmlFor="ant">Preço anterior (R$)</Label>
-                <Input
-                  id="ant"
-                  inputMode="decimal"
-                  placeholder="159,90"
-                  value={f.prev}
-                  onChange={(e) => set("prev", e.target.value)}
-                />
-              </div>
+          <FormCard n={4} title="Oferta e link de afiliada">
+            <div className={field}>
+              <Label htmlFor="url">URL oficial de afiliado</Label>
+              <Input
+                id="url"
+                inputMode="url"
+                spellCheck={false}
+                value={f.url}
+                onChange={(e) => set("url", e.target.value.trim())}
+                placeholder="https://..."
+              />
+              {f.url && (
+                <p className={`text-xs font-semibold ${domain ? "text-navy" : "text-destructive"}`}>
+                  {!mk
+                    ? "Escolha o marketplace para validar o link."
+                    : domain
+                      ? `✓ Domínio reconhecido: ${domain}`
+                      : `Link não aceito. Precisa ser https e de: ${mk.allowed_domains.join(", ")}.`}
+                </p>
+              )}
+              {lookNotes.length > 0 && (
+                <ul className="list-disc pl-5 text-xs text-destructive">
+                  {lookNotes.map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ul>
+              )}
             </div>
-            {priceErr && <p className="text-xs text-destructive">{priceErr}</p>}
-            <div className="flex flex-wrap items-end gap-3">
-              <div className={field}>
-                <Label htmlFor="verif">Verificado em</Label>
-                <Input
-                  id="verif"
-                  type="datetime-local"
-                  value={f.checkedAt}
-                  onChange={(e) => set("checkedAt", e.target.value)}
-                />
+            <fieldset className="space-y-3" disabled={!manualOk}>
+              {!manualOk && (
+                <p className="rounded-lg bg-muted p-2 text-xs font-semibold text-muted-foreground">
+                  As regras da {mk?.name} não permitem preço digitado à mão. O preço fica oculto
+                  no site até existir uma integração oficial.
+                </p>
+              )}
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className={field}>
+                  <Label htmlFor="preco">Preço atual (R$)</Label>
+                  <Input
+                    id="preco"
+                    inputMode="decimal"
+                    placeholder="129,90"
+                    value={f.price}
+                    onChange={(e) => set("price", e.target.value)}
+                  />
+                </div>
+                <div className={field}>
+                  <Label htmlFor="ant">Preço anterior (R$)</Label>
+                  <Input
+                    id="ant"
+                    inputMode="decimal"
+                    placeholder="159,90"
+                    value={f.prev}
+                    onChange={(e) => set("prev", e.target.value)}
+                  />
+                </div>
+                <div className={field}>
+                  <Label>Desconto</Label>
+                  <p className="flex h-11 items-center rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground">
+                    {discount != null ? `${discount}% (calculado)` : "—"}
+                  </p>
+                </div>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => set("checkedAt", toLocalInput(new Date().toISOString()))}
+              {priceErr && <p className="text-xs text-destructive">{priceErr}</p>}
+              <div className="flex flex-wrap items-end gap-3">
+                <div className={field}>
+                  <Label htmlFor="verif">Última verificação do preço</Label>
+                  <Input
+                    id="verif"
+                    type="datetime-local"
+                    value={f.checkedAt}
+                    onChange={(e) => set("checkedAt", e.target.value)}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11"
+                  onClick={() => set("checkedAt", toLocalInput(new Date().toISOString()))}
+                >
+                  Confirmar preço agora
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                O preço só aparece no site por {mk?.price_max_age_hours ?? 24} h depois da
+                verificação.
+              </p>
+            </fieldset>
+          </FormCard>
+
+          <FormCard n={5} title="Endereço e SEO">
+            <div className={field}>
+              <Label htmlFor="slug">Endereço (slug)</Label>
+              <Input
+                id="slug"
+                value={f.slug}
+                maxLength={100}
+                onChange={(e) => setF((s) => ({ ...s, slug: e.target.value, slugTouched: true }))}
+              />
+              <p
+                className={`break-all text-xs ${slugErr ? "text-destructive" : "text-muted-foreground"}`}
               >
-                Confirmar preço agora
-              </Button>
+                {slugErr ?? `garimouachou.com.br/p/${f.slug}`}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              O preço só aparece no site por {mk?.price_max_age_hours ?? 24} h depois da
-              verificação.
-            </p>
-          </fieldset>
-
-          <div className="flex flex-wrap gap-5">
-            <label className="flex items-center gap-2 text-sm font-semibold">
-              <input
-                type="checkbox"
-                checked={f.featured}
-                onChange={(e) => set("featured", e.target.checked)}
-              />
-              Destaque (aparece em Ofertas)
-            </label>
-            <label className="flex items-center gap-2 text-sm font-semibold">
-              <input
-                type="checkbox"
-                checked={f.weekly}
-                onChange={(e) => set("weekly", e.target.checked)}
-              />
-              Achadinho da semana
-            </label>
-          </div>
+          </FormCard>
 
           {(showMissing || status !== "published") && missing.length > 0 && (
-            <div className="rounded-xl bg-muted p-3 text-sm" role="status">
-              <p className="font-bold">Falta para publicar:</p>
+            <div className="rounded-2xl border border-border bg-card p-4 text-sm" role="status">
+              <p className="font-bold text-navy">Falta para publicar:</p>
               <ul className="ml-5 list-disc">
                 {missing.map((m) => (
                   <li key={m}>{m}</li>
@@ -657,62 +694,125 @@ function ProductForm() {
               </ul>
             </div>
           )}
-
-          <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-            {status === "published" ? (
-              <Button type="submit" disabled={busy}>
-                Salvar alterações
-              </Button>
-            ) : (
-              <Button type="button" variant="outline" disabled={busy} onClick={() => save("draft")}>
-                Salvar rascunho
-              </Button>
-            )}
-            {status !== "published" && (
-              <Button type="button" disabled={busy} onClick={() => save("published")}>
-                Publicar
-              </Button>
-            )}
-            {status === "published" && (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy}
-                onClick={() => setConfirm("deactivate")}
-              >
-                Desativar
-              </Button>
-            )}
-            {id !== "novo" && (
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={busy}
-                onClick={() => setConfirm("delete")}
-                className="ml-auto"
-              >
-                Excluir
-              </Button>
-            )}
-          </div>
         </form>
 
-        <aside className="space-y-3">
-          <h2 className="text-sm font-extrabold text-navy">Pré-visualização do card</h2>
-          {preview ? (
-            <div className="max-w-[220px]">
-              <ProductCard product={preview} preview />
+        <aside className="space-y-4 lg:sticky lg:top-28">
+          <PanelCard title="Ações">
+            <div className="grid gap-2">
+              {status === "published" ? (
+                <Button type="submit" form="product-form" disabled={busy}>
+                  Salvar alterações
+                </Button>
+              ) : (
+                <>
+                  <Button type="button" disabled={busy} onClick={() => save("published")}>
+                    Publicar produto
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => save("draft")}
+                  >
+                    Salvar rascunho
+                  </Button>
+                </>
+              )}
+              {status === "published" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => setConfirm("deactivate")}
+                >
+                  Desativar
+                </Button>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={lookBusy || !f.url}
+                  onClick={lookup}
+                >
+                  {lookBusy ? "Buscando…" : "Buscar pelo link"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={genBusy || !f.name.trim()}
+                  onClick={onGenerate}
+                >
+                  <Sparkles className="size-4" aria-hidden />
+                  {genBusy ? "Gerando…" : "Texto com IA"}
+                </Button>
+                {initial?.status === "published" && (
+                  <Button asChild variant="outline" size="sm">
+                    <a href={publicUrl} target="_blank" rel="noopener">
+                      Ver no site
+                    </a>
+                  </Button>
+                )}
+                {f.url && (
+                  <Button asChild variant="outline" size="sm">
+                    <a href={f.url} target="_blank" rel="noopener noreferrer">
+                      Abrir link
+                    </a>
+                  </Button>
+                )}
+              </div>
+              {id !== "novo" && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive"
+                  disabled={busy}
+                  onClick={() => setConfirm("delete")}
+                >
+                  Excluir produto
+                </Button>
+              )}
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Escolha o marketplace para ver a prévia.
+          </PanelCard>
+
+          <PanelCard title="Pronto para publicar?">
+            <ul className="space-y-1 text-sm">
+              {checks.map((c) => (
+                <li key={c.label} className="flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    className={`grid size-5 shrink-0 place-items-center rounded-full text-xs font-extrabold ${c.ok ? "bg-yellow text-navy" : "bg-muted text-muted-foreground"}`}
+                  >
+                    {c.ok ? "✓" : "•"}
+                  </span>
+                  <span className={c.ok ? "" : "text-muted-foreground"}>{c.label}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Marketplace: {mk ? `${mk.name}${mk.is_active ? "" : " (desativado)"}` : "não escolhido"}
             </p>
-          )}
-          {preview?.currentPrice != null && !manualOk && (
-            <p className="text-xs text-muted-foreground">
-              Preço oculto: {formatBRL(preview.currentPrice)} não será exibido.
-            </p>
-          )}
+          </PanelCard>
+
+          <PanelCard title="Prévia do card">
+            {preview ? (
+              <div className="mx-auto max-w-[220px]">
+                <ProductCard product={preview} preview />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Escolha o marketplace para ver a prévia.
+              </p>
+            )}
+            {preview?.currentPrice != null && !manualOk && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Preço oculto: {formatBRL(preview.currentPrice)} não será exibido.
+              </p>
+            )}
+          </PanelCard>
         </aside>
       </div>
 
@@ -757,5 +857,28 @@ function ProductForm() {
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+function FormCard({ n, title, children }: { n: number; title: string; children: ReactNode }) {
+  return (
+    <section className="space-y-4 rounded-2xl border border-border bg-card p-4 md:p-5">
+      <h2 className="flex items-center gap-2 text-base font-extrabold text-navy">
+        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-yellow text-xs">
+          {n}
+        </span>
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function PanelCard({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-border bg-card p-4">
+      <h2 className="mb-3 text-sm font-extrabold text-navy">{title}</h2>
+      {children}
+    </section>
   );
 }
