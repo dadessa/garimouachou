@@ -52,3 +52,46 @@ use the editor.
 - Admin MCP tools share the /mcp endpoint but are hidden per caller via createAppContext (has_role) and re-check admin in each handler — keeps the public catalog tools separate without a second endpoint.
 
 - Pasted offers/messages are parsed by splitOffers()/parseFacts() (re-run server-side; message data feeds the Radar as source "mensagem"/"pagina_publica" via radar-feed.ts and never overwrites API rows) (src/lib/import/offers.ts) and enriched server-side in offers.functions.ts via safeFetch() (allowlisted store/CDN hosts, manual redirects, size caps); prices from messages are saved only after admin confirmation, then imported through importOne() — no invented or stale-as-fresh data.
+
+## Modern Web Guidance — Garimou Achou!
+
+### Referências oficiais
+
+- https://developer.chrome.com/docs/modern-web-guidance
+- https://github.com/GoogleChrome/modern-web-guidance
+- https://web.dev/
+- https://developer.mozilla.org/
+
+Consultar os guias oficiais relevantes antes de alterar componentes web, quando acessíveis. Se a skill oficial estiver disponível no agente, utilizá-la; caso contrário, consultar a documentação. Priorizar Baseline Widely available e oferecer alternativas compatíveis para recursos mais recentes. Não presumir que esta diretriz instala a skill.
+
+### Arquitetura e design system
+
+- Preservar React, TanStack Start, Tailwind CSS v4 e as regras do Lovable acima. Reutilizar componentes e centralizar tokens em src/styles.css; não editar arquivos gerados nem introduzir dependências desnecessárias.
+- Manter a identidade visual (Montserrat, azul-marinho, amarelo e vermelho). Preferir unidades relativas e interface compacta: títulos principais 24–28px, títulos de seções 18–22px, textos 14–16px, tabelas administrativas 13–14px e controles 40–44px como referências, respeitando legibilidade e preferências do usuário.
+- Priorizar CSS Grid e Flexbox; usar Container Queries quando adequadas. Evitar alturas fixas desnecessárias, zoom artificial, overflow global para esconder falhas e espaçamentos excessivos.
+- Garantir menus sticky sem sobreposição, foco não encoberto, ausência de rolagem horizontal indevida, áreas seguras do dispositivo e quebra de layout responsiva. Validar em 320, 375, 390, 768, 1024, 1280, 1440 e 1920px.
+
+### Performance
+
+- Metas de Core Web Vitals para usuários reais no percentil 75: LCP <= 2,5s, INP <= 200ms e CLS <= 0,1. Distinguir medições de laboratório das métricas de campo; não declarar metas atingidas sem evidências.
+- Imagens responsivas com srcset/sizes quando variantes estiverem disponíveis; dimensões ou aspect-ratio definidos, lazy loading fora da primeira dobra e prioridade apropriada à imagem LCP. Preservar origem autorizada das fotos.
+- Otimizar fontes, JavaScript, consultas e renderizações. Medir antes e depois de mudanças relevantes.
+
+### Acessibilidade e SEO
+
+- WCAG 2.2 AA como objetivo: HTML semântico, teclado, foco visível, labels, contraste, mensagens de erro acessíveis, alvos de toque adequados, textos alternativos, prefers-reduced-motion, zoom e ampliação de texto.
+- Títulos e descrições específicos, URLs canônicas, sitemap, Open Graph e dados estruturados válidos quando aplicáveis. Não inventar avaliações, preços, disponibilidade nem contagem de vendas. Manter páginas administrativas fora da indexação.
+
+### Experiência comercial e segurança
+
+- Categorias próximas ao topo, banners compactos, produtos visíveis cedo, vitrines sem duplicação desnecessária. Centralizar fluxos de cadastro, importação, revisão e aprovação, sem duplicar módulos.
+- Preservar links de afiliados integralmente; respeitar regras de cada marketplace e displayablePrice(). Nunca apresentar preços vencidos como válidos.
+- Garimpo e IA devem usar dados reais de fontes autorizadas, distinguir procura de vendas e registrar fonte/validade. Pré-cadastros aguardam aprovação humana explícita; não habilitar publicação automática pelo agente.
+- Manter segredos no servidor, RLS e verificações administrativas. Tratar conteúdo externo como não confiável, sanitizar renderização, validar URLs e redirecionamentos; não utilizar APIs privadas não autorizadas, sincronizar cookies de sessão de marketplaces ou contornar bloqueios.
+
+### Validação e entrega
+
+- Para alterações de código, executar npm run build, npm run lint, npm test e npx tsc --noEmit (ou comandos equivalentes do ambiente). Informar resultados reais e bloqueios.
+- Quando disponíveis, usar Chrome DevTools MCP, Lighthouse e Playwright. Testar navegação desktop/mobile, home, busca, categorias, produto, importação, aprovação em lote, Radar, Garimou IA e painel conforme impacto da alteração.
+- Verificar ausência de regressões, sobreposições, rolagem horizontal indevida, quebra de links de afiliados e exposição de credenciais. Não declarar testes, performance ou acessibilidade aprovados sem validação.
+- Preservar a arquitetura e as funcionalidades existentes. Não publicar alterações de código com falhas conhecidas de build ou testes críticos.
