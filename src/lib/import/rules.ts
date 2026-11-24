@@ -126,7 +126,7 @@ export function csvRowToDraft(
 
 /** Slug único: nome + sufixo aleatório curto (ou "importado-…" sem nome). */
 export function importSlug(name: string, rand = Math.random().toString(36).slice(2, 7)) {
-  return `${slugify(name).slice(0, 80) || "importado"}-${rand}`;
+  return `${slugify(name).slice(0, 80).replace(/-+$/, "") || "importado"}-${rand}`;
 }
 
 export type ImportStatus = "pending" | "running" | "created" | "published" | "duplicate" | "error";
