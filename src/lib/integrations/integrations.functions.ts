@@ -115,3 +115,93 @@ export const searchShopeeOffers = createServerFn({ method: "POST" })
       };
     }
   });
+
+/** Teste autenticado (X-API-Key, só no servidor) do MCP do Afiliado + uma consulta real de amostra. */
+export const testAfiliado = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const af = await import("@/lib/discovery/mcp-afiliado.server");
+    const at = new Date().toISOString();
+    if (!af.afConfigured())
+      return {
+        ok: false,
+        at,
+        error: "A chave MCP_AFILIADO_API_KEY não está configurada no servidor.",
+        conta: null,
+        conectados: [] as string[],
+        pesquisaveis: [] as { site: string; monetized: boolean }[],
+        amostra: null,
+      };
+    try {
+      const b = await af.botInfo();
+      const pesquisaveis = af.searchableSites(b);
+      const conectados = [
+        ...new Set([
+          ...(b.search_sites ?? []),
+          ...(b.convertible_routes?.by_provider ?? []).map((p) => p.provider),
+        ]),
+      ];
+      let amostra: {
+        site: string;
+        consulta: string;
+        itens: { nome: string; preco: number | null; url: string }[];
+        erro: string | null;
+      } | null = null;
+      const site = pesquisaveis[0]?.site;
+      if (site) {
+        try {
+          const items = await af.searchProducts({
+            query: "fone bluetooth",
+            site,
+            sort: "relevance",
+            limit: 3,
+          });
+          amostra = {
+            site,
+            consulta: "fone bluetooth",
+            itens: items
+              .filter((i) => i.title && i.url)
+              .map((i) => ({
+                nome: String(i.title).slice(0, 150),
+                preco: i.price_number ?? null,
+                url: String(i.url),
+              })),
+            erro: null,
+          };
+        } catch (e) {
+          amostra = {
+            site,
+            consulta: "fone bluetooth",
+            itens: [],
+            erro: (e as Error).message.slice(0, 200),
+          };
+        }
+      }
+      return {
+        ok: true,
+        at,
+        error: null as string | null,
+        conta: (b as { bot?: { name?: string } }).bot?.name ?? null,
+        conectados,
+        pesquisaveis,
+        amostra,
+      };
+    } catch (e) {
+      const m = (e as Error).message;
+      const msg = /invalid_api_key|401/.test(m)
+        ? "Chave inválida ou revogada (401). Gere uma nova chave no painel do MCP do Afiliado e atualize o segredo."
+        : /insufficient_scope|403/.test(m)
+          ? "A chave é só de leitura (403). Gere uma chave com nível write."
+          : `Falha ao consultar o MCP do Afiliado: ${m.slice(0, 200)}`;
+      return {
+        ok: false,
+        at,
+        error: msg,
+        conta: null,
+        conectados: [],
+        pesquisaveis: [],
+        amostra: null,
+      };
+    }
+  });

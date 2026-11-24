@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { AfiliadoCard } from "@/components/admin/AfiliadoCard";
 import { listIntegrations, testIntegration } from "@/lib/integrations/integrations.functions";
 
 export const Route = createFileRoute("/admin/_painel/integracoes")({
@@ -69,6 +70,7 @@ function Integrations() {
         Uma loja só aparece como "Conectada" depois de um teste real com a API oficial. As
         credenciais ficam guardadas só no servidor.
       </p>
+      <AfiliadoCard />
       {q.isLoading && <p>Carregando…</p>}
       {q.error && <p className="text-destructive">Não foi possível carregar as integrações.</p>}
       <div className="grid gap-4 md:grid-cols-2">
