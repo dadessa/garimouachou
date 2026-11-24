@@ -231,7 +231,7 @@
       {
         "name": "get_market_trends",
         "title": "Tendências",
-        "description": "Oportunidades com procura crescente e termos mais buscados no site.",
+        "description": "Pesquisa externa real de mais vendidos nas lojas conectadas, mais tendências do Radar e buscas do site.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
