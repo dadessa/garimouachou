@@ -389,13 +389,16 @@ export type Database = {
           category: string | null
           commission_rate: number | null
           created_at: string
+          discount_pct: number | null
           external_id: string
+          extra_commission_rate: number | null
           fetched_at: string
           growth_pct: number | null
           id: string
           image_url: string | null
           marketplace_slug: string
           name: string
+          original_price_cents: number | null
           price_cents: number | null
           rating: number | null
           sales: number | null
@@ -409,13 +412,16 @@ export type Database = {
           category?: string | null
           commission_rate?: number | null
           created_at?: string
+          discount_pct?: number | null
           external_id: string
+          extra_commission_rate?: number | null
           fetched_at?: string
           growth_pct?: number | null
           id?: string
           image_url?: string | null
           marketplace_slug: string
           name: string
+          original_price_cents?: number | null
           price_cents?: number | null
           rating?: number | null
           sales?: number | null
@@ -429,13 +435,16 @@ export type Database = {
           category?: string | null
           commission_rate?: number | null
           created_at?: string
+          discount_pct?: number | null
           external_id?: string
+          extra_commission_rate?: number | null
           fetched_at?: string
           growth_pct?: number | null
           id?: string
           image_url?: string | null
           marketplace_slug?: string
           name?: string
+          original_price_cents?: number | null
           price_cents?: number | null
           rating?: number | null
           sales?: number | null
@@ -446,21 +455,122 @@ export type Database = {
         }
         Relationships: []
       }
+      radar_runs: {
+        Row: {
+          errors: string[]
+          finished_at: string | null
+          id: string
+          items: number
+          requests: number
+          sources: Json
+          started_at: string
+          status: string
+          trigger: string
+        }
+        Insert: {
+          errors?: string[]
+          finished_at?: string | null
+          id?: string
+          items?: number
+          requests?: number
+          sources?: Json
+          started_at?: string
+          status?: string
+          trigger: string
+        }
+        Update: {
+          errors?: string[]
+          finished_at?: string | null
+          id?: string
+          items?: number
+          requests?: number
+          sources?: Json
+          started_at?: string
+          status?: string
+          trigger?: string
+        }
+        Relationships: []
+      }
       radar_settings: {
         Row: {
+          daily_enabled: boolean
           id: number
+          max_items: number
           updated_at: string
           weights: Json
         }
         Insert: {
+          daily_enabled?: boolean
           id?: number
+          max_items?: number
           updated_at?: string
           weights: Json
         }
         Update: {
+          daily_enabled?: boolean
           id?: number
+          max_items?: number
           updated_at?: string
           weights?: Json
+        }
+        Relationships: []
+      }
+      radar_snapshots: {
+        Row: {
+          commission_rate: number | null
+          day: string
+          fetched_at: string
+          opportunity_id: string
+          price_cents: number | null
+          sales: number | null
+          search_volume: number | null
+          source: string
+        }
+        Insert: {
+          commission_rate?: number | null
+          day: string
+          fetched_at: string
+          opportunity_id: string
+          price_cents?: number | null
+          sales?: number | null
+          search_volume?: number | null
+          source: string
+        }
+        Update: {
+          commission_rate?: number | null
+          day?: string
+          fetched_at?: string
+          opportunity_id?: string
+          price_cents?: number | null
+          sales?: number | null
+          search_volume?: number | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "radar_snapshots_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "radar_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_searches: {
+        Row: {
+          count: number
+          day: string
+          term: string
+        }
+        Insert: {
+          count?: number
+          day: string
+          term: string
+        }
+        Update: {
+          count?: number
+          day?: string
+          term?: string
         }
         Relationships: []
       }
@@ -508,6 +618,7 @@ export type Database = {
         Args: { _domains: string[]; _url: string }
         Returns: boolean
       }
+      log_search: { Args: { _term: string }; Returns: undefined }
       password_change_required: { Args: never; Returns: boolean }
       request_password_change: { Args: never; Returns: undefined }
       search_products: {

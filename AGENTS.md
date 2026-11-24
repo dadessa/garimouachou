@@ -45,3 +45,6 @@ use the editor.
 - Product import (links, CSV, marketplace API results) goes through importOne() in src/lib/import/importer.ts with browser client + admin RLS; dedup by (marketplace_id, external_id) unique index or exact affiliate_url — one path for every import source.
 - Marketplace API calls live in src/lib/marketplaces/<slug>.server.ts behind admin-checked server functions in src/lib/integrations/integrations.functions.ts; "connected" is only written after a real API request succeeds.
 - Radar de Oportunidades: score determinístico em src/lib/radar/score.ts (pesos configuráveis em radar_settings, normalizado por loja+categoria); IA (radar.server.ts) só explica dados já calculados; inclusão no catálogo reutiliza importOne() — evita números inventados pela IA.
+
+- Radar: buildRadar()/applyView() in src/lib/radar/engine.ts is the single rule for the Radar screen and the AI assistant; collection runs through runRadarRefresh() (radar_runs single-flight index, request cap, DB write checked) for manual and daily cron (/api/public/jobs/radar) — keeps both paths consistent.
+- Site searches are logged only as term+day counts via the log_search RPC (no user/session data) — LGPD.

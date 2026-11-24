@@ -18,3 +18,12 @@
 - [x] Central de Importação (links, CSV, busca Shopee preparada, integrações)
 - [x] Radar de Oportunidades (MVP: score, quadros, assistente, dados manuais/relatório)
 - [ ] Radar: dados automáticos — dependem das credenciais Shopee/Mercado Livre; rotina diária não agendada (só "Atualizar agora")
+
+## Evolução do Radar
+- [x] Regra única de score (comissão extra, desconto, penalidade por poucos dados, vencidas fora)
+- [x] Histórico de indicadores, crescimento pelo histórico, buscas do site (LGPD)
+- [x] Execuções registradas, trava única, limite de requisições, atualização diária configurável
+- [x] Novas visões, assistente com plano/comparação/substituição, categoria automática, vencidos viram rascunho
+- [ ] OAuth do Mercado Livre, tendências e mais vendidos — aguardando ID e chave secreta do app
+- [ ] Shopee em produção — aguardando App ID e App Secret
+- [ ] Tendências de busca externas — sem fonte oficial aberta

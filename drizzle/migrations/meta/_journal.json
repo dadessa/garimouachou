@@ -85,6 +85,13 @@
       "when": 1795527363879,
       "tag": "0011_radar_oportunidades",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795529094892,
+      "tag": "0012_radar_evolucao",
+      "breakpoints": true
     }
   ]
 }

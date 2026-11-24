@@ -48,6 +48,21 @@ export interface ShopeeOffer {
   sales: number | null;
   offerLink: string;
   productLink: string;
+  ratingStar?: string | null;
+  sellerCommissionRate?: string | null;
+  shopeeCommissionRate?: string | null;
+  periodEndTime?: number | null;
+}
+
+/** Ordenações oficiais do productOfferV2. */
+export const SHOPEE_SORT = { relevancia: 1, maisVendidos: 2, maiorPreco: 3, menorPreco: 4, maiorComissao: 5 } as const;
+
+export async function shopeeRadarPage(opts: { keyword?: string; productCatId?: number; page: number; sortType: number; limit?: number }) {
+  const q = `query($keyword:String,$productCatId:Int,$page:Int,$limit:Int,$sortType:Int){productOfferV2(keyword:$keyword,productCatId:$productCatId,page:$page,limit:$limit,sortType:$sortType){nodes{itemId shopId productName imageUrl price priceMin priceMax priceDiscountRate commissionRate sellerCommissionRate shopeeCommissionRate ratingStar sales offerLink productLink periodEndTime} pageInfo{page hasNextPage}}}`;
+  const d = await shopeeQuery<{
+    productOfferV2: { nodes: ShopeeOffer[]; pageInfo: { page: number; hasNextPage: boolean } };
+  }>(q, { keyword: opts.keyword ?? "", productCatId: opts.productCatId, page: opts.page, limit: opts.limit ?? 50, sortType: opts.sortType });
+  return d.productOfferV2;
 }
 
 export async function shopeeSearch(keyword: string, page: number, sortType: number) {

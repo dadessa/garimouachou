@@ -10,6 +10,8 @@ import {
 } from "@/components/site/ProductFilters";
 import { ProductGrid, ProductGridSkeleton } from "@/components/site/ProductCard";
 import { searchQuery } from "@/lib/catalog/queries";
+import { useEffect } from "react";
+import { logSearch } from "@/lib/analytics/search-log";
 
 export const Route = createFileRoute("/busca")({
   validateSearch: (s): ListSearch => validateListSearch(s),
@@ -42,6 +44,9 @@ function SearchPage() {
   const { data } = useSuspenseQuery(searchQuery({ q: search.q, cat: search.cat, mk: search.mk }));
   const all = applySort(data, search.ordem);
   const limit = search.n ?? PAGE;
+  useEffect(() => {
+    if (search.q) logSearch(search.q);
+  }, [search.q]);
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="mb-1 text-2xl md:text-3xl">

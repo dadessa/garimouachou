@@ -39,6 +39,7 @@ import { Route as AdminPainelRadarRouteImport } from './routes/admin/_painel/rad
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as AdminPainelProdutosIndexRouteImport } from './routes/admin/_painel/produtos.index'
 import { Route as AdminPainelProdutosIdRouteImport } from './routes/admin/_painel/produtos.$id'
+import { Route as ApiPublicJobsRadarRouteImport } from './routes/api/public/jobs/radar'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -192,6 +193,11 @@ const AdminPainelProdutosIdRoute = AdminPainelProdutosIdRouteImport.update({
   path: '/produtos/$id',
   getParentRoute: () => AdminPainelRoute,
 } as any)
+const ApiPublicJobsRadarRoute = ApiPublicJobsRadarRouteImport.update({
+  id: '/api/public/jobs/radar',
+  path: '/api/public/jobs/radar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/': typeof AdminPainelIndexRoute
   '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
+  '/api/public/jobs/radar': typeof ApiPublicJobsRadarRoute
   '/admin/produtos/': typeof AdminPainelProdutosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin': typeof AdminPainelIndexRoute
   '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
+  '/api/public/jobs/radar': typeof ApiPublicJobsRadarRoute
   '/admin/produtos': typeof AdminPainelProdutosIndexRoute
 }
 export interface FileRoutesById {
@@ -287,6 +295,7 @@ export interface FileRoutesById {
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/_painel/': typeof AdminPainelIndexRoute
   '/admin/_painel/produtos/$id': typeof AdminPainelProdutosIdRoute
+  '/api/public/jobs/radar': typeof ApiPublicJobsRadarRoute
   '/admin/_painel/produtos/': typeof AdminPainelProdutosIndexRoute
 }
 export interface FileRouteTypes {
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/api/public/track'
     | '/admin/'
     | '/admin/produtos/$id'
+    | '/api/public/jobs/radar'
     | '/admin/produtos/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/api/public/track'
     | '/admin'
     | '/admin/produtos/$id'
+    | '/api/public/jobs/radar'
     | '/admin/produtos'
   id:
     | '__root__'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/api/public/track'
     | '/admin/_painel/'
     | '/admin/_painel/produtos/$id'
+    | '/api/public/jobs/radar'
     | '/admin/_painel/produtos/'
   fileRoutesById: FileRoutesById
 }
@@ -408,6 +420,7 @@ export interface RootRouteChildren {
   PSlugRoute: typeof PSlugRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
+  ApiPublicJobsRadarRoute: typeof ApiPublicJobsRadarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -622,6 +635,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPainelProdutosIdRouteImport
       parentRoute: typeof AdminPainelRoute
     }
+    '/api/public/jobs/radar': {
+      id: '/api/public/jobs/radar'
+      path: '/api/public/jobs/radar'
+      fullPath: '/api/public/jobs/radar'
+      preLoaderRoute: typeof ApiPublicJobsRadarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -677,6 +697,7 @@ const rootRouteChildren: RootRouteChildren = {
   PSlugRoute: PSlugRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
+  ApiPublicJobsRadarRoute: ApiPublicJobsRadarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

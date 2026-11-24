@@ -56,6 +56,9 @@ export interface RadarInput {
   rating: number | null; // 0 a 5
   seasonalDates: string[];
   internalClicks: number | null;
+  extraCommissionRate?: number | null; // comissão extra de campanha, em %
+  discountPct?: number | null;
+  expired?: boolean;
 }
 
 export interface RadarScore {
@@ -66,6 +69,23 @@ export interface RadarScore {
   missing: Indicator[];
   commissionCents: number | null;
   demandFromSearch: boolean;
+  /** Score antes da penalidade por poucos dados. */
+  rawScore: number;
+  expired: boolean;
+}
+
+/** Percentual total de comissão (base + extra de campanha). */
+export const totalRate = (rate: number | null, extra?: number | null) =>
+  rate == null && extra == null ? null : (rate ?? 0) + (extra ?? 0);
+
+/** Poucos indicadores não podem dar prioridade: o score é puxado para baixo pela cobertura. */
+export const coveragePenalty = (raw: number, coverage: number) =>
+  Math.round(raw * (0.4 + 0.6 * Math.min(1, Math.max(0, coverage))));
+
+/** Crescimento (%) entre um valor antigo do histórico e o atual. */
+export function growthFromHistory(past: number | null | undefined, current: number | null) {
+  if (past == null || current == null || past <= 0) return null;
+  return Math.round(((current - past) / past) * 1000) / 10;
 }
 
 export const commissionCents = (priceCents: number | null, rate: number | null) =>
@@ -105,7 +125,7 @@ export function scoreAll(items: RadarInput[], weights: Weights, today = new Date
   for (const g of groups.values()) {
     const salesN = minMax(g.map((i) => i.sales));
     const searchN = minMax(g.map((i) => i.searchVolume));
-    const comm = g.map((i) => commissionCents(i.priceCents, i.commissionRate));
+    const comm = g.map((i) => commissionCents(i.priceCents, totalRate(i.commissionRate, i.extraCommissionRate)));
     const commN = minMax(comm);
     const growthN = minMax(g.map((i) => i.growthPct));
     const priceN = minMax(g.map((i) => i.priceCents));
@@ -116,7 +136,10 @@ export function scoreAll(items: RadarInput[], weights: Weights, today = new Date
         demand: it.sales != null ? salesN(it.sales) : searchN(it.searchVolume),
         commission: commN(comm[idx] ?? null),
         growth: growthN(it.growthPct),
-        price: p == null ? null : 1 - p,
+        price:
+          p == null && it.discountPct == null
+            ? null
+            : Math.max(p == null ? 0 : 1 - p, Math.min(1, (it.discountPct ?? 0) / 50)),
         rating: it.rating == null ? null : Math.min(1, Math.max(0, (it.rating - 1) / 4)),
         seasonality: seasonality(it.seasonalDates, today),
         internal: internalN(it.internalClicks),
@@ -137,8 +160,11 @@ export function scoreAll(items: RadarInput[], weights: Weights, today = new Date
         wPresent += w;
       }
       const coverage = wPresent / totalW;
+      const raw = wPresent ? Math.round((sum / wPresent) * 100) : 0;
       out.set(it.id, {
-        score: wPresent ? Math.round((sum / wPresent) * 100) : 0,
+        rawScore: raw,
+        score: coveragePenalty(raw, coverage),
+        expired: !!it.expired,
         confidence: coverage >= 0.75 ? "alta" : coverage >= 0.45 ? "média" : "baixa",
         coverage,
         values,
@@ -167,6 +193,8 @@ export function justify(s: RadarScore) {
   const miss = s.missing.length
     ? ` Sem dados de: ${s.missing.map((k) => INDICATOR_LABEL[k].toLowerCase()).join(", ")}.`
     : "";
+  const exp = s.expired ? " Dados vencidos: atualize antes de divulgar." : "";
+  const low = s.score < s.rawScore ? ` Score reduzido de ${s.rawScore} por falta de dados.` : "";
   const dem = s.demandFromSearch ? " Demanda medida por procura, não por vendas." : "";
-  return base + dem + miss;
+  return base + dem + miss + low + exp;
 }
