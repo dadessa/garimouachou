@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { track } from "@/lib/analytics/track";
 import type { Product } from "@/lib/catalog/types";
 import { MarketplaceBadge } from "./ProductCard";
 import { OfferButton } from "./OfferButton";
@@ -8,6 +10,9 @@ import { ShareButtons } from "./ShareButtons";
 
 export function ProductDetail({ product, preview }: { product: Product; preview?: boolean }) {
   const mk = product.marketplace;
+  useEffect(() => {
+    if (!preview) track("product_view", { slug: product.slug });
+  }, [preview, product.slug]);
   return (
     <>
       <nav aria-label="Trilha" className="mb-4 text-xs text-muted-foreground">

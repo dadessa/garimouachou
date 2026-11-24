@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link2, MessageCircle, Share2 } from "lucide-react";
 import { useHydrated } from "@tanstack/react-router";
 import type { Product } from "@/lib/catalog/types";
+import { track } from "@/lib/analytics/track";
 import { nativeShareData, productPageUrl, shareText, whatsappShareUrl } from "@/lib/share";
 
 const btn =
@@ -19,7 +20,8 @@ export function ShareButtons({ product }: { product: Product }) {
     return () => clearTimeout(t);
   }, [copied]);
 
-  const copy = async () => {
+  const copy = async (log = true) => {
+    if (log) track("share_click", { slug: product.slug, channel: "copiar" });
     try {
       await navigator.clipboard.writeText(productPageUrl(product.slug));
       setCopied(true);
@@ -29,10 +31,11 @@ export function ShareButtons({ product }: { product: Product }) {
   };
 
   const native = async () => {
+    track("share_click", { slug: product.slug, channel: "nativo" });
     try {
       await navigator.share(nativeShareData(product));
     } catch (e) {
-      if ((e as DOMException)?.name !== "AbortError") await copy();
+      if ((e as DOMException)?.name !== "AbortError") await copy(false);
     }
   };
 
@@ -42,6 +45,7 @@ export function ShareButtons({ product }: { product: Product }) {
         href={whatsappShareUrl(shareText(product))}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => track("share_click", { slug: product.slug, channel: "whatsapp" })}
         className={btn}
       >
         <MessageCircle className="size-4" aria-hidden />
@@ -53,7 +57,7 @@ export function ShareButtons({ product }: { product: Product }) {
           Compartilhar
         </button>
       ) : (
-        <button type="button" onClick={copy} className={btn}>
+        <button type="button" onClick={() => copy()} className={btn}>
           <Link2 className="size-4" aria-hidden />
           {copied ? "Link copiado" : "Copiar link"}
         </button>

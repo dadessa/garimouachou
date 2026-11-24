@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ProductDetail } from "@/components/site/ProductDetail";
+import { CampaignLinks } from "@/components/admin/CampaignLinks";
 import { supabase } from "@/integrations/supabase/client";
 import {
   adminCategories,
@@ -654,6 +655,8 @@ function ProductForm() {
           </div>
         </section>
       )}
+
+      {initial?.status === "published" && <CampaignLinks slug={initial.slug} />}
 
       <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>

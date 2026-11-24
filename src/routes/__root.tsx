@@ -18,6 +18,7 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { categoriesQuery } from "@/lib/catalog/queries";
 import { supabase } from "@/integrations/supabase/client";
+import { track } from "@/lib/analytics/track";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -145,7 +146,11 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const categories = Route.useLoaderData();
   const router = useRouter();
-  const isAdmin = useRouterState({ select: (s) => s.location.pathname.startsWith("/admin") });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = pathname.startsWith("/admin");
+  useEffect(() => {
+    if (!isAdmin) track("page_view");
+  }, [pathname, isAdmin]);
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;

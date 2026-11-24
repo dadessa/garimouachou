@@ -64,6 +64,13 @@
       "when": 1795514765871,
       "tag": "0008_remove_public_storage_read",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795514918510,
+      "tag": "0009_analytics_events",
+      "breakpoints": true
     }
   ]
 }

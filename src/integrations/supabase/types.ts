@@ -35,6 +35,85 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          dedup_key: string
+          event_type: Database["public"]["Enums"]["analytics_event_type"]
+          id: string
+          marketplace_id: string | null
+          path: string
+          product_id: string | null
+          referrer_host: string | null
+          session_id: string
+          share_channel: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          dedup_key: string
+          event_type: Database["public"]["Enums"]["analytics_event_type"]
+          id?: string
+          marketplace_id?: string | null
+          path?: string
+          product_id?: string | null
+          referrer_host?: string | null
+          session_id: string
+          share_channel?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          dedup_key?: string
+          event_type?: Database["public"]["Enums"]["analytics_event_type"]
+          id?: string
+          marketplace_id?: string | null
+          path?: string
+          product_id?: string | null
+          referrer_host?: string | null
+          session_id?: string
+          share_channel?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_events_marketplace_id_fkey"
+            columns: ["marketplace_id"]
+            isOneToOne: false
+            referencedRelation: "marketplaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       banners: {
         Row: {
           alt: string
@@ -300,6 +379,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_performance_report: {
+        Args: {
+          _category?: string
+          _from: string
+          _marketplace?: string
+          _to: string
+        }
+        Returns: Json
+      }
       f_unaccent: { Args: { "": string }; Returns: string }
       has_role: {
         Args: {
@@ -351,6 +439,12 @@ export type Database = {
       }
     }
     Enums: {
+      analytics_event_type:
+        | "page_view"
+        | "product_view"
+        | "offer_click"
+        | "share_click"
+        | "instagram_click"
       app_role: "admin"
       integration_status: "manual" | "planned" | "active"
       price_source: "manual" | "api"
@@ -482,6 +576,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      analytics_event_type: [
+        "page_view",
+        "product_view",
+        "offer_click",
+        "share_click",
+        "instagram_click",
+      ],
       app_role: ["admin"],
       integration_status: ["manual", "planned", "active"],
       price_source: ["manual", "api"],

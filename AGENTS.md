@@ -41,3 +41,4 @@ use the editor.
 - AI product copy (description + tags) is generated in src/lib/admin/ai.server.ts via Lovable AI Gateway behind an admin-checked server function — keeps the key server-side and forbids invented prices.
 - Password requirements live in a read-own table with a self-admin scheduling RPC; has_role blocks the next login session until an auth password-change trigger clears the requirement, so bypassing the UI cannot grant administrative writes.
 - New-password forms share strongPasswordValidation; never apply new-password strength checks to login, so existing credentials remain usable. Hosted length/character settings must match the form policy to prevent direct Auth API bypass.
+- Commercial analytics: anonymous events go to /api/public/track (zod-validated, dedup_key unique, service-role insert); admins read only via admin_performance_report RPC — no client inserts, no PII.

@@ -31,7 +31,9 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as AdminPainelIndexRouteImport } from './routes/admin/_painel/index'
 import { Route as AdminPainelBannersRouteImport } from './routes/admin/_painel/banners'
 import { Route as AdminPainelCategoriasRouteImport } from './routes/admin/_painel/categorias'
+import { Route as AdminPainelDesempenhoRouteImport } from './routes/admin/_painel/desempenho'
 import { Route as AdminPainelMarketplacesRouteImport } from './routes/admin/_painel/marketplaces'
+import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as AdminPainelProdutosIndexRouteImport } from './routes/admin/_painel/produtos.index'
 import { Route as AdminPainelProdutosIdRouteImport } from './routes/admin/_painel/produtos.$id'
 
@@ -146,10 +148,20 @@ const AdminPainelCategoriasRoute = AdminPainelCategoriasRouteImport.update({
   path: '/categorias',
   getParentRoute: () => AdminPainelRoute,
 } as any)
+const AdminPainelDesempenhoRoute = AdminPainelDesempenhoRouteImport.update({
+  id: '/desempenho',
+  path: '/desempenho',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
 const AdminPainelMarketplacesRoute = AdminPainelMarketplacesRouteImport.update({
   id: '/marketplaces',
   path: '/marketplaces',
   getParentRoute: () => AdminPainelRoute,
+} as any)
+const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
+  id: '/api/public/track',
+  path: '/api/public/track',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPainelProdutosIndexRoute =
   AdminPainelProdutosIndexRouteImport.update({
@@ -185,7 +197,9 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/banners': typeof AdminPainelBannersRoute
   '/admin/categorias': typeof AdminPainelCategoriasRoute
+  '/admin/desempenho': typeof AdminPainelDesempenhoRoute
   '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/': typeof AdminPainelIndexRoute
   '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
   '/admin/produtos/': typeof AdminPainelProdutosIndexRoute
@@ -211,7 +225,9 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/banners': typeof AdminPainelBannersRoute
   '/admin/categorias': typeof AdminPainelCategoriasRoute
+  '/admin/desempenho': typeof AdminPainelDesempenhoRoute
   '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
   '/admin': typeof AdminPainelIndexRoute
   '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
   '/admin/produtos': typeof AdminPainelProdutosIndexRoute
@@ -239,7 +255,9 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/_painel/banners': typeof AdminPainelBannersRoute
   '/admin/_painel/categorias': typeof AdminPainelCategoriasRoute
+  '/admin/_painel/desempenho': typeof AdminPainelDesempenhoRoute
   '/admin/_painel/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/_painel/': typeof AdminPainelIndexRoute
   '/admin/_painel/produtos/$id': typeof AdminPainelProdutosIdRoute
   '/admin/_painel/produtos/': typeof AdminPainelProdutosIndexRoute
@@ -268,7 +286,9 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/admin/banners'
     | '/admin/categorias'
+    | '/admin/desempenho'
     | '/admin/marketplaces'
+    | '/api/public/track'
     | '/admin/'
     | '/admin/produtos/$id'
     | '/admin/produtos/'
@@ -294,7 +314,9 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/admin/banners'
     | '/admin/categorias'
+    | '/admin/desempenho'
     | '/admin/marketplaces'
+    | '/api/public/track'
     | '/admin'
     | '/admin/produtos/$id'
     | '/admin/produtos'
@@ -321,7 +343,9 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/admin/_painel/banners'
     | '/admin/_painel/categorias'
+    | '/admin/_painel/desempenho'
     | '/admin/_painel/marketplaces'
+    | '/api/public/track'
     | '/admin/_painel/'
     | '/admin/_painel/produtos/$id'
     | '/admin/_painel/produtos/'
@@ -347,6 +371,7 @@ export interface RootRouteChildren {
   ImgSplatRoute: typeof ImgSplatRoute
   PSlugRoute: typeof PSlugRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  ApiPublicTrackRoute: typeof ApiPublicTrackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -505,12 +530,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPainelCategoriasRouteImport
       parentRoute: typeof AdminPainelRoute
     }
+    '/admin/_painel/desempenho': {
+      id: '/admin/_painel/desempenho'
+      path: '/desempenho'
+      fullPath: '/admin/desempenho'
+      preLoaderRoute: typeof AdminPainelDesempenhoRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
     '/admin/_painel/marketplaces': {
       id: '/admin/_painel/marketplaces'
       path: '/marketplaces'
       fullPath: '/admin/marketplaces'
       preLoaderRoute: typeof AdminPainelMarketplacesRouteImport
       parentRoute: typeof AdminPainelRoute
+    }
+    '/api/public/track': {
+      id: '/api/public/track'
+      path: '/api/public/track'
+      fullPath: '/api/public/track'
+      preLoaderRoute: typeof ApiPublicTrackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/_painel/produtos/': {
       id: '/admin/_painel/produtos/'
@@ -532,6 +571,7 @@ declare module '@tanstack/react-router' {
 interface AdminPainelRouteChildren {
   AdminPainelBannersRoute: typeof AdminPainelBannersRoute
   AdminPainelCategoriasRoute: typeof AdminPainelCategoriasRoute
+  AdminPainelDesempenhoRoute: typeof AdminPainelDesempenhoRoute
   AdminPainelMarketplacesRoute: typeof AdminPainelMarketplacesRoute
   AdminPainelIndexRoute: typeof AdminPainelIndexRoute
   AdminPainelProdutosIdRoute: typeof AdminPainelProdutosIdRoute
@@ -541,6 +581,7 @@ interface AdminPainelRouteChildren {
 const AdminPainelRouteChildren: AdminPainelRouteChildren = {
   AdminPainelBannersRoute: AdminPainelBannersRoute,
   AdminPainelCategoriasRoute: AdminPainelCategoriasRoute,
+  AdminPainelDesempenhoRoute: AdminPainelDesempenhoRoute,
   AdminPainelMarketplacesRoute: AdminPainelMarketplacesRoute,
   AdminPainelIndexRoute: AdminPainelIndexRoute,
   AdminPainelProdutosIdRoute: AdminPainelProdutosIdRoute,
@@ -572,6 +613,7 @@ const rootRouteChildren: RootRouteChildren = {
   ImgSplatRoute: ImgSplatRoute,
   PSlugRoute: PSlugRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiPublicTrackRoute: ApiPublicTrackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

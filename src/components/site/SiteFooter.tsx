@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Mail } from "lucide-react";
+import { track } from "@/lib/analytics/track";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/site";
 import logo from "@/assets/logo-negativa.png.asset.json";
 
@@ -50,6 +51,7 @@ export function SiteFooter() {
           {INSTAGRAM_URL && (
             <a
               href={INSTAGRAM_URL}
+              onClick={() => track("instagram_click")}
               rel="noopener noreferrer"
               target="_blank"
               className="mt-2 flex items-center gap-2 text-sm hover:underline"

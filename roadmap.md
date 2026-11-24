@@ -10,3 +10,6 @@
 - [x] Chamada para seguir o Instagram na página inicial
 - [x] Botão de compartilhar cada produto (WhatsApp / menu nativo)
 - [ ] Etapas 3-5
+
+- [x] Etapa 3: inteligência comercial (eventos, Desempenho, links UTM)
+- [ ] Sprint de estabilização técnica: analisar o que falta ajustar

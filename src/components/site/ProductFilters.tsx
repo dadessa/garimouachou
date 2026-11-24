@@ -85,59 +85,59 @@ export function ProductFilters({
   };
   return (
     <div className="mb-6">
-    <div className="flex flex-wrap gap-2">
-      {showCategory && (
-        <label className="sr-only" htmlFor="f-cat">
-          Categoria
+      <div className="flex flex-wrap gap-2">
+        {showCategory && (
+          <label className="sr-only" htmlFor="f-cat">
+            Categoria
+          </label>
+        )}
+        {showCategory && (
+          <select
+            id="f-cat"
+            className={sel}
+            value={search.cat ?? ""}
+            onChange={(e) => onChange(setKey(search, "cat", e.target.value))}
+          >
+            <option value="">Todas as categorias</option>
+            {cats.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        )}
+        <label className="sr-only" htmlFor="f-mk">
+          Marketplace
         </label>
-      )}
-      {showCategory && (
         <select
-          id="f-cat"
+          id="f-mk"
           className={sel}
-          value={search.cat ?? ""}
-          onChange={(e) => onChange(setKey(search, "cat", e.target.value))}
+          value={search.mk ?? ""}
+          onChange={(e) => onChange(setKey(search, "mk", e.target.value))}
         >
-          <option value="">Todas as categorias</option>
-          {cats.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.name}
+          <option value="">Todos os marketplaces</option>
+          {marketplaces.map((m) => (
+            <option key={m.slug} value={m.slug}>
+              {m.name}
             </option>
           ))}
         </select>
-      )}
-      <label className="sr-only" htmlFor="f-mk">
-        Marketplace
-      </label>
-      <select
-        id="f-mk"
-        className={sel}
-        value={search.mk ?? ""}
-        onChange={(e) => onChange(setKey(search, "mk", e.target.value))}
-      >
-        <option value="">Todos os marketplaces</option>
-        {marketplaces.map((m) => (
-          <option key={m.slug} value={m.slug}>
-            {m.name}
-          </option>
-        ))}
-      </select>
-      <label className="sr-only" htmlFor="f-ordem">
-        Ordenar
-      </label>
-      <select
-        id="f-ordem"
-        className={sel}
-        value={search.ordem ?? "recentes"}
-        onChange={(e) =>
-          onChange(setKey(search, "ordem", e.target.value === "recentes" ? "" : e.target.value))
-        }
-      >
-        <option value="recentes">Mais recentes</option>
-        <option value="menor-preco">Menor preço</option>
-        <option value="maior-preco">Maior preço</option>
-      </select>
-    </div>
+        <label className="sr-only" htmlFor="f-ordem">
+          Ordenar
+        </label>
+        <select
+          id="f-ordem"
+          className={sel}
+          value={search.ordem ?? "recentes"}
+          onChange={(e) =>
+            onChange(setKey(search, "ordem", e.target.value === "recentes" ? "" : e.target.value))
+          }
+        >
+          <option value="recentes">Mais recentes</option>
+          <option value="menor-preco">Menor preço</option>
+          <option value="maior-preco">Maior preço</option>
+        </select>
+      </div>
       {chips.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="Filtros ativos">
           {chips.map((c) => (
