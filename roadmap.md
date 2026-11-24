@@ -32,3 +32,12 @@
 - [x] MCP admin separado do público, ferramentas ligadas ao Radar
 - [x] Agente multi-etapas, cards, importação com aprovação, plano diário, campanhas, preferências
 - [ ] Homologar Shopee/Mercado Livre — aguardando credenciais
+
+## Sprint crítica de estabilização comercial
+- [x] P2: importação mantém a data real da consulta do preço; consulta vencida vira rascunho sem preço
+- [ ] P2: revalidar oferta vencida antes de publicar; recuperação de importação parcial
+- [ ] P3: aprovação humana em tela autenticada para publicações vindas do MCP; limite de uso de IA em todas as operações
+- [ ] P5: Central financeira (importar relatório CSV de vendas/comissões, sem duplicidade)
+- [ ] P6: status dos agendamentos (última/próxima execução, erros, itens)
+- [ ] P1/P4: Shopee e Mercado Livre — aguardando credenciais
+- [ ] Integração contínua — depende de conectar o GitHub

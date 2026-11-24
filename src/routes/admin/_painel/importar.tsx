@@ -288,6 +288,7 @@ function ImportCenter() {
 type Offer = Awaited<ReturnType<typeof searchShopeeOffers>>["nodes"][number];
 
 function ApiSearch({ onAdd, running }: { onAdd: (d: ImportDraft[]) => void; running: boolean }) {
+  const [fetchedAt, setFetchedAt] = useState<string | null>(null);
   const search = useServerFn(searchShopeeOffers);
   const [kw, setKw] = useState("");
   const [sort, setSort] = useState(2);
@@ -304,6 +305,7 @@ function ApiSearch({ onAdd, running }: { onAdd: (d: ImportDraft[]) => void; runn
     }));
     setErr(r.error);
     setNodes(r.nodes);
+    setFetchedAt(new Date().toISOString());
     setPicked(new Set());
     setBusy(false);
   }
@@ -317,6 +319,7 @@ function ApiSearch({ onAdd, running }: { onAdd: (d: ImportDraft[]) => void; runn
       externalId: `${o.shopId}:${o.itemId}`,
       priceCents: cents != null && !Number.isNaN(cents) ? cents : null,
       fromApi: true,
+      priceCheckedAt: fetchedAt,
     };
   };
 

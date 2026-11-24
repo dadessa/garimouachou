@@ -114,6 +114,7 @@ function Radar() {
       d.name = o.name;
       d.imageUrl = o.image_url;
       d.priceCents = o.price_cents;
+      d.priceCheckedAt = o.fetched_at;
       d.externalId = o.external_id;
       d.fromApi = o.source.endsWith("_api");
       d.categoryId = classifyCategory(o.name, o.category, cats)?.id ?? null;

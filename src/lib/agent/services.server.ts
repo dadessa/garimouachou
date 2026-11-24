@@ -241,6 +241,7 @@ export async function confirmImport(sb: Sb, userId: string, token: string, chann
     d.externalId = r.o.external_id;
     d.fromApi = r.o.source.endsWith("_api");
     d.priceCents = r.expired ? null : r.o.price_cents;
+    d.priceCheckedAt = r.o.fetched_at;
     d.categoryId = classifyCategory(r.o.name, r.o.category, cats.data ?? [])?.id ?? null;
     const out = await importOneWith(sb, d, { publish: a!.publish && !r.expired, defaultCategoryId: null, useAi: true }, { mks: mks.data ?? [], cats: cats.data ?? [], genCopy });
     results.push({ id, nome: r.o.name, status: out.status, mensagem: out.message + (r.expired ? " Dados vencidos: salvo sem preço." : ""), ...(out.productId ? { produto_id: out.productId } : {}) });

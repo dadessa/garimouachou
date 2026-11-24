@@ -10,6 +10,8 @@ export interface ImportDraft {
   categoryId: string | null;
   priceCents: number | null;
   previousPriceCents: number | null;
+  /** Data real da consulta do preço (API/Radar). Nunca a data do cadastro. */
+  priceCheckedAt: string | null;
   imageUrl: string | null;
   imageAlt: string;
   externalId: string | null;
@@ -24,6 +26,7 @@ export const emptyDraft = (affiliateUrl: string): ImportDraft => ({
   categoryId: null,
   priceCents: null,
   previousPriceCents: null,
+  priceCheckedAt: null,
   imageUrl: null,
   imageAlt: "",
   externalId: null,

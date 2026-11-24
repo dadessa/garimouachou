@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import type { CategoryRow, MarketplaceRow } from "@/lib/admin/api";
 import { publishMissing } from "@/lib/publish-rules";
+import { getMarketplace } from "@/lib/marketplaces";
 import { detectMarketplace, importSlug, type ImportDraft, type ImportStatus } from "./rules";
 
 export interface ImportResult {
@@ -67,8 +68,9 @@ export async function importOneWith(
     marketplace: { isActive: mk.is_active, name: mk.name, allowedDomains: mk.allowed_domains },
     affiliateUrl: d.affiliateUrl,
   });
-  const publish = opts.publish && missing.length === 0;
-  const now = new Date().toISOString();
+  const price = importPrice(d, mk.slug);
+  if (price.stale) notes.push("Preço da consulta vencido: salvo sem preço, revalide antes de publicar.");
+  const publish = opts.publish && missing.length === 0 && !price.stale;
   const { data: row, error } = await supabase
     .from("products")
     .insert({
@@ -82,9 +84,9 @@ export async function importOneWith(
       external_id: d.externalId,
       main_image_url: d.imageUrl,
       main_image_alt: d.imageUrl ? imageAlt : null,
-      current_price_cents: d.priceCents,
-      previous_price_cents: d.previousPriceCents,
-      price_checked_at: d.priceCents != null ? now : null,
+      current_price_cents: price.cents,
+      previous_price_cents: price.cents != null ? d.previousPriceCents : null,
+      price_checked_at: price.checkedAt,
       price_source: d.fromApi ? "api" : "manual",
       source: d.fromApi ? "api" : "manual",
       status: publish ? "published" : "draft",
@@ -104,4 +106,21 @@ export async function importOneWith(
       " ",
     ),
   };
+}
+
+/**
+ * Preço a gravar: preço de API/Radar mantém a data original da consulta; sem data ou vencido
+ * não é gravado (stale). Preço digitado agora pela administradora vale a partir de agora.
+ */
+export function importPrice(d: ImportDraft, mkSlug: string, now = new Date()) {
+  if (d.priceCents == null) return { cents: null, checkedAt: null, stale: false };
+  if (!d.fromApi) {
+    const at = d.priceCheckedAt ?? now.toISOString();
+    return { cents: d.priceCents, checkedAt: at, stale: false };
+  }
+  if (!d.priceCheckedAt) return { cents: null, checkedAt: null, stale: true };
+  const maxH = getMarketplace(mkSlug)?.priceMaxAgeHours ?? 24;
+  const ageH = (now.getTime() - new Date(d.priceCheckedAt).getTime()) / 36e5;
+  if (!(ageH >= 0 && ageH <= maxH)) return { cents: null, checkedAt: null, stale: true };
+  return { cents: d.priceCents, checkedAt: d.priceCheckedAt, stale: false };
 }
