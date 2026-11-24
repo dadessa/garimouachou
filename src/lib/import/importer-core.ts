@@ -69,7 +69,8 @@ export async function importOneWith(
     affiliateUrl: d.affiliateUrl,
   });
   const price = importPrice(d, mk.slug);
-  if (price.stale) notes.push("Preço da consulta vencido: salvo sem preço, revalide antes de publicar.");
+  if (price.stale)
+    notes.push("Preço da consulta vencido: salvo sem preço, revalide antes de publicar.");
   const publish = opts.publish && missing.length === 0 && !price.stale;
   const { data: row, error } = await supabase
     .from("products")

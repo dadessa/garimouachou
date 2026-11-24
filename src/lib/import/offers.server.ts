@@ -2,12 +2,20 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { Output, streamText } from "ai";
 import { z } from "zod";
 import { externalIdFromUrl, type OfferBlock } from "./offers";
-import { IMAGE_HOSTS, MAX_PAGE_BYTES, isSafeUrl, readCapped, readMeta, safeFetch } from "./safe-fetch";
+import {
+  IMAGE_HOSTS,
+  MAX_PAGE_BYTES,
+  isSafeUrl,
+  readCapped,
+  readMeta,
+  safeFetch,
+} from "./safe-fetch";
 
 export interface PageInfo {
   finalUrl: string;
   title: string | null;
   image: string | null;
+  images: string[];
   description: string | null;
   availability: string | null;
   externalId: string | null;
@@ -16,24 +24,39 @@ export interface PageInfo {
 
 /** Abre o link (seguindo encurtadores das lojas) e lê só os metadados públicos da página. */
 export async function readPage(url: string, storeHosts: string[]): Promise<PageInfo> {
-  const base = { finalUrl: url, title: null, image: null, description: null, availability: null };
+  const base = {
+    finalUrl: url,
+    title: null,
+    image: null,
+    images: [] as string[],
+    description: null,
+    availability: null,
+  };
   try {
     const r = await safeFetch(url, storeHosts, "text/html");
     const externalId = externalIdFromUrl(r.url) ?? externalIdFromUrl(url);
-    if (!("res" in r) || !r.res) return { ...base, finalUrl: r.url, externalId, note: r.error ?? null };
+    if (!("res" in r) || !r.res)
+      return { ...base, finalUrl: r.url, externalId, note: r.error ?? null };
     const { res } = r;
     if (!res.ok || !(res.headers.get("content-type") ?? "").includes("html")) {
       await res.body?.cancel();
-      return { ...base, finalUrl: r.url, externalId, note: `A loja não liberou a página (${res.status}).` };
+      return {
+        ...base,
+        finalUrl: r.url,
+        externalId,
+        note: `A loja não liberou a página (${res.status}).`,
+      };
     }
     const bytes = await readCapped(res, MAX_PAGE_BYTES);
     if (!bytes) return { ...base, finalUrl: r.url, externalId, note: "Página grande demais." };
     const m = readMeta(new TextDecoder().decode(bytes));
     const image = m.image && isSafeUrl(m.image, IMAGE_HOSTS) ? m.image : null;
+    const images = m.images.filter((u) => isSafeUrl(u, IMAGE_HOSTS)).slice(0, 5);
     return {
       finalUrl: r.url,
       title: m.title?.slice(0, 200) ?? null,
       image,
+      images,
       description: m.description?.slice(0, 1000) ?? null,
       availability: m.availability,
       externalId,
@@ -46,7 +69,12 @@ export async function readPage(url: string, storeHosts: string[]): Promise<PageI
 
 const aiSchema = z.object({
   items: z.array(
-    z.object({ index: z.number(), name: z.string(), category: z.string(), missing: z.array(z.string()) }),
+    z.object({
+      index: z.number(),
+      name: z.string(),
+      category: z.string(),
+      missing: z.array(z.string()),
+    }),
   ),
 });
 
@@ -72,7 +100,10 @@ export async function interpretOffers(
       `category (exatamente uma destas ou vazio: ${categories.join(" | ")}), missing (o que falta: nome, foto, preço). ` +
       "NUNCA invente nome, preço, desconto, comissão ou características que não estejam escritos.",
     prompt: blocks
-      .map((b, i) => `#${i}\nTítulo da página: ${b.pageTitle ?? "(não disponível)"}\nMensagem: ${b.context || "(só o link)"}`)
+      .map(
+        (b, i) =>
+          `#${i}\nTítulo da página: ${b.pageTitle ?? "(não disponível)"}\nMensagem: ${b.context || "(só o link)"}`,
+      )
       .join("\n\n"),
     providerOptions: { openai: { store: false, reasoningEffort: "low" } },
   });
@@ -81,7 +112,7 @@ export async function interpretOffers(
 
 /** Baixa a imagem oficial (só CDNs das lojas, tipo e tamanho validados). */
 export async function downloadImage(url: string) {
-  const { IMAGE_TYPES, MAX_IMAGE_BYTES } = await import("./safe-fetch");
+  const { IMAGE_TYPES, MAX_IMAGE_BYTES, sniffImage } = await import("./safe-fetch");
   const r = await safeFetch(url, IMAGE_HOSTS, "image/*", 3);
   if (!("res" in r) || !r.res) throw new Error(r.error ?? "Imagem indisponível.");
   const type = (r.res.headers.get("content-type") ?? "").split(";")[0]!.trim();
@@ -91,5 +122,7 @@ export async function downloadImage(url: string) {
   }
   const bytes = await readCapped(r.res, MAX_IMAGE_BYTES);
   if (!bytes) throw new Error("A imagem passa de 5 MB.");
-  return { bytes, type, ext: IMAGE_TYPES[type]! };
+  const real = sniffImage(bytes);
+  if (!real) throw new Error("O arquivo recebido não é uma imagem válida.");
+  return { bytes, type: real, ext: IMAGE_TYPES[real]! };
 }

@@ -99,6 +99,13 @@
       "when": 1795529447082,
       "tag": "0013_agente_comercial",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1795531617128,
+      "tag": "0014_radar_ofertas_coladas",
+      "breakpoints": true
     }
   ]
 }

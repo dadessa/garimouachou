@@ -11,7 +11,13 @@ import { generateCopy } from "@/lib/admin/ai.functions";
 import { AdminImg, uploadImage } from "@/lib/admin/storage";
 import { importOne } from "@/lib/import/importer";
 import { MAX_OFFERS, splitOffers } from "@/lib/import/offers";
-import { identifyOffers, importOfferImage, type IdentifiedOffer } from "@/lib/import/offers.functions";
+import {
+  identifyOffers,
+  importOfferImage,
+  type IdentifiedOffer,
+} from "@/lib/import/offers.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { keepApiRows, toRadarRow } from "@/lib/import/radar-feed";
 import { STATUS_LABEL, emptyDraft, type ImportStatus } from "@/lib/import/rules";
 import { parseReais } from "@/lib/publish-rules";
 
@@ -28,7 +34,8 @@ type Card = IdentifiedOffer & {
 
 const brl = (c: number | null) => (c == null ? "" : (c / 100).toFixed(2).replace(".", ","));
 const CHUNK = 5;
-const sel = "h-9 w-full rounded-full border-2 border-input bg-background px-3 text-sm font-semibold";
+const sel =
+  "h-9 w-full rounded-full border-2 border-input bg-background px-3 text-sm font-semibold";
 
 export function OfferPaste({
   cats,
@@ -45,8 +52,12 @@ export function OfferPaste({
   const copyImg = useServerFn(importOfferImage);
   const genCopy = useServerFn(generateCopy);
   const [text, setText] = useState("");
+  const [toRadar, setToRadar] = useState(true);
+  const [summary, setSummary] = useState<Record<string, number> | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
-  const [progress, setProgress] = useState<{ done: number; total: number; label: string } | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number; label: string } | null>(
+    null,
+  );
   const busy = progress !== null;
   const patch = (key: string, p: Partial<Card>) =>
     setCards((xs) => xs.map((x) => (x.key === key ? { ...x, ...p } : x)));
@@ -66,13 +77,29 @@ export function OfferPaste({
     setProgress({ done: 0, total: blocks.length, label: "Identificando" });
     for (let i = 0; i < blocks.length; i += CHUNK) {
       const part = blocks.slice(i, i + CHUNK);
-      const r = await identify({ data: { blocks: part, useAi: opts.useAi } }).catch(() => null);
+      const r = await identify({
+        data: { blocks: part.map((b) => ({ url: b.url, context: b.context })), useAi: opts.useAi },
+      }).catch(() => null);
       const items: IdentifiedOffer[] =
         r?.items ??
         part.map((b) => ({
-          ...b, finalUrl: b.url, marketplaceId: null, marketplaceName: null, pageTitle: null, imageUrl: null,
-          pageDescription: null, availability: null, externalId: null, categoryId: null, nameSource: null,
-          duplicateId: null, missing: ["nome", "foto"], notes: [r?.error ?? "Falha ao identificar. Tente de novo."],
+          ...b,
+          finalUrl: b.url,
+          marketplaceId: null,
+          marketplaceSlug: null,
+          extraImages: [],
+          sources: { api: "não consultada", page: "não consultada", message: !!b.context },
+          marketplaceName: null,
+          pageTitle: null,
+          imageUrl: null,
+          pageDescription: null,
+          availability: null,
+          externalId: null,
+          categoryId: null,
+          nameSource: null,
+          duplicateId: null,
+          missing: ["nome", "foto"],
+          notes: [r?.error ?? "Falha ao identificar. Tente de novo."],
         }));
       for (const it of items) {
         found.push({
@@ -88,7 +115,11 @@ export function OfferPaste({
         });
       }
       setCards([...found]);
-      setProgress({ done: Math.min(i + CHUNK, blocks.length), total: blocks.length, label: "Identificando" });
+      setProgress({
+        done: Math.min(i + CHUNK, blocks.length),
+        total: blocks.length,
+        label: "Identificando",
+      });
     }
     setProgress(null);
   }
@@ -99,13 +130,18 @@ export function OfferPaste({
       return;
     }
     setProgress({ done: 0, total: list.length, label: "Incluindo" });
+    setSummary(null);
+    const tally: Record<string, number> = { published: 0, created: 0, duplicate: 0, error: 0 };
     let n = 0;
     for (const c of list) {
       patch(c.key, { status: "running", message: "" });
       const notes: string[] = [];
       let image = c.imageUrl;
       if (image && /^https:/.test(image)) {
-        const r = await copyImg({ data: { url: image } }).catch(() => ({ error: "Falha ao copiar a foto.", path: null }));
+        const r = await copyImg({ data: { url: image } }).catch(() => ({
+          error: "Falha ao copiar a foto.",
+          path: null,
+        }));
         if (r.path) {
           image = r.path;
           patch(c.key, { imageUrl: r.path });
@@ -128,7 +164,10 @@ export function OfferPaste({
             imageAlt: c.name.trim(),
             externalId: c.externalId,
             priceCents: okCents,
-            previousPriceCents: okCents != null && prev != null && !Number.isNaN(prev) && prev > okCents ? prev : null,
+            previousPriceCents:
+              okCents != null && prev != null && !Number.isNaN(prev) && prev > okCents
+                ? prev
+                : null,
           },
           opts,
           {
@@ -137,15 +176,75 @@ export function OfferPaste({
             genCopy: (a) => genCopy({ data: { ...a.data, details: details || a.data.details } }),
           },
         );
-        if (!c.priceConfirmed && c.priceText) notes.push("Preço da mensagem não salvo: confirme-o no cadastro.");
+        if (!c.priceConfirmed && c.priceText)
+          notes.push("Preço da mensagem não salvo: confirme-o no cadastro.");
+        if (r.productId && r.status !== "duplicate" && c.extraImages.length) {
+          const extra: string[] = [];
+          for (const u of c.extraImages) {
+            const x = await copyImg({ data: { url: u } }).catch(() => null);
+            if (x?.path) extra.push(x.path);
+          }
+          if (extra.length) {
+            const { error } = await supabase.from("product_images").insert(
+              extra.map((url, i) => ({
+                product_id: r.productId!,
+                url,
+                alt: c.name.trim(),
+                sort_order: i + 1,
+              })),
+            );
+            notes.push(
+              error
+                ? "Fotos adicionais não foram salvas."
+                : `${extra.length} foto(s) adicional(is) da loja.`,
+            );
+          }
+        }
+        tally[r.status] = (tally[r.status] ?? 0) + 1;
         patch(c.key, { ...r, message: [r.message, ...notes].join(" ") });
       } catch {
+        tally["error"] = (tally["error"] ?? 0) + 1;
         patch(c.key, { status: "error", message: "Falha inesperada. Tente de novo." });
       }
       setProgress({ done: ++n, total: list.length, label: "Incluindo" });
     }
+    if (toRadar) await feedRadar(list);
     setProgress(null);
+    setSummary(tally);
     onDone();
+  }
+
+  async function feedRadar(list: Card[]) {
+    const rows = list
+      .filter((c) => c.marketplaceSlug && c.name.trim())
+      .map((c) =>
+        toRadarRow({
+          ...c,
+          name: c.name.trim(),
+          marketplaceSlug: c.marketplaceSlug!,
+          imageUrl: c.imageUrl,
+          category: cats.find((x) => x.id === c.categoryId)?.name ?? null,
+          fromPage: c.sources.page === "dados públicos lidos",
+        }),
+      );
+    if (!rows.length) return;
+    const { data: existing } = await supabase
+      .from("radar_opportunities")
+      .select("marketplace_slug,external_id,source")
+      .in(
+        "external_id",
+        rows.map((r) => r.external_id),
+      );
+    const ok = keepApiRows(rows, existing ?? []);
+    if (!ok.length) return;
+    const { error } = await supabase
+      .from("radar_opportunities")
+      .upsert(ok, { onConflict: "marketplace_slug,external_id" });
+    if (error) toast.error("As ofertas não foram enviadas ao Radar.");
+    else
+      toast.success(
+        `${ok.length} oferta(s) enviada(s) ao Radar como dado de mensagem (não confirmado).`,
+      );
   }
 
   async function attach(c: Card, file: File | undefined) {
@@ -158,7 +257,9 @@ export function OfferPaste({
     }
   }
 
-  const selectable = cards.filter((c) => c.marketplaceId && (c.status === "found" || c.status === "error"));
+  const selectable = cards.filter(
+    (c) => c.marketplaceId && (c.status === "found" || c.status === "error"),
+  );
   const chosen = selectable.filter((c) => c.selected);
   const failed = cards.filter((c) => c.status === "error");
 
@@ -171,14 +272,20 @@ export function OfferPaste({
           rows={8}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={"Cole mensagens do WhatsApp, ofertas compartilhadas ou até 50 links.\n\nEx.: 🔥 Garrafa térmica 1L\nDe R$ 99,90 por R$ 49,90\nhttps://s.shopee.com.br/…"}
+          placeholder={
+            "Cole mensagens do WhatsApp, ofertas compartilhadas ou até 50 links.\n\nEx.: 🔥 Garrafa térmica 1L\nDe R$ 99,90 por R$ 49,90\nhttps://s.shopee.com.br/…"
+          }
         />
         <p className="text-xs text-muted-foreground">
-          O link é guardado exatamente como colado. Nome e foto vêm da página pública da loja quando ela
-          libera; senão, da mensagem. Preço de mensagem só é salvo se você confirmar que conferiu agora.
-          Comissão só aparece com a integração oficial da loja conectada.
+          O link é guardado exatamente como colado. Nome e foto vêm da página pública da loja quando
+          ela libera; senão, da mensagem. Preço de mensagem só é salvo se você confirmar que
+          conferiu agora. Comissão só aparece com a integração oficial da loja conectada.
         </p>
       </div>
+      <label className="flex items-center gap-2 text-sm font-semibold">
+        <input type="checkbox" checked={toRadar} onChange={(e) => setToRadar(e.target.checked)} />
+        Enviar também ao Radar de Oportunidades (fonte: mensagem, vale 24h)
+      </label>
       <Button disabled={busy || !text.trim()} onClick={find}>
         Identificar produtos
       </Button>
@@ -189,17 +296,38 @@ export function OfferPaste({
             {progress.label}: {progress.done} de {progress.total}
           </p>
           <div className="h-2 overflow-hidden rounded-full bg-muted">
-            <div className="h-full bg-primary transition-all" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
+            <div
+              className="h-full bg-primary transition-all"
+              style={{ width: `${(progress.done / progress.total) * 100}%` }}
+            />
           </div>
         </div>
       )}
 
+      {summary && (
+        <p role="status" className="rounded-xl bg-muted p-3 text-sm font-bold">
+          Resumo: {summary["published"]} publicado(s) · {summary["created"]} rascunho(s) ·{" "}
+          {summary["duplicate"]} duplicado(s) · {summary["error"]} com erro
+        </p>
+      )}
       {cards.length > 0 && (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="font-bold">Encontrados: {cards.length}</span>
-            <Button size="sm" variant="outline" disabled={busy}
-              onClick={() => setCards((xs) => xs.map((x) => (selectable.includes(x) ? { ...x, selected: chosen.length !== selectable.length } : x)))}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              onClick={() =>
+                setCards((xs) =>
+                  xs.map((x) =>
+                    selectable.includes(x)
+                      ? { ...x, selected: chosen.length !== selectable.length }
+                      : x,
+                  ),
+                )
+              }
+            >
               {chosen.length === selectable.length ? "Desmarcar todos" : "Selecionar todos"}
             </Button>
             <Button size="sm" disabled={busy || !chosen.length} onClick={() => include(chosen)}>
@@ -213,12 +341,20 @@ export function OfferPaste({
           </div>
           <ul className="space-y-3">
             {cards.map((c) => (
-              <li key={c.key} className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-[96px_1fr]">
+              <li
+                key={c.key}
+                className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-[96px_1fr]"
+              >
                 <div className="flex size-24 items-center justify-center overflow-hidden rounded-lg bg-muted text-center text-xs text-muted-foreground">
                   {c.imageUrl?.startsWith("/img/") ? (
                     <AdminImg src={c.imageUrl} alt="" className="size-full object-contain" />
                   ) : c.imageUrl ? (
-                    <img src={c.imageUrl} alt="" referrerPolicy="no-referrer" className="size-full object-contain" />
+                    <img
+                      src={c.imageUrl}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      className="size-full object-contain"
+                    />
                   ) : (
                     "Sem foto"
                   )}
@@ -226,59 +362,133 @@ export function OfferPaste({
                 <div className="min-w-0 space-y-2 text-sm">
                   <div className="flex flex-wrap items-center gap-2">
                     <label className="flex items-center gap-1 font-semibold">
-                      <input type="checkbox" checked={c.selected} disabled={!selectable.includes(c) || busy}
-                        onChange={(e) => patch(c.key, { selected: e.target.checked })} />
+                      <input
+                        type="checkbox"
+                        checked={c.selected}
+                        disabled={!selectable.includes(c) || busy}
+                        onChange={(e) => patch(c.key, { selected: e.target.checked })}
+                      />
                       Selecionar
                     </label>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">{c.marketplaceName ?? "Loja não cadastrada"}</span>
-                    <span className="text-xs font-bold">{c.status === "found" ? "Encontrado" : STATUS_LABEL[c.status]}</span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
+                      {c.marketplaceName ?? "Loja não cadastrada"}
+                    </span>
+                    <span className="text-xs font-bold">
+                      {c.status === "found" ? "Encontrado" : STATUS_LABEL[c.status]}
+                    </span>
                     {c.productId && (
-                      <Link to="/admin/produtos/$id" params={{ id: c.productId }} className="text-xs font-bold text-navy underline">
+                      <Link
+                        to="/admin/produtos/$id"
+                        params={{ id: c.productId }}
+                        className="text-xs font-bold text-navy underline"
+                      >
                         Abrir cadastro
                       </Link>
                     )}
                   </div>
-                  <p className="truncate text-xs text-muted-foreground" title={c.url}>{c.url}</p>
+                  <p className="truncate text-xs text-muted-foreground" title={c.url}>
+                    {c.url}
+                  </p>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div>
-                      <Label className="text-xs">Nome {c.nameSource && <span className="font-normal">({c.nameSource})</span>}</Label>
-                      <Input value={c.name} disabled={busy} onChange={(e) => patch(c.key, { name: e.target.value })} className="h-9" />
+                      <Label className="text-xs">
+                        Nome {c.nameSource && <span className="font-normal">({c.nameSource})</span>}
+                      </Label>
+                      <Input
+                        value={c.name}
+                        disabled={busy}
+                        onChange={(e) => patch(c.key, { name: e.target.value })}
+                        className="h-9"
+                      />
                     </div>
                     <div>
                       <Label className="text-xs">Categoria</Label>
-                      <select className={sel} value={c.categoryId ?? ""} disabled={busy}
-                        onChange={(e) => patch(c.key, { categoryId: e.target.value || null })}>
-                        <option value="">{opts.defaultCategoryId ? "Usar a categoria padrão" : "Sem categoria"}</option>
-                        {cats.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                      <select
+                        className={sel}
+                        value={c.categoryId ?? ""}
+                        disabled={busy}
+                        onChange={(e) => patch(c.key, { categoryId: e.target.value || null })}
+                      >
+                        <option value="">
+                          {opts.defaultCategoryId ? "Usar a categoria padrão" : "Sem categoria"}
+                        </option>
+                        {cats.map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
                       <Label className="text-xs">Preço da mensagem (R$)</Label>
-                      <Input value={c.priceText} disabled={busy} inputMode="decimal" onChange={(e) => patch(c.key, { priceText: e.target.value })} className="h-9" />
+                      <Input
+                        value={c.priceText}
+                        disabled={busy}
+                        inputMode="decimal"
+                        onChange={(e) => patch(c.key, { priceText: e.target.value })}
+                        className="h-9"
+                      />
                     </div>
                     <div>
                       <Label className="text-xs">Preço anterior (R$)</Label>
-                      <Input value={c.prevText} disabled={busy} inputMode="decimal" onChange={(e) => patch(c.key, { prevText: e.target.value })} className="h-9" />
+                      <Input
+                        value={c.prevText}
+                        disabled={busy}
+                        inputMode="decimal"
+                        onChange={(e) => patch(c.key, { prevText: e.target.value })}
+                        className="h-9"
+                      />
                     </div>
                   </div>
                   {c.priceText && (
                     <label className="flex items-center gap-1 text-xs font-semibold">
-                      <input type="checkbox" checked={c.priceConfirmed} disabled={busy}
-                        onChange={(e) => patch(c.key, { priceConfirmed: e.target.checked })} />
+                      <input
+                        type="checkbox"
+                        checked={c.priceConfirmed}
+                        disabled={busy}
+                        onChange={(e) => patch(c.key, { priceConfirmed: e.target.checked })}
+                      />
                       Conferi este preço na loja agora
                     </label>
                   )}
                   <div className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
-                    {c.discountPct != null && <span>Desconto citado na mensagem: {c.discountPct}%</span>}
-                    {c.coupon && <span>Cupom citado: {c.coupon}</span>}
+                    <span className="w-full font-semibold">
+                      Informado na mensagem (não confirmado pela loja):
+                    </span>
+                    {c.discountPct != null && <span>Desconto: {c.discountPct}%</span>}
+                    <span>
+                      Comissão: {c.commissionPct != null ? `${c.commissionPct}%` : "não informada"}
+                    </span>
+                    {c.extraCommissionPct != null && (
+                      <span>Comissão extra: {c.extraCommissionPct}%</span>
+                    )}
+                    {c.extraEarningsCents != null && (
+                      <span>Ganhos extras: R$ {brl(c.extraEarningsCents)}</span>
+                    )}
+                    {c.coupon && <span>Cupom: {c.coupon}</span>}
+                    {c.sales != null && <span>Vendas: {c.sales.toLocaleString("pt-BR")}</span>}
+                    {c.rating != null && (
+                      <span>Avaliação: {String(c.rating).replace(".", ",")}</span>
+                    )}
+                    {c.bestSeller && <span>Selo: mais vendido</span>}
+                    {c.mostSearched && <span>Selo: mais buscado</span>}
                     {c.availability && <span>Disponibilidade na página: {c.availability}</span>}
-                    <span>Comissão: indisponível sem integração oficial</span>
+                    <span className="w-full">
+                      Fontes — API oficial: {c.sources.api} · Página pública: {c.sources.page} ·
+                      Mensagem: {c.sources.message ? "sim" : "não"}
+                      {c.extraImages.length > 0 &&
+                        ` · ${c.extraImages.length} foto(s) adicional(is)`}
+                    </span>
                   </div>
                   {!c.imageUrl && (
                     <label className="block text-xs font-semibold">
                       Anexar foto da mensagem{" "}
-                      <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
-                        onChange={(e) => attach(c, e.target.files?.[0])} />
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={busy}
+                        onChange={(e) => attach(c, e.target.files?.[0])}
+                      />
                     </label>
                   )}
                   {(c.missing.length > 0 || c.notes.length > 0) && c.status === "found" && (

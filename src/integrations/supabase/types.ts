@@ -523,10 +523,12 @@ export type Database = {
           affiliate_url: string | null
           category: string | null
           commission_rate: number | null
+          coupon: string | null
           created_at: string
           discount_pct: number | null
           external_id: string
           extra_commission_rate: number | null
+          extra_earnings_cents: number | null
           fetched_at: string
           growth_pct: number | null
           id: string
@@ -539,6 +541,7 @@ export type Database = {
           sales: number | null
           search_volume: number | null
           seasonal_dates: string[]
+          signals: string[]
           source: string
           valid_until: string | null
         }
@@ -546,10 +549,12 @@ export type Database = {
           affiliate_url?: string | null
           category?: string | null
           commission_rate?: number | null
+          coupon?: string | null
           created_at?: string
           discount_pct?: number | null
           external_id: string
           extra_commission_rate?: number | null
+          extra_earnings_cents?: number | null
           fetched_at?: string
           growth_pct?: number | null
           id?: string
@@ -562,6 +567,7 @@ export type Database = {
           sales?: number | null
           search_volume?: number | null
           seasonal_dates?: string[]
+          signals?: string[]
           source: string
           valid_until?: string | null
         }
@@ -569,10 +575,12 @@ export type Database = {
           affiliate_url?: string | null
           category?: string | null
           commission_rate?: number | null
+          coupon?: string | null
           created_at?: string
           discount_pct?: number | null
           external_id?: string
           extra_commission_rate?: number | null
+          extra_earnings_cents?: number | null
           fetched_at?: string
           growth_pct?: number | null
           id?: string
@@ -585,6 +593,7 @@ export type Database = {
           sales?: number | null
           search_volume?: number | null
           seasonal_dates?: string[]
+          signals?: string[]
           source?: string
           valid_until?: string | null
         }

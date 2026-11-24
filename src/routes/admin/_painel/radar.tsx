@@ -64,7 +64,7 @@ export const Route = createFileRoute("/admin/_painel/radar")({
   component: Radar,
 });
 
-const SOURCE: Record<string, string> = { manual: "Manual", relatorio: "Relatório", shopee_api: "API Shopee", mercadolivre_api: "API Mercado Livre" };
+const SOURCE: Record<string, string> = { manual: "Manual", relatorio: "Relatório", shopee_api: "API Shopee", mercadolivre_api: "API Mercado Livre", mensagem: "Mensagem colada (não confirmado)", pagina_publica: "Página pública + mensagem (não confirmado)" };
 const brl = (c: number | null) => (c == null ? "—" : (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
 const num = (v: string) => (v.trim() === "" ? null : Number(v.replace(",", ".")));
 const sel = "h-10 rounded-full border-2 border-input bg-background px-3 text-sm font-semibold";

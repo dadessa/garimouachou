@@ -5,6 +5,9 @@ import type { ImportDraft } from "./rules";
 export type { ImportResult };
 
 /** Importação pelo painel (navegador): mesma regra do servidor. */
-export function importOne(d: ImportDraft, ...rest: Parameters<typeof importOneWith> extends [unknown, unknown, ...infer R] ? R : never) {
+export function importOne(
+  d: ImportDraft,
+  ...rest: Parameters<typeof importOneWith> extends [unknown, unknown, ...infer R] ? R : never
+) {
   return importOneWith(supabase, d, ...rest);
 }

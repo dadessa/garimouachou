@@ -46,3 +46,4 @@
 - [x] Aba "Colar ofertas e links": mensagens/WhatsApp/até 50 links, prévia, edição, seleção, progresso, reprocessar
 - [x] Dados públicos da página (servidor, domínios permitidos, anti-SSRF), foto oficial copiada, anexar foto, duplicados
 - [ ] Preço/comissão/fotos automáticos do Mercado Livre e Shopee — páginas bloqueiam leitura; dependem das credenciais oficiais
+- [x] Aperfeiçoamento: comissão/ganhos extras/cupom/vendas/avaliação/selos separados, cleanUrl corrigido, DNS e conteúdo das fotos validados, fotos adicionais, envio ao Radar, resumo final
