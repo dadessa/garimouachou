@@ -118,6 +118,12 @@ export const identifyOffers = createServerFn({ method: "POST" })
       const notes = [...aiNotes];
       if (!mk) notes.push("Link de loja não cadastrada: não será importado.");
       if (page?.note) notes.push(page.note);
+      if (/mercadoli[bv]re\.com\.br\/social\//.test(page?.finalUrl ?? ""))
+        notes.push("Este link abre uma vitrine/perfil, não um produto: use o link de um anúncio.");
+      if (mk && mk.integration_status !== "active")
+        notes.push(
+          `API oficial ${mk.name}: não conectada (sem preço, comissão ou disponibilidade confirmados).`,
+        );
       const name = page?.title || b.name || a?.name?.trim() || "";
       const nameSource = page?.title
         ? "página da loja"

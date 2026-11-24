@@ -35,6 +35,7 @@ import { formatBRL } from "@/lib/price";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 import { generateCopy } from "@/lib/admin/ai.functions";
+import { identifyOffers, importOfferImage } from "@/lib/import/offers.functions";
 import { parseReais, publishMissing, slugify } from "@/lib/publish-rules";
 
 export const Route = createFileRoute("/admin/_painel/produtos/$id")({
@@ -99,6 +100,66 @@ function ProductForm() {
   });
   const genFn = useServerFn(generateCopy);
   const [genBusy, setGenBusy] = useState(false);
+  const identifyFn = useServerFn(identifyOffers);
+  const copyImgFn = useServerFn(importOfferImage);
+  const [lookBusy, setLookBusy] = useState(false);
+  const [lookNotes, setLookNotes] = useState<string[]>([]);
+
+  /** Busca dados pelo link e preenche só campos vazios (o link nunca muda). */
+  async function lookup() {
+    if (!f.url.trim()) {
+      toast.error("Informe o link de afiliada primeiro.");
+      return;
+    }
+    setLookBusy(true);
+    setLookNotes([]);
+    try {
+      const r = await identifyFn({
+        data: { blocks: [{ url: f.url, context: f.details }], useAi: true },
+      });
+      const it = r.items[0];
+      if (!it) {
+        toast.error(r.error ?? "Não foi possível consultar o link.");
+        return;
+      }
+      const filled: string[] = [];
+      const notes = [...it.notes];
+      let img: string | null = null;
+      if (!f.imageUrl && it.imageUrl) {
+        const c = await copyImgFn({ data: { url: it.imageUrl } });
+        if (c.path) img = c.path;
+        else notes.push(`Foto: ${c.error}`);
+      }
+      setF((s) => {
+        const n = { ...s };
+        if (!s.name.trim() && it.name) {
+          n.name = it.name;
+          filled.push("nome");
+          if (!s.slugTouched || !s.slug) n.slug = slugify(it.name);
+        }
+        if (img) {
+          n.imageUrl = img;
+          if (!s.imageAlt) n.imageAlt = n.name;
+          filled.push("foto");
+        }
+        if (!s.categoryId && it.categoryId) {
+          n.categoryId = it.categoryId;
+          filled.push("categoria");
+        }
+        if (!s.marketplaceId && it.marketplaceId) n.marketplaceId = it.marketplaceId;
+        if (!s.details && it.pageDescription) n.details = it.pageDescription;
+        return n;
+      });
+      setLookNotes(notes);
+      if (filled.length)
+        toast.success(`Preenchido pelo link: ${filled.join(", ")}. Revise e salve.`);
+      else toast.error("Nenhum dado novo foi encontrado pelo link. Veja o motivo abaixo.");
+    } catch {
+      toast.error("A consulta falhou. Tente de novo.");
+    } finally {
+      setLookBusy(false);
+    }
+  }
   const [status, setStatus] = useState<ProductRow["status"]>(initial?.status ?? "draft");
   const [replaced, setReplaced] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -493,6 +554,22 @@ function ProductForm() {
                     ? `✓ Domínio reconhecido: ${domain}`
                     : `Link não aceito. Precisa ser https e de: ${mk.allowed_domains.join(", ")}.`}
               </p>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={lookBusy || !f.url}
+              onClick={lookup}
+            >
+              {lookBusy ? "Buscando…" : "Buscar informações pelo link"}
+            </Button>
+            {lookNotes.length > 0 && (
+              <ul className="list-disc pl-5 text-xs text-destructive">
+                {lookNotes.map((n) => (
+                  <li key={n}>{n}</li>
+                ))}
+              </ul>
             )}
           </div>
 

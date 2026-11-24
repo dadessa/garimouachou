@@ -51,25 +51,28 @@ export function isPrivateIp(ip: string): boolean {
 }
 
 /** Confere (DNS sobre HTTPS) que o domínio só aponta para IPs públicos antes de conectar. */
-export async function resolvesPublic(host: string): Promise<boolean> {
-  try {
-    const ips: string[] = [];
-    for (const type of ["A", "AAAA"]) {
-      const r = await fetch(
-        `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${type}`,
-        {
+const DOH = ["https://cloudflare-dns.com/dns-query", "https://dns.google/resolve"];
+
+/** null = nenhum serviço de verificação respondeu (diferente de "endereço privado"). */
+export async function resolvesPublic(host: string): Promise<boolean | null> {
+  for (const base of DOH) {
+    try {
+      const ips: string[] = [];
+      for (const type of ["A", "AAAA"]) {
+        const r = await fetch(`${base}?name=${encodeURIComponent(host)}&type=${type}`, {
           headers: { accept: "application/dns-json" },
           signal: AbortSignal.timeout(4000),
-        },
-      );
-      if (!r.ok) return false;
-      const j = (await r.json()) as { Answer?: { type: number; data: string }[] };
-      for (const a of j.Answer ?? []) if (a.type === 1 || a.type === 28) ips.push(a.data);
+        });
+        if (!r.ok) throw new Error("doh");
+        const j = (await r.json()) as { Answer?: { type: number; data: string }[] };
+        for (const a of j.Answer ?? []) if (a.type === 1 || a.type === 28) ips.push(a.data);
+      }
+      return ips.length > 0 && ips.every((ip) => !isPrivateIp(ip));
+    } catch {
+      // tenta o próximo serviço
     }
-    return ips.length > 0 && ips.every((ip) => !isPrivateIp(ip));
-  } catch {
-    return false;
   }
+  return null;
 }
 
 /** Confere pelos primeiros bytes que o arquivo é mesmo JPG, PNG ou WebP (não confia só no cabeçalho). */
@@ -160,8 +163,13 @@ export async function safeFetch(url: string, hosts: string[], accept: string, ma
   for (let hop = 0; hop <= maxHops; hop++) {
     if (!isSafeUrl(current, hosts))
       return { error: "Endereço fora das lojas permitidas.", url: current };
-    if (!(await resolvesPublic(new URL(current).hostname)))
-      return { error: "Endereço não aponta para um servidor público.", url: current };
+    const pub = await resolvesPublic(new URL(current).hostname);
+    if (pub === null)
+      return {
+        error: "Verificação de segurança do endereço indisponível agora. Tente de novo.",
+        url: current,
+      };
+    if (!pub) return { error: "Endereço não aponta para um servidor público.", url: current };
     const res = await fetch(current, {
       redirect: "manual",
       credentials: "omit",

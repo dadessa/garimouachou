@@ -17,7 +17,6 @@ import {
   csvRowToDraft,
   emptyDraft,
   parseCsv,
-  parseLinkList,
   type ImportDraft,
   type ImportStatus,
 } from "@/lib/import/rules";
@@ -47,7 +46,7 @@ type Item = {
   message: string;
   productId?: string;
 };
-type Tab = "offers" | "link" | "csv" | "api";
+type Tab = "offers" | "csv" | "api";
 const sel =
   "h-10 w-full rounded-full border-2 border-input bg-background px-3 text-sm font-semibold";
 
@@ -57,8 +56,6 @@ function ImportCenter() {
   const genCopy = useServerFn(generateCopy);
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("offers");
-  const [links, setLinks] = useState("");
-  const [name, setName] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [publish, setPublish] = useState(false);
   const [useAi, setUseAi] = useState(true);
@@ -103,11 +100,6 @@ function ImportCenter() {
     void run(list);
   }
 
-  function fromLinks() {
-    const urls = parseLinkList(links);
-    enqueue(urls.map((u) => ({ ...emptyDraft(u), name: urls.length === 1 ? name.trim() : "" })));
-  }
-
   async function fromCsv(file: File | undefined) {
     if (!file) return;
     if (file.size > 1024 * 1024) {
@@ -133,8 +125,7 @@ function ImportCenter() {
       <div role="tablist" aria-label="Forma de importar" className="mb-4 flex flex-wrap gap-2">
         {(
           [
-            ["offers", "Colar ofertas e links"],
-            ["link", "Por link"],
+            ["offers", "Links e ofertas"],
             ["csv", "Planilha CSV"],
             ["api", "Busca na loja (API)"],
           ] as const
@@ -167,31 +158,6 @@ function ImportCenter() {
               opts={opts}
               onDone={() => qc.invalidateQueries({ queryKey: ["admin", "products"] })}
             />
-          )}
-          {tab === "link" && (
-            <>
-              <div className="space-y-1.5">
-                <Label htmlFor="links">Links de afiliada (um por linha)</Label>
-                <Textarea
-                  id="links"
-                  rows={6}
-                  value={links}
-                  onChange={(e) => setLinks(e.target.value)}
-                  placeholder="https://s.shopee.com.br/…"
-                />
-                <p className="text-xs text-muted-foreground">
-                  O link é guardado exatamente como você colou. Sem API, o produto entra como
-                  rascunho para você completar nome, foto e preço.
-                </p>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="iname">Nome do produto (opcional, só para 1 link)</Label>
-                <Input id="iname" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-              <Button disabled={running} onClick={fromLinks}>
-                Importar links
-              </Button>
-            </>
           )}
           {tab === "csv" && (
             <>

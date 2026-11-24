@@ -44,7 +44,10 @@ export async function readPage(url: string, storeHosts: string[]): Promise<PageI
         ...base,
         finalUrl: r.url,
         externalId,
-        note: `A loja não liberou a página (${res.status}).`,
+        note:
+          res.status === 403 || res.status === 429
+            ? `Bloqueio do marketplace: a página pública recusou a leitura (${res.status}).`
+            : `A loja não liberou a página (${res.status}).`,
       };
     }
     const bytes = await readCapped(res, MAX_PAGE_BYTES);
@@ -60,7 +63,10 @@ export async function readPage(url: string, storeHosts: string[]): Promise<PageI
       description: m.description?.slice(0, 1000) ?? null,
       availability: m.availability,
       externalId,
-      note: m.title || image ? null : "A loja não publica dados do produto nesta página.",
+      note:
+        m.title || image
+          ? null
+          : "Consulta à página pública: a loja não entrega nome/foto sem abrir no navegador (provável bloqueio do marketplace).",
     };
   } catch {
     return { ...base, externalId: null, note: "A loja não respondeu a tempo." };

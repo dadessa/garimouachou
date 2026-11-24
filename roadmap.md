@@ -56,3 +56,10 @@
 - [ ] Radar: confiabilidade da fonte no score, comissão total x adicional, selos x volume
 - [ ] MCP: aprovação humana em tela para publicação externa
 - [ ] Homologação completa e relatório
+
+## Correção crítica da importação automática
+- [x] Fluxo único "Links e ofertas" (sem "Por link"); rascunho incompleto só com confirmação explícita
+- [x] Motivo exato da falha, tentar de novo, colar mensagem, anexar foto, descrição da página na prévia
+- [x] "Buscar informações pelo link" no cadastro; reprocessar rascunhos incompletos em lote (só campos vazios)
+- [ ] Nome/foto/preço automáticos do Mercado Livre e Shopee — páginas bloqueiam leitura; dependem das credenciais oficiais
+- [ ] Homologar leitura de páginas no site publicado (o ambiente de teste não alcança o verificador de endereços)
