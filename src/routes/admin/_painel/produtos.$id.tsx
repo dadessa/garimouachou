@@ -28,7 +28,7 @@ import {
   type ProductRow,
 } from "@/lib/admin/api";
 import { friendlyError } from "@/lib/admin/errors";
-import { removeImages, uploadImage } from "@/lib/admin/storage";
+import { AdminImg, removeImages, uploadImage, useAdminImageUrl } from "@/lib/admin/storage";
 import { toMarketplace, type Product } from "@/lib/catalog/types";
 import { matchAffiliateDomain } from "@/lib/marketplaces/types";
 import { formatBRL } from "@/lib/price";
@@ -136,6 +136,7 @@ function ProductForm() {
       : null,
   });
 
+  const previewImg = useAdminImageUrl(f.imageUrl);
   const preview: Product | null = useMemo(
     () =>
       mk && {
@@ -146,7 +147,7 @@ function ProductForm() {
         categoryName: cat?.name ?? "Sem categoria",
         marketplace: toMarketplace(mk),
         affiliateUrl: f.url,
-        imageUrl: f.imageUrl,
+        imageUrl: previewImg,
         imageAlt: f.imageAlt || f.name,
         isFeatured: f.featured,
         isWeeklyPick: f.weekly,
@@ -164,7 +165,7 @@ function ProductForm() {
           ),
         ],
       },
-    [f, mk, cat, priceCents, prevCents, initial?.price_source],
+    [f, previewImg, mk, cat, priceCents, prevCents, initial?.price_source],
   );
 
   async function onImage(file: File | undefined) {
@@ -440,7 +441,7 @@ function ProductForm() {
             <legend className="px-1 text-sm font-bold">Imagem principal</legend>
             <div className="flex items-center gap-3">
               <div className="size-24 shrink-0 overflow-hidden rounded-xl bg-muted">
-                {f.imageUrl && <img src={f.imageUrl} alt="" className="size-full object-contain" />}
+                <AdminImg src={f.imageUrl} alt="" className="size-full object-contain" />
               </div>
               <div className="space-y-2">
                 <input

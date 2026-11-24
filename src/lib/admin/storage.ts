@@ -1,3 +1,4 @@
+import { createElement, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type Bucket = "product-images" | "banner-images";
@@ -37,4 +38,33 @@ export async function removeImages(bucket: Bucket, urls: (string | null | undefi
   if (!paths.length) return;
   const { error } = await supabase.storage.from(bucket).remove(paths);
   if (error) throw new Error("Não foi possível excluir as imagens.");
+}
+
+/** Tempo de validade dos links temporários de pré-visualização no painel. */
+export const PREVIEW_TTL_S = 60 * 10;
+
+/** Link temporário (só administradoras conseguem gerar, pela regra do armazenamento). */
+export function useAdminImageUrl(url: string | null | undefined): string | null {
+  const path = storagePath(url, "product-images") ?? null;
+  const [signed, setSigned] = useState<{ path: string; url: string } | null>(null);
+  useEffect(() => {
+    if (!path) return;
+    let alive = true;
+    supabase.storage
+      .from("product-images")
+      .createSignedUrl(path, PREVIEW_TTL_S)
+      .then(({ data }) => {
+        if (alive && data?.signedUrl) setSigned({ path, url: data.signedUrl });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [path]);
+  if (!path) return url ?? null;
+  return signed?.path === path ? signed.url : null;
+}
+
+export function AdminImg({ src, ...rest }: { src: string | null | undefined; alt: string; className?: string }) {
+  const u = useAdminImageUrl(src);
+  return u ? createElement("img", { src: u, ...rest }) : null;
 }

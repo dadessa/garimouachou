@@ -1,3 +1,4 @@
+import { AdminImg } from "@/lib/admin/storage";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -132,7 +133,7 @@ function ProductList() {
                 >
                   <div className="size-14 shrink-0 overflow-hidden rounded-xl bg-muted">
                     {p.main_image_url && (
-                      <img src={p.main_image_url} alt="" className="size-full object-cover" />
+                      <AdminImg src={p.main_image_url} alt="" className="size-full object-cover" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
