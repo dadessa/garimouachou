@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
 
 const BUCKETS = new Set(["product-images", "banner-images"]);
 
-/** Serve as fotos do catálogo (pastas privadas) com leitura pública controlada pelo storage. */
+/** Serve fotos do catálogo só quando pertencem a produto publicado ou banner ativo (checado com acesso de visitante). */
 export const Route = createFileRoute("/img/$")({
   server: {
     handlers: {
@@ -21,14 +22,33 @@ export const Route = createFileRoute("/img/$")({
         const key =
           process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
         if (!url || !key) return new Response("Unavailable", { status: 503 });
-        const res = await fetch(`${url}/storage/v1/object/authenticated/${bucket}/${path}`, {
-          headers: { apikey: key },
+        const pub = createClient(url, key, {
+          auth: { persistSession: false, autoRefreshToken: false },
         });
-        if (!res.ok || !res.body) return new Response("Not found", { status: 404 });
-        const type = res.headers.get("content-type") ?? "";
+        const ref = `/img/${bucket}/${path}`;
+        let visible = false;
+        if (bucket === "product-images") {
+          const [a, b] = await Promise.all([
+            pub.from("products").select("id").eq("main_image_url", ref).limit(1),
+            pub.from("product_images").select("id").eq("url", ref).limit(1),
+          ]);
+          visible = !!a.data?.length || !!b.data?.length;
+        } else {
+          const { data } = await pub
+            .from("banners")
+            .select("id")
+            .or(`image_url.eq."${ref}",image_mobile_url.eq."${ref}"`)
+            .limit(1);
+          visible = !!data?.length;
+        }
+        if (!visible) return new Response("Not found", { status: 404 });
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: blob, error } = await supabaseAdmin.storage.from(bucket).download(path);
+        if (error || !blob) return new Response("Not found", { status: 404 });
+        const type = blob.type;
         if (!/^image\/(jpeg|png|webp)$/.test(type))
           return new Response("Not found", { status: 404 });
-        return new Response(res.body, {
+        return new Response(blob.stream(), {
           headers: {
             "content-type": type,
             "cache-control": "public, max-age=86400",

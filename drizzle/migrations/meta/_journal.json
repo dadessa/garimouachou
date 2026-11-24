@@ -57,6 +57,13 @@
       "when": 1795459717420,
       "tag": "0007_restrict_public_catalog_images",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795514765871,
+      "tag": "0008_remove_public_storage_read",
+      "breakpoints": true
     }
   ]
 }

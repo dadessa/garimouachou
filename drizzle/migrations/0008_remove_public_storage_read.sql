@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Público vê imagens do catálogo em uso" ON storage.objects;
