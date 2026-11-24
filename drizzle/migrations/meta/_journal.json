@@ -106,6 +106,13 @@
       "when": 1795531617128,
       "tag": "0014_radar_ofertas_coladas",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1795538643750,
+      "tag": "0015_eventos_banner_categoria",
+      "breakpoints": true
     }
   ]
 }

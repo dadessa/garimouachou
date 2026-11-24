@@ -63,3 +63,5 @@
 - [x] "Buscar informações pelo link" no cadastro; reprocessar rascunhos incompletos em lote (só campos vazios)
 - [ ] Nome/foto/preço automáticos do Mercado Livre e Shopee — páginas bloqueiam leitura; dependem das credenciais oficiais
 - [ ] Homologar leitura de páginas no site publicado (o ambiente de teste não alcança o verificador de endereços)
+
+- [x] Reorganização comercial da página inicial

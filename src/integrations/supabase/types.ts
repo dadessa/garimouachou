@@ -808,6 +808,8 @@ export type Database = {
         | "offer_click"
         | "share_click"
         | "instagram_click"
+        | "banner_click"
+        | "category_click"
       app_role: "admin"
       integration_status: "manual" | "planned" | "active"
       price_source: "manual" | "api"
@@ -945,6 +947,8 @@ export const Constants = {
         "offer_click",
         "share_click",
         "instagram_click",
+        "banner_click",
+        "category_click",
       ],
       app_role: ["admin"],
       integration_status: ["manual", "planned", "active"],

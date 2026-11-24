@@ -42,6 +42,16 @@ export const Route = createFileRoute("/api/public/track")({
             if (!data) return ok();
             product = data;
           }
+          let categoryId: string | null = null;
+          if (e.slug && e.type === "category_click") {
+            const { data } = await supabaseAdmin
+              .from("categories")
+              .select("id")
+              .eq("slug", e.slug)
+              .maybeSingle();
+            if (!data) return ok();
+            categoryId = data.id;
+          }
           await supabaseAdmin.from("analytics_events").upsert(
             {
               event_type: e.type,
@@ -49,7 +59,7 @@ export const Route = createFileRoute("/api/public/track")({
               path: e.path,
               product_id: product?.id ?? null,
               marketplace_id: product?.marketplace_id ?? null,
-              category_id: product?.category_id ?? null,
+              category_id: product?.category_id ?? categoryId,
               share_channel: e.type === "share_click" ? (e.channel ?? null) : null,
               referrer_host: e.type === "page_view" ? referrerHost(e.ref, host) : null,
               utm_source: e.utm?.source || null,

@@ -8,6 +8,7 @@ import { ProductGrid, ProductGridSkeleton } from "@/components/site/ProductCard"
 import { SearchForm } from "@/components/site/SiteHeader";
 import { Section } from "@/components/site/Section";
 import { InstagramCta } from "@/components/site/InstagramCta";
+import { track } from "@/lib/analytics/track";
 import { categoriesQuery, homeQuery } from "@/lib/catalog/queries";
 
 export const Route = createFileRoute("/")({
@@ -45,12 +46,20 @@ function Home() {
     data: { banners, products: all },
   } = useSuspenseQuery(homeQuery);
   const { data: categories } = useSuspenseQuery(categoriesQuery);
-  const weekly = all.filter((p) => p.isWeeklyPick).slice(0, 4);
-  const shown = new Set(weekly.map((p) => p.slug));
-  const featured = all.filter((p) => p.isFeatured && !shown.has(p.slug)).slice(0, 4);
-  featured.forEach((p) => shown.add(p.slug));
+  // Vitrines sem repetir produto; seção com um só produto vai para Novidades.
+  const shown = new Set<string>();
+  const pick = (list: typeof all, n: number) => {
+    const out = list.filter((p) => !shown.has(p.slug)).slice(0, n);
+    if (out.length < 2) return [];
+    out.forEach((p) => shown.add(p.slug));
+    return out;
+  };
+  const weekly = pick(all.filter((p) => p.isWeeklyPick), 4);
+  const featured = pick(all.filter((p) => p.isFeatured), 4);
   const latest = all.filter((p) => !shown.has(p.slug)).slice(0, 8);
-  const cats = categories.filter((c) => all.some((p) => p.categorySlug === c.slug));
+  // Categorias com mais produtos publicados primeiro.
+  const count = (slug: string) => all.filter((p) => p.categorySlug === slug).length;
+  const cats = categories.filter((c) => count(c.slug) > 0).sort((a, b) => count(b.slug) - count(a.slug));
   return (
     <>
       <section className="bg-yellow">
@@ -77,6 +86,7 @@ function Home() {
                   <Link
                     to="/categoria/$slug"
                     params={{ slug: c.slug }}
+                    onClick={() => track("category_click", { slug: c.slug })}
                     className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-sm font-bold text-navy transition hover:-translate-y-0.5 hover:border-navy hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2 active:translate-y-0 active:bg-yellow"
                   >
                     <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent">
@@ -90,6 +100,7 @@ function Home() {
           </div>
         </nav>
       )}
+      <BannerCarousel banners={banners} />
       {all.length === 0 && <ComingSoon />}
       {weekly.length > 0 && (
         <Section title="Achadinhos da Semana">
@@ -113,7 +124,6 @@ function Home() {
           <ProductGrid products={latest} />
         </Section>
       )}
-      <BannerCarousel banners={banners} />
       <InstagramCta />
     </>
   );

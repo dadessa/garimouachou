@@ -7,6 +7,8 @@ export const EVENT_TYPES = [
   "offer_click",
   "share_click",
   "instagram_click",
+  "banner_click",
+  "category_click",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -49,6 +51,8 @@ export const DEDUP_WINDOW_S: Record<EventType, number> = {
   offer_click: 10,
   share_click: 10,
   instagram_click: 10,
+  banner_click: 10,
+  category_click: 10,
 };
 
 export function dedupKey(e: TrackInput, nowMs: number): string {
