@@ -23,6 +23,7 @@ import {
 } from "@/lib/import/rules";
 import { searchShopeeOffers } from "@/lib/integrations/integrations.functions";
 import { parseReais } from "@/lib/publish-rules";
+import { OfferPaste } from "@/components/admin/OfferPaste";
 
 export const Route = createFileRoute("/admin/_painel/importar")({
   loader: ({ context }) =>
@@ -46,7 +47,7 @@ type Item = {
   message: string;
   productId?: string;
 };
-type Tab = "link" | "csv" | "api";
+type Tab = "offers" | "link" | "csv" | "api";
 const sel =
   "h-10 w-full rounded-full border-2 border-input bg-background px-3 text-sm font-semibold";
 
@@ -55,7 +56,7 @@ function ImportCenter() {
   const { data: mks } = useSuspenseQuery(adminMarketplaces);
   const genCopy = useServerFn(generateCopy);
   const qc = useQueryClient();
-  const [tab, setTab] = useState<Tab>("link");
+  const [tab, setTab] = useState<Tab>("offers");
   const [links, setLinks] = useState("");
   const [name, setName] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -132,6 +133,7 @@ function ImportCenter() {
       <div role="tablist" aria-label="Forma de importar" className="mb-4 flex flex-wrap gap-2">
         {(
           [
+            ["offers", "Colar ofertas e links"],
             ["link", "Por link"],
             ["csv", "Planilha CSV"],
             ["api", "Busca na loja (API)"],
@@ -158,6 +160,14 @@ function ImportCenter() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="space-y-4 rounded-2xl border border-border bg-card p-4 md:p-6">
+          {tab === "offers" && (
+            <OfferPaste
+              cats={cats}
+              mks={mks}
+              opts={opts}
+              onDone={() => qc.invalidateQueries({ queryKey: ["admin", "products"] })}
+            />
+          )}
           {tab === "link" && (
             <>
               <div className="space-y-1.5">

@@ -50,3 +50,5 @@ use the editor.
 - Site searches are logged only as term+day counts via the log_search RPC (no user/session data) — LGPD.
 - Garimou IA: src/lib/agent/services.server.ts is the shared service layer (caller's RLS client) for the panel agent, admin MCP tools and the daily plan; imports run server-side via importOneWith() and need a single-use, 15-min, user-bound approval token — prevents unapproved or duplicate imports.
 - Admin MCP tools share the /mcp endpoint but are hidden per caller via createAppContext (has_role) and re-check admin in each handler — keeps the public catalog tools separate without a second endpoint.
+
+- Pasted offers/messages are parsed by splitOffers() (src/lib/import/offers.ts) and enriched server-side in offers.functions.ts via safeFetch() (allowlisted store/CDN hosts, manual redirects, size caps); prices from messages are saved only after admin confirmation, then imported through importOne() — no invented or stale-as-fresh data.

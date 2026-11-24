@@ -41,3 +41,8 @@
 - [ ] P6: status dos agendamentos (última/próxima execução, erros, itens)
 - [ ] P1/P4: Shopee e Mercado Livre — aguardando credenciais
 - [ ] Integração contínua — depende de conectar o GitHub
+
+## Importação inteligente por links de divulgação
+- [x] Aba "Colar ofertas e links": mensagens/WhatsApp/até 50 links, prévia, edição, seleção, progresso, reprocessar
+- [x] Dados públicos da página (servidor, domínios permitidos, anti-SSRF), foto oficial copiada, anexar foto, duplicados
+- [ ] Preço/comissão/fotos automáticos do Mercado Livre e Shopee — páginas bloqueiam leitura; dependem das credenciais oficiais
