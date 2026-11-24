@@ -163,6 +163,14 @@ function Chat() {
   return (
     <section className="rounded-3xl border border-border bg-card p-4">
       <div className="mb-3 flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          disabled={loading}
+          onClick={() => send("Garimpar agora")}
+          className="bg-yellow font-extrabold text-navy hover:bg-yellow/90"
+        >
+          Garimpar agora
+        </Button>
         {PRESETS.map((p) => (
           <Button key={p} size="sm" variant="outline" disabled={loading} onClick={() => send(p)}>
             {p}

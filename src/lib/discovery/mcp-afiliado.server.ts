@@ -45,3 +45,26 @@ export const searchProducts = (a: {
   limit: number;
   price_max?: number;
 }) => call<{ items: AfItem[] }>("/search-products", a).then((r) => r.items ?? []);
+
+/** Gera links de afiliada da conta (só onde o MCP do Afiliado tem rota autorizada). */
+export async function convertLinks(urls: string[]) {
+  if (!urls.length) return new Map<string, string>();
+  const r = await call<{
+    items: {
+      ok: boolean;
+      url_original?: string;
+      url?: string;
+      affiliate_url?: string | null;
+      final_url?: string | null;
+    }[];
+  }>("/convert-links", { urls: urls.slice(0, 150) });
+  const m = new Map<string, string>();
+  (r.items ?? []).forEach((it, i) => {
+    const link = it.final_url || it.affiliate_url;
+    const src = it.url_original ?? it.url ?? urls[i];
+    if (it.ok && link && src) m.set(src, link);
+  });
+  return m;
+}
+export const convertibleProviders = (b: BotInfo) =>
+  (b.convertible_routes?.by_provider ?? []).map((p) => p.provider);

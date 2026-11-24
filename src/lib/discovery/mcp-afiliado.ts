@@ -23,6 +23,7 @@ export const MODE_SEARCH: Record<Mode, { sort: string; priceMax?: number }> = {
 };
 
 export const PRESET_MODE: Record<string, Mode> = {
+  "Garimpar agora": "oportunidades",
   "Encontrar melhores oportunidades de hoje": "oportunidades",
   "Encontrar produtos em tendência": "tendencia",
   "Encontrar produtos com maiores comissões": "comissao",
