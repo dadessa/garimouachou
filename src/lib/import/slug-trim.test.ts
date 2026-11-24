@@ -7,3 +7,10 @@ describe("importSlug", () => {
     expect(s).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
   });
 });
+
+import { slugify } from "@/lib/publish-rules";
+describe("slugify", () => {
+  it("não termina com hífen quando o corte de 100 caracteres cai num espaço", () => {
+    expect(slugify("a".repeat(99) + " bcd")).toBe("a".repeat(99));
+  });
+});
