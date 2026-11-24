@@ -16,4 +16,5 @@
 - [ ] Integração Mercado Livre — aguardando ID e chave secreta do aplicativo (usuária)
 - [ ] Integração Shopee Afiliados — adiada pela usuária; precisa de App ID e App Secret
 - [x] Central de Importação (links, CSV, busca Shopee preparada, integrações)
-- [ ] Radar de Oportunidades — analisar briefing
+- [x] Radar de Oportunidades (MVP: score, quadros, assistente, dados manuais/relatório)
+- [ ] Radar: dados automáticos — dependem das credenciais Shopee/Mercado Livre; rotina diária não agendada (só "Atualizar agora")

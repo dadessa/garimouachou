@@ -34,6 +34,7 @@ const NAV = [
   { to: "/admin/desempenho", label: "Desempenho" },
   { to: "/admin/produtos", label: "Produtos" },
   { to: "/admin/importar", label: "Importar" },
+  { to: "/admin/radar", label: "Radar" },
   { to: "/admin/integracoes", label: "Integrações" },
   { to: "/admin/categorias", label: "Categorias" },
   { to: "/admin/banners", label: "Banners" },

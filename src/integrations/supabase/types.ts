@@ -383,6 +383,87 @@ export type Database = {
           },
         ]
       }
+      radar_opportunities: {
+        Row: {
+          affiliate_url: string | null
+          category: string | null
+          commission_rate: number | null
+          created_at: string
+          external_id: string
+          fetched_at: string
+          growth_pct: number | null
+          id: string
+          image_url: string | null
+          marketplace_slug: string
+          name: string
+          price_cents: number | null
+          rating: number | null
+          sales: number | null
+          search_volume: number | null
+          seasonal_dates: string[]
+          source: string
+          valid_until: string | null
+        }
+        Insert: {
+          affiliate_url?: string | null
+          category?: string | null
+          commission_rate?: number | null
+          created_at?: string
+          external_id: string
+          fetched_at?: string
+          growth_pct?: number | null
+          id?: string
+          image_url?: string | null
+          marketplace_slug: string
+          name: string
+          price_cents?: number | null
+          rating?: number | null
+          sales?: number | null
+          search_volume?: number | null
+          seasonal_dates?: string[]
+          source: string
+          valid_until?: string | null
+        }
+        Update: {
+          affiliate_url?: string | null
+          category?: string | null
+          commission_rate?: number | null
+          created_at?: string
+          external_id?: string
+          fetched_at?: string
+          growth_pct?: number | null
+          id?: string
+          image_url?: string | null
+          marketplace_slug?: string
+          name?: string
+          price_cents?: number | null
+          rating?: number | null
+          sales?: number | null
+          search_volume?: number | null
+          seasonal_dates?: string[]
+          source?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      radar_settings: {
+        Row: {
+          id: number
+          updated_at: string
+          weights: Json
+        }
+        Insert: {
+          id?: number
+          updated_at?: string
+          weights: Json
+        }
+        Update: {
+          id?: number
+          updated_at?: string
+          weights?: Json
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

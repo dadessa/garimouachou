@@ -35,6 +35,7 @@ import { Route as AdminPainelDesempenhoRouteImport } from './routes/admin/_paine
 import { Route as AdminPainelImportarRouteImport } from './routes/admin/_painel/importar'
 import { Route as AdminPainelIntegracoesRouteImport } from './routes/admin/_painel/integracoes'
 import { Route as AdminPainelMarketplacesRouteImport } from './routes/admin/_painel/marketplaces'
+import { Route as AdminPainelRadarRouteImport } from './routes/admin/_painel/radar'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as AdminPainelProdutosIndexRouteImport } from './routes/admin/_painel/produtos.index'
 import { Route as AdminPainelProdutosIdRouteImport } from './routes/admin/_painel/produtos.$id'
@@ -170,6 +171,11 @@ const AdminPainelMarketplacesRoute = AdminPainelMarketplacesRouteImport.update({
   path: '/marketplaces',
   getParentRoute: () => AdminPainelRoute,
 } as any)
+const AdminPainelRadarRoute = AdminPainelRadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
 const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
   id: '/api/public/track',
   path: '/api/public/track',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/admin/importar': typeof AdminPainelImportarRoute
   '/admin/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/admin/radar': typeof AdminPainelRadarRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/': typeof AdminPainelIndexRoute
   '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/admin/importar': typeof AdminPainelImportarRoute
   '/admin/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/admin/radar': typeof AdminPainelRadarRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin': typeof AdminPainelIndexRoute
   '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/admin/_painel/importar': typeof AdminPainelImportarRoute
   '/admin/_painel/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/_painel/marketplaces': typeof AdminPainelMarketplacesRoute
+  '/admin/_painel/radar': typeof AdminPainelRadarRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/_painel/': typeof AdminPainelIndexRoute
   '/admin/_painel/produtos/$id': typeof AdminPainelProdutosIdRoute
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/admin/importar'
     | '/admin/integracoes'
     | '/admin/marketplaces'
+    | '/admin/radar'
     | '/api/public/track'
     | '/admin/'
     | '/admin/produtos/$id'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/admin/importar'
     | '/admin/integracoes'
     | '/admin/marketplaces'
+    | '/admin/radar'
     | '/api/public/track'
     | '/admin'
     | '/admin/produtos/$id'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/admin/_painel/importar'
     | '/admin/_painel/integracoes'
     | '/admin/_painel/marketplaces'
+    | '/admin/_painel/radar'
     | '/api/public/track'
     | '/admin/_painel/'
     | '/admin/_painel/produtos/$id'
@@ -582,6 +594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPainelMarketplacesRouteImport
       parentRoute: typeof AdminPainelRoute
     }
+    '/admin/_painel/radar': {
+      id: '/admin/_painel/radar'
+      path: '/radar'
+      fullPath: '/admin/radar'
+      preLoaderRoute: typeof AdminPainelRadarRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
     '/api/public/track': {
       id: '/api/public/track'
       path: '/api/public/track'
@@ -613,6 +632,7 @@ interface AdminPainelRouteChildren {
   AdminPainelImportarRoute: typeof AdminPainelImportarRoute
   AdminPainelIntegracoesRoute: typeof AdminPainelIntegracoesRoute
   AdminPainelMarketplacesRoute: typeof AdminPainelMarketplacesRoute
+  AdminPainelRadarRoute: typeof AdminPainelRadarRoute
   AdminPainelIndexRoute: typeof AdminPainelIndexRoute
   AdminPainelProdutosIdRoute: typeof AdminPainelProdutosIdRoute
   AdminPainelProdutosIndexRoute: typeof AdminPainelProdutosIndexRoute
@@ -625,6 +645,7 @@ const AdminPainelRouteChildren: AdminPainelRouteChildren = {
   AdminPainelImportarRoute: AdminPainelImportarRoute,
   AdminPainelIntegracoesRoute: AdminPainelIntegracoesRoute,
   AdminPainelMarketplacesRoute: AdminPainelMarketplacesRoute,
+  AdminPainelRadarRoute: AdminPainelRadarRoute,
   AdminPainelIndexRoute: AdminPainelIndexRoute,
   AdminPainelProdutosIdRoute: AdminPainelProdutosIdRoute,
   AdminPainelProdutosIndexRoute: AdminPainelProdutosIndexRoute,
