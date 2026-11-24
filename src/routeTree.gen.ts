@@ -32,6 +32,8 @@ import { Route as AdminPainelIndexRouteImport } from './routes/admin/_painel/ind
 import { Route as AdminPainelBannersRouteImport } from './routes/admin/_painel/banners'
 import { Route as AdminPainelCategoriasRouteImport } from './routes/admin/_painel/categorias'
 import { Route as AdminPainelDesempenhoRouteImport } from './routes/admin/_painel/desempenho'
+import { Route as AdminPainelImportarRouteImport } from './routes/admin/_painel/importar'
+import { Route as AdminPainelIntegracoesRouteImport } from './routes/admin/_painel/integracoes'
 import { Route as AdminPainelMarketplacesRouteImport } from './routes/admin/_painel/marketplaces'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as AdminPainelProdutosIndexRouteImport } from './routes/admin/_painel/produtos.index'
@@ -153,6 +155,16 @@ const AdminPainelDesempenhoRoute = AdminPainelDesempenhoRouteImport.update({
   path: '/desempenho',
   getParentRoute: () => AdminPainelRoute,
 } as any)
+const AdminPainelImportarRoute = AdminPainelImportarRouteImport.update({
+  id: '/importar',
+  path: '/importar',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
+const AdminPainelIntegracoesRoute = AdminPainelIntegracoesRouteImport.update({
+  id: '/integracoes',
+  path: '/integracoes',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
 const AdminPainelMarketplacesRoute = AdminPainelMarketplacesRouteImport.update({
   id: '/marketplaces',
   path: '/marketplaces',
@@ -198,6 +210,8 @@ export interface FileRoutesByFullPath {
   '/admin/banners': typeof AdminPainelBannersRoute
   '/admin/categorias': typeof AdminPainelCategoriasRoute
   '/admin/desempenho': typeof AdminPainelDesempenhoRoute
+  '/admin/importar': typeof AdminPainelImportarRoute
+  '/admin/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/': typeof AdminPainelIndexRoute
@@ -226,6 +240,8 @@ export interface FileRoutesByTo {
   '/admin/banners': typeof AdminPainelBannersRoute
   '/admin/categorias': typeof AdminPainelCategoriasRoute
   '/admin/desempenho': typeof AdminPainelDesempenhoRoute
+  '/admin/importar': typeof AdminPainelImportarRoute
+  '/admin/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin': typeof AdminPainelIndexRoute
@@ -256,6 +272,8 @@ export interface FileRoutesById {
   '/admin/_painel/banners': typeof AdminPainelBannersRoute
   '/admin/_painel/categorias': typeof AdminPainelCategoriasRoute
   '/admin/_painel/desempenho': typeof AdminPainelDesempenhoRoute
+  '/admin/_painel/importar': typeof AdminPainelImportarRoute
+  '/admin/_painel/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/_painel/marketplaces': typeof AdminPainelMarketplacesRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/admin/_painel/': typeof AdminPainelIndexRoute
@@ -287,6 +305,8 @@ export interface FileRouteTypes {
     | '/admin/banners'
     | '/admin/categorias'
     | '/admin/desempenho'
+    | '/admin/importar'
+    | '/admin/integracoes'
     | '/admin/marketplaces'
     | '/api/public/track'
     | '/admin/'
@@ -315,6 +335,8 @@ export interface FileRouteTypes {
     | '/admin/banners'
     | '/admin/categorias'
     | '/admin/desempenho'
+    | '/admin/importar'
+    | '/admin/integracoes'
     | '/admin/marketplaces'
     | '/api/public/track'
     | '/admin'
@@ -344,6 +366,8 @@ export interface FileRouteTypes {
     | '/admin/_painel/banners'
     | '/admin/_painel/categorias'
     | '/admin/_painel/desempenho'
+    | '/admin/_painel/importar'
+    | '/admin/_painel/integracoes'
     | '/admin/_painel/marketplaces'
     | '/api/public/track'
     | '/admin/_painel/'
@@ -537,6 +561,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPainelDesempenhoRouteImport
       parentRoute: typeof AdminPainelRoute
     }
+    '/admin/_painel/importar': {
+      id: '/admin/_painel/importar'
+      path: '/importar'
+      fullPath: '/admin/importar'
+      preLoaderRoute: typeof AdminPainelImportarRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
+    '/admin/_painel/integracoes': {
+      id: '/admin/_painel/integracoes'
+      path: '/integracoes'
+      fullPath: '/admin/integracoes'
+      preLoaderRoute: typeof AdminPainelIntegracoesRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
     '/admin/_painel/marketplaces': {
       id: '/admin/_painel/marketplaces'
       path: '/marketplaces'
@@ -572,6 +610,8 @@ interface AdminPainelRouteChildren {
   AdminPainelBannersRoute: typeof AdminPainelBannersRoute
   AdminPainelCategoriasRoute: typeof AdminPainelCategoriasRoute
   AdminPainelDesempenhoRoute: typeof AdminPainelDesempenhoRoute
+  AdminPainelImportarRoute: typeof AdminPainelImportarRoute
+  AdminPainelIntegracoesRoute: typeof AdminPainelIntegracoesRoute
   AdminPainelMarketplacesRoute: typeof AdminPainelMarketplacesRoute
   AdminPainelIndexRoute: typeof AdminPainelIndexRoute
   AdminPainelProdutosIdRoute: typeof AdminPainelProdutosIdRoute
@@ -582,6 +622,8 @@ const AdminPainelRouteChildren: AdminPainelRouteChildren = {
   AdminPainelBannersRoute: AdminPainelBannersRoute,
   AdminPainelCategoriasRoute: AdminPainelCategoriasRoute,
   AdminPainelDesempenhoRoute: AdminPainelDesempenhoRoute,
+  AdminPainelImportarRoute: AdminPainelImportarRoute,
+  AdminPainelIntegracoesRoute: AdminPainelIntegracoesRoute,
   AdminPainelMarketplacesRoute: AdminPainelMarketplacesRoute,
   AdminPainelIndexRoute: AdminPainelIndexRoute,
   AdminPainelProdutosIdRoute: AdminPainelProdutosIdRoute,

@@ -15,3 +15,5 @@
 - [ ] Sprint de estabilização técnica: analisar o que falta ajustar
 - [ ] Integração Mercado Livre — aguardando ID e chave secreta do aplicativo (usuária)
 - [ ] Integração Shopee Afiliados — adiada pela usuária; precisa de App ID e App Secret
+- [x] Central de Importação (links, CSV, busca Shopee preparada, integrações)
+- [ ] Radar de Oportunidades — analisar briefing

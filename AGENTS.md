@@ -42,3 +42,5 @@ use the editor.
 - Password requirements live in a read-own table with a self-admin scheduling RPC; has_role blocks the next login session until an auth password-change trigger clears the requirement, so bypassing the UI cannot grant administrative writes.
 - New-password forms share strongPasswordValidation; never apply new-password strength checks to login, so existing credentials remain usable. Hosted length/character settings must match the form policy to prevent direct Auth API bypass.
 - Commercial analytics: anonymous events go to /api/public/track (zod-validated, dedup_key unique, service-role insert); admins read only via admin_performance_report RPC — no client inserts, no PII.
+- Product import (links, CSV, marketplace API results) goes through importOne() in src/lib/import/importer.ts with browser client + admin RLS; dedup by (marketplace_id, external_id) unique index or exact affiliate_url — one path for every import source.
+- Marketplace API calls live in src/lib/marketplaces/<slug>.server.ts behind admin-checked server functions in src/lib/integrations/integrations.functions.ts; "connected" is only written after a real API request succeeds.

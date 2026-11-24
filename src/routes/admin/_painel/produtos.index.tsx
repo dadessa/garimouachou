@@ -53,13 +53,21 @@ function ProductList() {
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold text-navy">Produtos</h1>
-        <Link
-          to="/admin/produtos/$id"
-          params={{ id: "novo" }}
-          className="rounded-full bg-primary px-5 py-2.5 text-sm font-extrabold text-primary-foreground"
-        >
-          Novo produto
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to="/admin/importar"
+            className="rounded-full bg-card px-5 py-2.5 text-sm font-extrabold"
+          >
+            Importar produtos
+          </Link>
+          <Link
+            to="/admin/produtos/$id"
+            params={{ id: "novo" }}
+            className="rounded-full bg-primary px-5 py-2.5 text-sm font-extrabold text-primary-foreground"
+          >
+            Novo produto
+          </Link>
+        </div>
       </div>
       <div className="mb-4 flex flex-wrap gap-2">
         <Input

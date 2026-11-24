@@ -186,6 +186,33 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_integrations: {
+        Row: {
+          last_checked_at: string | null
+          last_error: string | null
+          last_sync_at: string | null
+          marketplace_slug: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          last_checked_at?: string | null
+          last_error?: string | null
+          last_sync_at?: string | null
+          marketplace_slug: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          last_checked_at?: string | null
+          last_error?: string | null
+          last_sync_at?: string | null
+          marketplace_slug?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       marketplaces: {
         Row: {
           allow_manual_price: boolean
