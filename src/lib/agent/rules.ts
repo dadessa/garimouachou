@@ -14,7 +14,10 @@ export interface Envelope<T> {
   indisponiveis: string[];
   limitacoes: string[];
 }
-export const envelope = <T>(resultado: T, e: Partial<Omit<Envelope<T>, "resultado">> = {}): Envelope<T> => ({
+export const envelope = <T>(
+  resultado: T,
+  e: Partial<Omit<Envelope<T>, "resultado">> = {},
+): Envelope<T> => ({
   resultado,
   fonte: e.fonte ?? [],
   consultado_em: e.consultado_em ?? new Date().toISOString(),
@@ -34,7 +37,11 @@ export function newToken() {
 }
 
 /** A aprovação vale só para quem a criou, dentro do prazo, uma única vez. */
-export function approvalProblem(a: { user_id: string; expires_at: string; used_at: string | null } | null, userId: string, now = new Date()) {
+export function approvalProblem(
+  a: { user_id: string; expires_at: string; used_at: string | null } | null,
+  userId: string,
+  now = new Date(),
+) {
   if (!a) return "Aprovação não encontrada.";
   if (a.user_id !== userId) return "Esta aprovação é de outra pessoa.";
   if (a.used_at) return "Esta aprovação já foi usada.";
@@ -44,11 +51,14 @@ export function approvalProblem(a: { user_id: string; expires_at: string; used_a
 
 /** Texto externo (nome de produto etc.) entra no modelo como dado, nunca como instrução. */
 export function sanitizeExternal(s: string | null | undefined, max = 200) {
-  return String(s ?? "")
-    .replace(/[\u0000-\u001f\u007f<>`]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, max);
+  return (
+    String(s ?? "")
+      // eslint-disable-next-line no-control-regex -- remove caracteres de controle de dados externos
+      .replace(/[\u0000-\u001f\u007f<>`]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, max)
+  );
 }
 
 /** UTM fixo do agente; só para o site próprio. */
@@ -56,6 +66,13 @@ export function utmUrl(siteUrl: string, slug: string, channel: string, campaign:
   const u = new URL(`/p/${encodeURIComponent(slug)}`, siteUrl);
   u.searchParams.set("utm_source", channel);
   u.searchParams.set("utm_medium", "social");
-  u.searchParams.set("utm_campaign", campaign.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "garimou");
+  u.searchParams.set(
+    "utm_campaign",
+    campaign
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 40) || "garimou",
+  );
   return u.toString();
 }

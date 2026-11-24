@@ -113,6 +113,13 @@
       "when": 1795538643750,
       "tag": "0015_eventos_banner_categoria",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1795539623277,
+      "tag": "0016_radar_fonte_mcp_afiliado",
+      "breakpoints": true
     }
   ]
 }
