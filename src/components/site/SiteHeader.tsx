@@ -40,12 +40,12 @@ export function SearchForm({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="O que você procura?"
-        className={`${large ? "h-14 text-base" : "h-11 text-sm"} w-full rounded-full border-2 border-input bg-background pl-4 pr-14 font-medium placeholder:text-muted-foreground focus:border-navy focus:outline-none`}
+        className={`${large ? "h-14 text-base" : "h-12 text-sm"} w-full rounded-full border-2 border-input bg-background pl-4 pr-14 font-medium placeholder:text-muted-foreground focus:border-navy focus:outline-none`}
       />
       <button
         type="submit"
         aria-label="Buscar"
-        className={`absolute right-1 top-1 grid place-items-center ${large ? "size-12" : "size-9"} rounded-full bg-navy text-secondary-foreground`}
+        className={`absolute right-1 top-1 grid place-items-center ${large ? "size-12" : "size-10"} rounded-full bg-navy text-secondary-foreground`}
       >
         <Search className="size-4" />
       </button>
@@ -70,7 +70,7 @@ export function SiteHeader({ categories: initial }: { categories: Category[] }) 
       className={`sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur transition-shadow ${scrolled ? "shadow-card" : ""}`}
     >
       <div
-        className={`mx-auto flex max-w-6xl items-center gap-3 px-4 transition-all ${scrolled ? "h-14" : "h-16 md:h-20"}`}
+        className={`mx-auto flex max-w-6xl items-center gap-3 px-4 transition-all ${scrolled ? "h-14 md:h-16" : "h-16 md:h-[72px]"}`}
       >
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger
@@ -121,7 +121,7 @@ export function SiteHeader({ categories: initial }: { categories: Category[] }) 
             alt="Garimou Achou!"
             width={383}
             height={155}
-            className={`w-auto transition-all ${scrolled ? "h-10" : "h-12 md:h-16"}`}
+            className={`w-auto transition-all ${scrolled ? "h-10 md:h-11" : "h-11 md:h-12"}`}
           />
         </Link>
 
@@ -132,10 +132,10 @@ export function SiteHeader({ categories: initial }: { categories: Category[] }) 
         <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Principal">
           <div className="group relative">
             <button
-              className="flex items-center gap-2 rounded-full px-4 py-2 font-semibold hover:bg-muted"
+              className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-navy hover:bg-muted"
               aria-haspopup="true"
             >
-              <Grid2x2 className="size-5" />
+              <Grid2x2 className="size-4" />
               Categorias
             </button>
             <div className="invisible absolute right-0 top-full w-64 rounded-2xl border border-border bg-popover p-2 opacity-0 shadow-lift transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
@@ -154,9 +154,9 @@ export function SiteHeader({ categories: initial }: { categories: Category[] }) 
           </div>
           <Link
             to="/ofertas"
-            className="flex items-center gap-2 rounded-full px-4 py-2 font-semibold hover:bg-muted"
+            className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-navy hover:bg-muted"
           >
-            <Tag className="size-5" />
+            <Tag className="size-4" />
             Ofertas
           </Link>
         </nav>

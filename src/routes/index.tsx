@@ -54,43 +54,23 @@ function Home() {
   return (
     <>
       <section className="bg-yellow">
-        <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
-          <h1 className="max-w-2xl text-2xl leading-tight text-navy md:text-4xl">
+        <div className="mx-auto max-w-6xl px-4 py-5 md:py-7">
+          <h1 className="max-w-[20ch] text-2xl leading-[1.1] text-navy sm:max-w-[26ch] md:text-[40px] lg:text-[44px]">
             A gente garimpa os melhores achadinhos. Você aproveita.
           </h1>
-          <p className="mt-2 max-w-2xl text-sm font-semibold text-navy md:text-base">
+          <p className="mt-2 max-w-[62ch] text-sm font-semibold leading-snug text-navy md:text-lg lg:text-xl">
             Produtos escolhidos no Mercado Livre, Shopee e outras lojas. Você compra direto no site
             da loja.
           </p>
-          <div className="mt-5 max-w-xl">
+          <div className="mt-4 max-w-[760px]">
             <SearchForm id="busca-home" large />
           </div>
         </div>
       </section>
-      <BannerCarousel banners={banners} />
       {all.length === 0 && <ComingSoon />}
       {weekly.length > 0 && (
         <Section title="Achadinhos da Semana">
           <ProductGrid products={weekly} />
-        </Section>
-      )}
-      {cats.length > 0 && (
-        <Section title="Categorias">
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-7">
-            {cats.map((c) => (
-              <Link
-                key={c.slug}
-                to="/categoria/$slug"
-                params={{ slug: c.slug }}
-                className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3 text-center text-xs font-bold shadow-card transition hover:-translate-y-0.5 hover:bg-accent"
-              >
-                <span className="grid size-12 place-items-center rounded-full bg-accent text-navy">
-                  <CatIcon icon={c.icon} className="size-6" />
-                </span>
-                {c.name}
-              </Link>
-            ))}
-          </div>
         </Section>
       )}
       {featured.length > 0 && (
@@ -110,6 +90,26 @@ function Home() {
           <ProductGrid products={latest} />
         </Section>
       )}
+      {cats.length > 0 && (
+        <Section title="Categorias">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-7 md:gap-3">
+            {cats.map((c) => (
+              <Link
+                key={c.slug}
+                to="/categoria/$slug"
+                params={{ slug: c.slug }}
+                className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-card p-2.5 text-center text-xs font-bold shadow-card transition hover:-translate-y-0.5 hover:bg-accent"
+              >
+                <span className="grid size-10 place-items-center rounded-full bg-accent text-navy">
+                  <CatIcon icon={c.icon} className="size-5" />
+                </span>
+                {c.name}
+              </Link>
+            ))}
+          </div>
+        </Section>
+      )}
+      <BannerCarousel banners={banners} />
       <InstagramCta />
     </>
   );

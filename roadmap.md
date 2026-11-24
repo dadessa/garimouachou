@@ -47,3 +47,12 @@
 - [x] Dados públicos da página (servidor, domínios permitidos, anti-SSRF), foto oficial copiada, anexar foto, duplicados
 - [ ] Preço/comissão/fotos automáticos do Mercado Livre e Shopee — páginas bloqueiam leitura; dependem das credenciais oficiais
 - [x] Aperfeiçoamento: comissão/ganhos extras/cupom/vendas/avaliação/selos separados, cleanUrl corrigido, DNS e conteúdo das fotos validados, fotos adicionais, envio ao Radar, resumo final
+- [x] Home mais compacta: topo 72px, faixa amarela menor, produtos logo no início, banner da marca mais abaixo
+
+## Sprint de qualidade e lançamento comercial (recebida)
+- [ ] Design system/cabeçalho/rodapé/estados vazios
+- [ ] Galeria com fotos adicionais e ampliação na página do produto
+- [ ] Importação: sem fotos órfãs, falhas/reprocessamento
+- [ ] Radar: confiabilidade da fonte no score, comissão total x adicional, selos x volume
+- [ ] MCP: aprovação humana em tela para publicação externa
+- [ ] Homologação completa e relatório

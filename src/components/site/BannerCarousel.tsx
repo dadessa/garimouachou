@@ -18,11 +18,11 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
     <section
       aria-roledescription="carrossel"
       aria-label="Destaques"
-      className="mx-auto max-w-6xl px-4 pt-5"
+      className="mx-auto max-w-6xl px-4 pt-8"
     >
       <div
         ref={ref}
-        className="flex items-start snap-x snap-mandatory overflow-x-auto rounded-3xl [scrollbar-width:none]"
+        className="mx-auto flex max-w-3xl items-start snap-x snap-mandatory overflow-x-auto rounded-2xl [scrollbar-width:none]"
       >
         {banners.map((b, i) => (
           <picture key={b.id} className="w-full shrink-0 snap-center">
@@ -48,7 +48,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
         ))}
       </div>
       {banners.length > 1 && (
-        <div className="mt-3 flex justify-center gap-2">
+        <div className="mt-2 flex justify-center gap-2">
           {banners.map((b, i) => (
             <button
               key={b.id}
