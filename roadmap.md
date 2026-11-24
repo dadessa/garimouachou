@@ -27,3 +27,8 @@
 - [ ] OAuth do Mercado Livre, tendências e mais vendidos — aguardando ID e chave secreta do app
 - [ ] Shopee em produção — aguardando App ID e App Secret
 - [ ] Tendências de busca externas — sem fonte oficial aberta
+
+## Agente comercial (Garimou IA)
+- [x] MCP admin separado do público, ferramentas ligadas ao Radar
+- [x] Agente multi-etapas, cards, importação com aprovação, plano diário, campanhas, preferências
+- [ ] Homologar Shopee/Mercado Livre — aguardando credenciais

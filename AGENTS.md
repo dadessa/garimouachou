@@ -48,3 +48,5 @@ use the editor.
 
 - Radar: buildRadar()/applyView() in src/lib/radar/engine.ts is the single rule for the Radar screen and the AI assistant; collection runs through runRadarRefresh() (radar_runs single-flight index, request cap, DB write checked) for manual and daily cron (/api/public/jobs/radar) — keeps both paths consistent.
 - Site searches are logged only as term+day counts via the log_search RPC (no user/session data) — LGPD.
+- Garimou IA: src/lib/agent/services.server.ts is the shared service layer (caller's RLS client) for the panel agent, admin MCP tools and the daily plan; imports run server-side via importOneWith() and need a single-use, 15-min, user-bound approval token — prevents unapproved or duplicate imports.
+- Admin MCP tools share the /mcp endpoint but are hidden per caller via createAppContext (has_role) and re-check admin in each handler — keeps the public catalog tools separate without a second endpoint.
