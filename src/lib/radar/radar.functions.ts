@@ -10,6 +10,16 @@ async function assertAdmin(ctx: { supabase: SupabaseClient<Database>; userId: st
   if (!data) throw new Error("Sem permissão para esta ação.");
 }
 
+/** Tendências de pesquisa para a equipe de curadoria, separadas dos dados de vendas. */
+export const dailyGoogleTrends = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { fetchGoogleTrends } = await import("../discovery/google-trends.server");
+    const result = await fetchGoogleTrends();
+    return { ...result, trends: result.trends.slice(0, 5) };
+  });
+
 /** Atualizar agora: só consulta fontes oficiais com credencial; nada é simulado. */
 export const refreshRadar = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
