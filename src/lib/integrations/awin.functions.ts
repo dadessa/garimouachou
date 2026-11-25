@@ -43,3 +43,24 @@ export const awinLinkFn = createServerFn({ method: "POST" })
       return { url: null, error: e instanceof Error ? e.message.slice(0, 200) : "Falha ao gerar link." };
     }
   });
+
+/** Consulta financeira exclusiva para administradores; não grava ou altera transações. */
+export const awinFinanceFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { days: number }) => {
+    if (![7, 15, 30].includes(d?.days)) throw new Error("Período inválido.");
+    return { days: d.days };
+  })
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const awin = await import("./awin.server");
+    const at = new Date().toISOString();
+    if (!awin.awinConfigured()) return { report: null, at, error: "Configure AWIN_PUBLISHER_ID e AWIN_ACCESS_TOKEN nos Secrets do servidor." };
+    try {
+      return { report: await awin.awinFinancialReport(data.days), at, error: null as string | null };
+    } catch (e) {
+      // Não encaminhar erros de rede brutos, URLs ou credenciais ao navegador.
+      const message = e instanceof Error && (e.message.startsWith("Awin ") || e.message.startsWith("Resposta inesperada")) ? e.message : "Não foi possível consultar as transações Awin.";
+      return { report: null, at, error: message.slice(0, 200) };
+    }
+  });

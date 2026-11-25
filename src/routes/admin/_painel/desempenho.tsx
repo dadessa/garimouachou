@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { adminCategories, adminMarketplaces } from "@/lib/admin/api";
 import { friendlyError } from "@/lib/admin/errors";
 import { clickRate, toCsv } from "@/lib/analytics/campaign";
+import { AffiliateFinance } from "@/components/admin/AffiliateFinance";
 
 export const Route = createFileRoute("/admin/_painel/desempenho")({
   loader: ({ context }) =>
@@ -63,6 +64,17 @@ const CHANNEL: Record<string, string> = {
 const sel = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
 
 function Desempenho() {
+  const [tab, setTab] = useState<"trafego" | "financeiro">("trafego");
+  return <>
+    <div className="mb-4 flex flex-wrap gap-2" aria-label="Visões de desempenho">
+      <Button variant={tab === "trafego" ? "default" : "outline"} onClick={() => setTab("trafego")}>Tráfego e cliques</Button>
+      <Button variant={tab === "financeiro" ? "default" : "outline"} onClick={() => setTab("financeiro")}>Central financeira</Button>
+    </div>
+    {tab === "trafego" ? <TrafficReport /> : <AffiliateFinance />}
+  </>;
+}
+
+function TrafficReport() {
   const { data: cats } = useSuspenseQuery(adminCategories);
   const { data: mks } = useSuspenseQuery(adminMarketplaces);
   const [days, setDays] = useState(30);
@@ -132,8 +144,7 @@ function Desempenho() {
         <div>
           <h1 className="text-2xl font-extrabold text-navy">Desempenho</h1>
           <p className="text-sm text-muted-foreground">
-            Cliques mostram interesse, não vendas. Vendas e comissões só aparecem no painel de cada
-            marketplace.
+            Cliques mostram interesse, não vendas. Consulte a aba Central financeira para transações disponíveis na Awin.
           </p>
         </div>
         <Button variant="outline" onClick={exportCsv} disabled={!r}>

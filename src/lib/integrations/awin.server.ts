@@ -1,4 +1,5 @@
 import { canGenerateAwinLink, normalizeProgrammes, verifiedAwinLink, type AwinRelationship } from "./awin";
+import { normalizeTransactions, transactionRange, summarizeTransactions } from "./awin-finance";
 
 function credentials() {
   const id = process.env["AWIN_PUBLISHER_ID"]?.trim() ?? "";
@@ -45,4 +46,25 @@ export async function generateAwinLink(advertiserId: number, destination: string
   const url = verifiedAwinLink(value, c.id, advertiserId, destination);
   if (!url) throw new Error("A Awin não devolveu um link verificável para esta conta e destino.");
   return url;
+}
+
+/** Consulta somente leitura, por data da transação, não por data de pagamento. */
+export async function awinFinancialReport(days: number) {
+  const c = credentials();
+  if (!c) throw new Error("Credenciais Awin não configuradas.");
+  const range = transactionRange(days);
+  const raw = await call("transactions/", new URLSearchParams({
+    startDate: range.start, endDate: range.end, timezone: "UTC", dateType: "transaction",
+  }));
+  const normalized = normalizeTransactions(raw, c.id);
+  let names = new Map<number, string>();
+  let namesUnavailable = false;
+  try {
+    names = new Map((await listAwinProgrammes("joined")).map((p) => [p.id, p.name]));
+  } catch { namesUnavailable = true; }
+  const transactions = normalized.rows.map((r) => ({ ...r, advertiserName: names.get(r.advertiserId) ?? "Anunciante " + r.advertiserId }));
+  return {
+    range, transactions, totals: summarizeTransactions(transactions),
+    ignored: normalized.ignored, duplicates: normalized.duplicates, namesUnavailable,
+  };
 }
