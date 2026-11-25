@@ -8,7 +8,9 @@ describe("texto público do achadinho", () => {
   });
 
   it("retira valores em reais do meio do texto", () => {
-    expect(withoutOfferPrice("Confira R$ 499,90 na oferta")).toBe("Confira o preço na loja na oferta");
+    expect(withoutOfferPrice("Confira R$ 499,90 na oferta")).toBe(
+      "Confira o preço na loja na oferta",
+    );
   });
 
   it("preserva números que identificam o modelo ou especificação", () => {

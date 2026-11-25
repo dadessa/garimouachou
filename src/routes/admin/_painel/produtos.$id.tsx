@@ -443,7 +443,8 @@ function ProductForm() {
                 }
               />
               <p id="nome-dica" className="text-xs text-muted-foreground">
-                Use marca, modelo e uma característica importante. Preencha o preço no campo próprio.
+                Use marca, modelo e uma característica importante. Preencha o preço no campo
+                próprio.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
