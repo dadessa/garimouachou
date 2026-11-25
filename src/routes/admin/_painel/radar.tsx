@@ -486,8 +486,7 @@ function RunsPanel({
               · {r.items} itens · {r.requests} consultas
               {Array.isArray(r.sources) && (
                 <span className="text-muted-foreground">
- ·                {" "}
-                   {" "}
+                  ·{" "}
                   {(r.sources as { source: string; status: string }[])
                     .map((x) => `${x.source}: ${x.status}`)
                     .join(" · ")}

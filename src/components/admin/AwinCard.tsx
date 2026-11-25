@@ -157,7 +157,7 @@ export function AwinCard() {
                     <span className="min-w-0 break-words">
                       {p.name}{" "}
                       <span className="text-xs text-muted-foreground">
-·                         ID {p.id}
+                        · ID {p.id}
                         {p.linkStatus === "offline" ? " · links indisponíveis" : ""}
                       </span>
                     </span>
