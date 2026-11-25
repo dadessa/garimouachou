@@ -12,7 +12,7 @@ export function displayablePrice(p: PriceInfo, mk: MarketplaceAdapter, now = new
   if (!validPriceCents(p.currentPrice) || !p.priceCheckedAt) return null;
   if (p.priceSource !== "api" && !mk.allowManualPrice) return null;
   const ageH = (now.getTime() - new Date(p.priceCheckedAt).getTime()) / 36e5;
-  if (!(ageH >= 0 && ageH <= mk.priceMaxAgeHours)) return null;
+  if (!(ageH >= 0 && ageH < effectivePriceHours(mk.priceMaxAgeHours, p.priceSource))) return null;
   const previous =
     validPriceCents(p.previousPrice) && p.previousPrice > p.currentPrice ? p.previousPrice : null;
   return { current: p.currentPrice, previous, checkedAt: new Date(p.priceCheckedAt) };
@@ -23,4 +23,9 @@ export const formatBRL = (cents: number) =>
 
 export function validPriceCents(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
+}
+
+/** Prazo conservador comum de API: o MCP informa validade de seis horas. */
+export function effectivePriceHours(maxAge: number, source?: "manual" | "api") {
+  return source === "api" ? Math.min(maxAge, 6) : maxAge;
 }

@@ -55,9 +55,9 @@ describe("histórico de preços", () => {
     const row = { ...sample, valid_until: "2026-11-25T15:00:00Z" };
     expect(isObservationCurrent(row, 24, now)).toBe(true);
     expect(isObservationCurrent({ ...row, valid_until: null }, 24, now)).toBe(false);
-    expect(
-      isObservationCurrent({ ...row, valid_until: "2026-11-25T13:00:00Z" }, 24, now),
-    ).toBe(false);
+    expect(isObservationCurrent({ ...row, valid_until: "2026-11-25T13:00:00Z" }, 24, now)).toBe(
+      false,
+    );
   });
 
   it("exclui fontes manuais e Amazon do histórico desta versão", () => {
@@ -67,7 +67,11 @@ describe("histórico de preços", () => {
   });
 
   it("não exibe preço inválido ou data inválida na vitrine", () => {
-    expect(displayablePrice({ currentPrice: 100, priceCheckedAt: "inválida" }, shopee, now)).toBeNull();
-    expect(displayablePrice({ currentPrice: 0, priceCheckedAt: sample.fetched_at }, shopee, now)).toBeNull();
+    expect(
+      displayablePrice({ currentPrice: 100, priceCheckedAt: "inválida" }, shopee, now),
+    ).toBeNull();
+    expect(
+      displayablePrice({ currentPrice: 0, priceCheckedAt: sample.fetched_at }, shopee, now),
+    ).toBeNull();
   });
 });

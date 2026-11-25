@@ -45,6 +45,23 @@ export async function runRadarRefresh(sb: Sb, trigger: "manual" | "agendada") {
   let requests = 0;
   let tried = 0;
 
+  try {
+    const { monitorPublishedPrices } = await import("@/lib/price-monitor.server");
+    const result = await monitorPublishedPrices(sb);
+    requests += result.requests;
+    items += result.updated;
+    if (result.checked) tried++;
+    report.push({
+      source: "Monitoramento de preços",
+      status: result.status,
+      count: result.updated,
+    });
+    if (result.errors) errors.push("Monitoramento: " + result.errors + " falha(s) na consulta ou gravação.");
+  } catch {
+    errors.push("Não foi possível executar o monitoramento individual de preços.");
+    report.push({ source: "Monitoramento de preços", status: "Falha", count: 0 });
+  }
+
   const s = await import("@/lib/marketplaces/shopee.server");
   if (!s.shopeeConfigured()) report.push({ source: "Shopee", status: "Não configurada", count: 0 });
   else {

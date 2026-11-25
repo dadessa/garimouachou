@@ -10,7 +10,11 @@ async function sha256Hex(s: string) {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export async function shopeeQuery<T>(query: string, variables: Record<string, unknown> = {}) {
+export async function shopeeQuery<T>(
+  query: string,
+  variables: Record<string, unknown> = {},
+  timeoutMs = 15_000,
+) {
   const appId = process.env["SHOPEE_AFFILIATE_APP_ID"];
   const secret = process.env["SHOPEE_AFFILIATE_APP_SECRET"];
   if (!appId || !secret) throw new Error("Shopee não configurada.");
@@ -24,6 +28,8 @@ export async function shopeeQuery<T>(query: string, variables: Record<string, un
       authorization: `SHA256 Credential=${appId}, Timestamp=${ts}, Signature=${sig}`,
     },
     body: payload,
+    redirect: "error",
+    signal: AbortSignal.timeout(timeoutMs),
   });
   const body = (await res.json().catch(() => null)) as {
     data?: T;
@@ -69,17 +75,22 @@ export async function shopeeRadarPage(opts: {
   page: number;
   sortType: number;
   limit?: number;
+  timeoutMs?: number;
 }) {
   const q = `query($keyword:String,$productCatId:Int,$page:Int,$limit:Int,$sortType:Int){productOfferV2(keyword:$keyword,productCatId:$productCatId,page:$page,limit:$limit,sortType:$sortType){nodes{itemId shopId productName imageUrl price priceMin priceMax priceDiscountRate commissionRate sellerCommissionRate shopeeCommissionRate ratingStar sales offerLink productLink periodEndTime} pageInfo{page hasNextPage}}}`;
   const d = await shopeeQuery<{
     productOfferV2: { nodes: ShopeeOffer[]; pageInfo: { page: number; hasNextPage: boolean } };
-  }>(q, {
-    keyword: opts.keyword ?? "",
-    productCatId: opts.productCatId,
-    page: opts.page,
-    limit: opts.limit ?? 50,
-    sortType: opts.sortType,
-  });
+  }>(
+    q,
+    {
+      keyword: opts.keyword ?? "",
+      productCatId: opts.productCatId,
+      page: opts.page,
+      limit: opts.limit ?? 50,
+      sortType: opts.sortType,
+    },
+    opts.timeoutMs,
+  );
   return d.productOfferV2;
 }
 

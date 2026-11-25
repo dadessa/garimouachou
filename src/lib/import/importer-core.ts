@@ -3,6 +3,7 @@ import type { Database } from "@/integrations/supabase/types";
 import type { CategoryRow, MarketplaceRow } from "@/lib/admin/api";
 import { publishMissing } from "@/lib/publish-rules";
 import { getMarketplace } from "@/lib/marketplaces";
+import { effectivePriceHours } from "@/lib/price";
 import { detectMarketplace, importSlug, type ImportDraft, type ImportStatus } from "./rules";
 
 export interface ImportResult {
@@ -138,8 +139,8 @@ export function importPrice(d: ImportDraft, mkSlug: string, now = new Date()) {
     return { cents: d.priceCents, checkedAt: at, stale: false };
   }
   if (!d.priceCheckedAt) return { cents: null, checkedAt: null, stale: true };
-  const maxH = getMarketplace(mkSlug)?.priceMaxAgeHours ?? 24;
+  const maxH = effectivePriceHours(getMarketplace(mkSlug)?.priceMaxAgeHours ?? 24, "api");
   const ageH = (now.getTime() - new Date(d.priceCheckedAt).getTime()) / 36e5;
-  if (!(ageH >= 0 && ageH <= maxH)) return { cents: null, checkedAt: null, stale: true };
+  if (!(ageH >= 0 && ageH < maxH)) return { cents: null, checkedAt: null, stale: true };
   return { cents: d.priceCents, checkedAt: d.priceCheckedAt, stale: false };
 }

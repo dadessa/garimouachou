@@ -3,7 +3,7 @@ import { convertedAffiliateLink, safeHttps, type AfItem } from "./mcp-afiliado";
 const BASE = "https://mcpdoafiliado.com/api/v1";
 export const afConfigured = () => !!process.env["MCP_AFILIADO_API_KEY"];
 
-async function call<T>(path: string, body?: unknown): Promise<T> {
+async function call<T>(path: string, body?: unknown, timeoutMs = 20_000): Promise<T> {
   const key = process.env["MCP_AFILIADO_API_KEY"];
   if (!key) throw new Error("MCP do Afiliado não configurado.");
   const res = await fetch(BASE + path, {
@@ -11,7 +11,7 @@ async function call<T>(path: string, body?: unknown): Promise<T> {
     headers: { "X-API-Key": key, "content-type": "application/json" },
     redirect: "manual",
     ...(body ? { body: JSON.stringify(body) } : {}),
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   const j = (await res.json().catch(() => ({}))) as {
     success?: boolean;
@@ -27,7 +27,7 @@ export interface BotInfo {
   public_catalogs: Record<string, { searchable: boolean; monetized: boolean }>;
   convertible_routes?: { by_provider: { provider: string }[] };
 }
-export const botInfo = () => call<BotInfo>("/bot");
+export const botInfo = (timeoutMs?: number) => call<BotInfo>("/bot", undefined, timeoutMs);
 
 /** Lojas pesquisáveis com indicação de monetização pela conta. */
 export function searchableSites(b: BotInfo) {
@@ -38,13 +38,16 @@ export function searchableSites(b: BotInfo) {
   return out;
 }
 
-export const searchProducts = (a: {
-  query: string;
-  site: string;
-  sort: string;
-  limit: number;
-  price_max?: number;
-}) => call<{ items: AfItem[] }>("/search-products", a).then((r) => r.items ?? []);
+export const searchProducts = (
+  a: {
+    query: string;
+    site: string;
+    sort: string;
+    limit: number;
+    price_max?: number;
+  },
+  timeoutMs?: number,
+) => call<{ items: AfItem[] }>("/search-products", a, timeoutMs).then((r) => r.items ?? []);
 
 /** Gera links de afiliada da conta (só onde o MCP do Afiliado tem rota autorizada). */
 export async function convertLinks(urls: string[]) {

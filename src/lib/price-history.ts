@@ -42,9 +42,7 @@ export function summarizePriceHistory(
     points,
     min: values.length ? Math.min(...values) : null,
     max: values.length ? Math.max(...values) : null,
-    average: values.length
-      ? Math.round(values.reduce((a, b) => a + b, 0) / values.length)
-      : null,
+    average: values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : null,
     latest: points.at(-1) ?? null,
   };
 }
@@ -56,9 +54,5 @@ export function isObservationCurrent(
 ) {
   if (!validPriceCents(observation.price_cents) || !observation.valid_until) return false;
   const age = (now.getTime() - Date.parse(observation.fetched_at)) / 36e5;
-  return (
-    age >= 0 &&
-    age <= maxAgeHours &&
-    Date.parse(observation.valid_until) > now.getTime()
-  );
+  return age >= 0 && age <= maxAgeHours && Date.parse(observation.valid_until) > now.getTime();
 }

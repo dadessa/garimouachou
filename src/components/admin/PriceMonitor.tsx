@@ -6,7 +6,11 @@ import { Input } from "@/components/ui/input";
 import { adminMarketplaces, adminProducts, isPriceStale } from "@/lib/admin/api";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/price";
-import { isObservationCurrent, summarizePriceHistory, supportsPriceHistory } from "@/lib/price-history";
+import {
+  isObservationCurrent,
+  summarizePriceHistory,
+  supportsPriceHistory,
+} from "@/lib/price-history";
 
 const box = "rounded-2xl border border-border bg-card p-4";
 const money = (v: number | null) => (v == null ? "—" : formatBRL(v));
@@ -68,7 +72,11 @@ export function PriceMonitor() {
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Link to="/admin/produtos" search={{}} className="rounded-full border px-4 py-2 text-sm font-bold">
+        <Link
+          to="/admin/produtos"
+          search={{}}
+          className="rounded-full border px-4 py-2 text-sm font-bold"
+        >
           Voltar aos produtos
         </Link>
         <Link to="/admin/radar" className="rounded-full border px-4 py-2 text-sm font-bold">
@@ -138,7 +146,9 @@ export function PriceMonitor() {
               ))}
             </tbody>
           </table>
-          {!list.length && <p className="p-3 text-sm text-muted-foreground">Nenhum produto encontrado.</p>}
+          {!list.length && (
+            <p className="p-3 text-sm text-muted-foreground">Nenhum produto encontrado.</p>
+          )}
         </div>
       </section>
       {product && (
@@ -167,7 +177,9 @@ export function PriceMonitor() {
               Sem identificador externo ou marketplace. Não é possível vincular com segurança.
             </p>
           ) : history.isPending ? (
-            <p role="status" className="mt-2 text-sm">Consultando histórico...</p>
+            <p role="status" className="mt-2 text-sm">
+              Consultando histórico...
+            </p>
           ) : history.isError ? (
             <p role="alert" className="mt-2 text-sm text-destructive">
               Não foi possível consultar o histórico.
@@ -188,13 +200,17 @@ export function PriceMonitor() {
                 <Stat label="Média das amostras" value={money(history.data.summary.average)} />
               </div>
               <p className="text-sm">
-                {isObservationCurrent(history.data.observation, marketplace?.price_max_age_hours ?? 0)
+                {isObservationCurrent(
+                  history.data.observation,
+                  marketplace?.price_max_age_hours ?? 0,
+                )
                   ? "Última oferta observada: " + money(history.data.observation.price_cents)
                   : "Última oferta sem preço válido para exibição."}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Consultada em {new Date(history.data.observation.fetched_at).toLocaleString("pt-BR")}.
-                O preço do catálogo não é alterado automaticamente.
+                Consultada em{" "}
+                {new Date(history.data.observation.fetched_at).toLocaleString("pt-BR")}. O catálogo
+                só é atualizado após uma consulta individual confirmada.
               </p>
               <div className="mt-3 max-h-72 overflow-auto">
                 {history.data.summary.points.length ? (
@@ -215,7 +231,9 @@ export function PriceMonitor() {
                     </tbody>
                   </table>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Sem amostras válidas nesse período.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Sem amostras válidas nesse período.
+                  </p>
                 )}
               </div>
             </>
@@ -228,16 +246,21 @@ export function PriceMonitor() {
             >
               Revisar produto
             </Link>
-            <Button variant="outline" onClick={() => void history.refetch()} disabled={!history.isEnabled || history.isFetching}>
+            <Button
+              variant="outline"
+              onClick={() => void history.refetch()}
+              disabled={!history.isEnabled || history.isFetching}
+            >
               Reconsultar registros
             </Button>
           </div>
         </section>
       )}
       <p className="text-xs text-muted-foreground">
-        O histórico utiliza somente registros já existentes. O Radar e o garimpo podem gerar novas
-        amostras quando consultam a mesma oferta. Não há garantia de cobertura diária de todos os
-        produtos. A divulgação pública do histórico depende das permissões de cada fonte.
+        O Radar consulta até quatro produtos publicados por execução, em rodízio. Somente preços de
+        API confirmados pelo identificador exato são atualizados. Preços de API expiram em até seis
+        horas; a ausência de resultados não comprova indisponibilidade. A cobertura depende das
+        fontes conectadas e da frequência do agendamento.
       </p>
     </div>
   );

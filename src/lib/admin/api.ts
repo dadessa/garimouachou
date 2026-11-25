@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { validPriceCents } from "@/lib/price";
+import { effectivePriceHours, validPriceCents } from "@/lib/price";
 
 export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
@@ -40,14 +40,18 @@ export const adminBanners = queryOptions({
 
 /** Preço vencido: tem preço, mas a verificação está ausente ou fora do prazo do marketplace. */
 export function isPriceStale(
-  p: Pick<ProductRow, "current_price_cents" | "price_checked_at">,
+  p: Pick<ProductRow, "current_price_cents" | "price_checked_at"> &
+    Partial<Pick<ProductRow, "price_source">>,
   mk: Pick<MarketplaceRow, "price_max_age_hours"> | undefined,
   now = new Date(),
 ) {
   if (p.current_price_cents == null) return false;
   if (!p.price_checked_at || !mk) return true;
   const age = (now.getTime() - new Date(p.price_checked_at).getTime()) / 36e5;
-  return !validPriceCents(p.current_price_cents) || !(age >= 0 && age <= mk.price_max_age_hours);
+  return (
+    !validPriceCents(p.current_price_cents) ||
+    !(age >= 0 && age < effectivePriceHours(mk.price_max_age_hours, p.price_source))
+  );
 }
 
 /** Troca a ordem de dois itens vizinhos. */
