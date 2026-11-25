@@ -151,17 +151,20 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
     } else if (run.phase === "convert") {
       // Gera links da conta só onde o MCP do Afiliado tem rota autorizada; falha = pendência.
       const errors = [...run.errors];
-      const { data: opp } = await sb
-        .from("radar_opportunities")
-        .select("id,external_id,affiliate_url,signals")
-        .in("id", run.candidates);
+      const { data: opp, error: readError } = run.candidates.length
+        ? await sb.from("radar_opportunities").select("id,external_id,affiliate_url,signals").in("id", run.candidates)
+        : { data: [], error: null };
+      if (readError) throw new Error("Não foi possível consultar as oportunidades para conversão.");
       const need = (opp ?? []).filter((o) => !o.affiliate_url && !o.signals.includes("sem_comissao_na_conta"));
       if (need.length) {
         try {
           const m = await af.convertLinks(need.map((o) => o.external_id));
           for (const o of need) {
             const link = m.get(o.external_id);
-            if (link) await sb.from("radar_opportunities").update({ affiliate_url: link }).eq("id", o.id);
+            if (link && link !== o.external_id && /^https:\/\//i.test(link)) {
+              const { error } = await sb.from("radar_opportunities").update({ affiliate_url: link }).eq("id", o.id);
+              if (error) errors.push("Não foi possível salvar um link convertido no Radar.");
+            }
           }
         } catch (e) {
           errors.push(`Conversão de links: ${(e as Error).message.slice(0, 120)}`);
@@ -176,11 +179,11 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
 }
 
 async function createBatch(sb: Sb, run: Run, s: GarimpoSettings, save: (p: Partial<Run>) => Promise<void>) {
-  const { data: opp } = await sb
-    .from("radar_opportunities")
-    .select("*")
-    .in("id", run.candidates)
-    .order("sales", { ascending: false, nullsFirst: false });
+  const { data: opp, error: readError } = run.candidates.length
+    ? await sb.from("radar_opportunities").select("*").in("id", run.candidates)
+        .order("sales", { ascending: false, nullsFirst: false }).order("id")
+    : { data: [], error: null };
+  if (readError) throw new Error("Não foi possível consultar as oportunidades para pré-cadastro.");
   const list = opp ?? [];
   const slice = list.slice(run.cursor, run.cursor + CREATE_PER_STEP);
   let { queued, unmonetized, duplicates } = run;
@@ -191,8 +194,12 @@ async function createBatch(sb: Sb, run: Run, s: GarimpoSettings, save: (p: Parti
     const noAi = async () => ({ error: null, description: "", tags: [] as string[] });
     for (const o of slice) {
       if (queued >= s.daily_limit) break;
-      if (!o.affiliate_url) {
+      if (!o.affiliate_url || o.affiliate_url === o.external_id) {
         unmonetized++;
+        continue;
+      }
+      if (!o.valid_until || !(new Date(o.valid_until).getTime() > Date.now())) {
+        if (errors.length < 30) errors.push(`${o.name.slice(0, 50)}: oferta vencida; consulte novamente.`);
         continue;
       }
       const dr = emptyDraft(o.affiliate_url);
@@ -206,15 +213,11 @@ async function createBatch(sb: Sb, run: Run, s: GarimpoSettings, save: (p: Parti
       const out = await importOneWith(
         sb,
         dr,
-        { publish: false, defaultCategoryId: null, useAi: false },
+        { publish: false, defaultCategoryId: null, useAi: false, garimpoRunId: run.id },
         { mks: mks.data ?? [], cats: cats.data ?? [], genCopy: noAi },
       );
       if (out.status === "duplicate") duplicates++;
-      else if (out.productId) {
-        await sb
-          .from("products")
-          .update({ origin: "garimpo", review_status: "pending", garimpo_run_id: run.id })
-          .eq("id", out.productId);
+      else if (out.status === "created" && out.productId) {
         created.push(out.productId);
         queued++;
       } else if (out.status === "error") {

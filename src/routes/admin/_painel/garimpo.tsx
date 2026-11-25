@@ -57,7 +57,7 @@ function Garimpo() {
   const pending = useQuery({
     queryKey: ["admin", "garimpo", "pending"],
     queryFn: async () =>
-      (await supabase.from("products").select("id", { count: "exact", head: true }).eq("review_status", "pending")).count ?? 0,
+      (await supabase.from("products").select("id", { count: "exact", head: true }).eq("review_status", "pending").eq("status", "draft")).count ?? 0,
   });
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
@@ -92,7 +92,9 @@ function Garimpo() {
         id = r.id;
         await qc.invalidateQueries({ queryKey: ["admin", "garimpo"] });
         if (r.status !== "running") {
-          toast.success(r.status === "failed" ? "Garimpo terminou com falha." : "Garimpo concluído.");
+          if (r.status === "failed") toast.error("Garimpo terminou com falha. Confira o histórico.");
+          else if (r.status === "partial") toast.warning("Garimpo concluído com pendências.");
+          else toast.success("Garimpo concluído.");
           break;
         }
       }

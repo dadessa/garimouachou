@@ -283,6 +283,9 @@ function ProductForm() {
         ),
       ],
       status: nextStatus,
+      ...(initial?.review_status === "pending" && nextStatus !== "draft"
+        ? { review_status: nextStatus === "published" ? "approved" : "rejected" }
+        : {}),
     };
     const res =
       id === "novo"

@@ -26,6 +26,8 @@ export async function importOneWith(
     useAi: boolean;
     /** Só quando a administradora pediu explicitamente salvar sem nome. */
     allowIncomplete?: boolean;
+    /** Garimpo: revisão gravada atomicamente com o rascunho. */
+    garimpoRunId?: string;
   },
   deps: { mks: MarketplaceRow[]; cats: CategoryRow[]; genCopy: GenCopy },
 ): Promise<ImportResult> {
@@ -84,7 +86,7 @@ export async function importOneWith(
   const price = importPrice(d, mk.slug);
   if (price.stale)
     notes.push("Preço da consulta vencido: salvo sem preço, revalide antes de publicar.");
-  const publish = opts.publish && missing.length === 0 && !price.stale;
+  const publish = !opts.garimpoRunId && opts.publish && missing.length === 0 && !price.stale;
   const { data: row, error } = await supabase
     .from("products")
     .insert({
@@ -104,6 +106,9 @@ export async function importOneWith(
       price_source: d.fromApi ? "api" : "manual",
       source: d.fromApi ? "api" : "manual",
       status: publish ? "published" : "draft",
+      ...(opts.garimpoRunId
+        ? { origin: "garimpo", review_status: "pending", garimpo_run_id: opts.garimpoRunId }
+        : {}),
     })
     .select("id")
     .single();

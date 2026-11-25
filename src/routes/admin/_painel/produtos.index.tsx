@@ -9,6 +9,8 @@ import { publishMissing } from "@/lib/publish-rules";
 import { adminCategories, adminMarketplaces, adminProducts, isPriceStale } from "@/lib/admin/api";
 
 export const Route = createFileRoute("/admin/_painel/produtos/")({
+  validateSearch: (search: Record<string, unknown>): { aba?: "aprovacao" } =>
+    search.aba === "aprovacao" ? { aba: "aprovacao" } : {},
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(adminProducts),
@@ -37,6 +39,8 @@ type BatchResult = { id: string; name: string; ok: boolean; message: string };
 
 function ProductList() {
   const qc = useQueryClient();
+  const { aba } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const { data: products } = useSuspenseQuery(adminProducts);
   const { data: cats } = useSuspenseQuery(adminCategories);
   const { data: mks } = useSuspenseQuery(adminMarketplaces);
@@ -60,6 +64,7 @@ function ProductList() {
     (p) =>
       (!q || norm(`${p.name} ${p.slug}`).includes(norm(q))) &&
       (!status || p.status === status) &&
+      (aba !== "aprovacao" || (p.status === "draft" && p.review_status === "pending")) &&
       (!cat || p.category_id === cat) &&
       (!mk || p.marketplace_id === mk) &&
       (!stale || isPriceStale(p, p.marketplace_id ? mkById.get(p.marketplace_id) : undefined)),
@@ -137,7 +142,7 @@ function ProductList() {
               // RLS exige papel admin e o gatilho valida novamente os requisitos de publicação.
               const { data, error } = await supabase
                 .from("products")
-                .update({ status: "published" })
+                .update({ status: "published", ...(current.review_status === "pending" ? { review_status: "approved" } : {}) })
                 .eq("id", item.id)
                 .eq("status", "draft")
                 .eq("updated_at", item.updatedAt)
@@ -190,6 +195,13 @@ function ProductList() {
             Novo produto
           </Link>
         </div>
+      </div>
+      <div className="mb-4 flex flex-wrap gap-2" aria-label="Visões de produtos">
+        <Button variant={aba !== "aprovacao" ? "default" : "outline"} onClick={() => { resetSelection(); setStatus(""); void navigate({ search: {} }); }}>Todos</Button>
+        <Button variant={aba === "aprovacao" ? "default" : "outline"} onClick={() => { resetSelection(); setStatus(""); void navigate({ search: { aba: "aprovacao" } }); }}>
+          Aguardando aprovação ({products.filter((p) => p.status === "draft" && p.review_status === "pending").length})
+        </Button>
+        <Link to="/admin/garimpo" className="inline-flex items-center rounded-full border border-input px-4 py-2 text-sm font-bold">Garimpo automático</Link>
       </div>
       <div className="mb-4 flex flex-wrap gap-2">
         <Input
@@ -445,7 +457,7 @@ function ProductList() {
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${p.status === "published" ? "bg-yellow text-navy" : "bg-muted text-muted-foreground"}`}
                   >
-                    {STATUS[p.status]}
+                    {p.status === "draft" && p.review_status === "pending" ? "Aguardando aprovação" : STATUS[p.status]}
                   </span>
                 </Link>
               </li>
