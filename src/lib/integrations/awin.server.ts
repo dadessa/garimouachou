@@ -27,7 +27,7 @@ async function call(path: string, query?: URLSearchParams, body?: object): Promi
       ...(body ? { "Content-Type": "application/json" } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
-    redirect: "error",
+    redirect: "manual",
     signal: AbortSignal.timeout(15_000),
     cache: "no-store",
   });
@@ -121,7 +121,7 @@ export async function listAwinCoupons(page: number) {
       filters: { membership: "joined", regionCodes: ["BR"], status: "active", type: "voucher" },
       pagination: { page, pageSize: 50 },
     }),
-    redirect: "error",
+    redirect: "manual",
     signal: AbortSignal.timeout(15_000),
     cache: "no-store",
   });
