@@ -8,6 +8,7 @@ import { ProductGrid, ProductGridSkeleton } from "@/components/site/ProductCard"
 import { SearchForm } from "@/components/site/SiteHeader";
 import { Section } from "@/components/site/Section";
 import { InstagramCta } from "@/components/site/InstagramCta";
+import { CouponShelf } from "@/components/site/CouponShelf";
 import { track } from "@/lib/analytics/track";
 import { categoriesQuery, homeQuery } from "@/lib/catalog/queries";
 
@@ -132,6 +133,7 @@ function Home() {
           <ProductGrid products={latest} />
         </Section>
       )}
+      <CouponShelf />
       <InstagramCta />
     </>
   );

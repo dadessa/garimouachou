@@ -3,6 +3,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { LoadError } from "@/components/site/EmptyState";
 import { ProductGrid } from "@/components/site/ProductCard";
 import { ProductDetail } from "@/components/site/ProductDetail";
+import { CouponShelf } from "@/components/site/CouponShelf";
 import { productQuery } from "@/lib/catalog/queries";
 
 export const Route = createFileRoute("/p/$slug")({
@@ -44,6 +45,7 @@ function ProductPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 pb-28 md:pb-6">
       <ProductDetail product={product} />
+      <CouponShelf productSlug={product.slug} marketplace={product.marketplace.slug} />
       {related.length > 0 && (
         <section className="pt-12">
           <h2 className="mb-4 text-xl">Mais em {product.categoryName}</h2>

@@ -110,3 +110,25 @@ export const awinFinanceFn = createServerFn({ method: "POST" })
       return { report: null, at, error: message.slice(0, 200) };
     }
   });
+
+export const awinCouponsFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { page: number }) => {
+    if (!Number.isInteger(d?.page) || d.page < 1 || d.page > 20) {
+      throw new Error("Página inválida.");
+    }
+    return { page: d.page };
+  })
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const awin = await import("./awin.server");
+    if (!awin.awinConfigured()) {
+      return { result: null, error: "Configure as credenciais Awin nos Secrets." };
+    }
+    try {
+      return { result: await awin.listAwinCoupons(data.page), error: null };
+    } catch {
+      // A URL da consulta contém o token; nunca enviar erros brutos ao navegador.
+      return { result: null, error: "Falha na consulta de cupons Awin. Confira a integração." };
+    }
+  });

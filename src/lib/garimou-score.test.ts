@@ -91,6 +91,11 @@ describe("Garimou Score do consumidor", () => {
     expect(score(a)).toEqual(score(b));
   });
   it("não usa amostras de outra fonte", () => {
-    expect(score(offer, samples.map((s) => ({ ...s, source: "manual" }))).score).toBeNull();
+    expect(
+      score(
+        offer,
+        samples.map((s) => ({ ...s, source: "manual" })),
+      ).score,
+    ).toBeNull();
   });
 });

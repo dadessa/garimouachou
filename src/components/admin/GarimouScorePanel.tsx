@@ -62,7 +62,9 @@ export function GarimouScorePanel({
           Oferta em avaliação. Não foi possível consultar o histórico.
         </p>
       ) : history.isPending ? (
-        <p role="status" className="text-sm">Consultando histórico para calcular a nota...</p>
+        <p role="status" className="text-sm">
+          Consultando histórico para calcular a nota...
+        </p>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {selected.map((o) => {
@@ -101,10 +103,9 @@ export function GarimouScorePanel({
         </div>
       )}
       <p className="text-xs text-muted-foreground">
-        Avaliações são notas do produto retornadas pela fonte, não reputação verificada do
-        vendedor. Frete, estoque, pagamento e quantidade de avaliações não confirmados. A nota
-        não é garantia de compra. A divulgação pública depende de autorização e identidade
-        persistente das ofertas.
+        Avaliações são notas do produto retornadas pela fonte, não reputação verificada do vendedor.
+        Frete, estoque, pagamento e quantidade de avaliações não confirmados. A nota não é garantia
+        de compra. A divulgação pública depende de autorização e identidade persistente das ofertas.
       </p>
     </section>
   );

@@ -1,4 +1,8 @@
-import { offerEligibility, type ComparisonOffer, type ComparisonStore } from "./marketplace-comparison";
+import {
+  offerEligibility,
+  type ComparisonOffer,
+  type ComparisonStore,
+} from "./marketplace-comparison";
 import { effectivePriceHours, validPriceCents } from "./price";
 import { summarizePriceHistory, type PriceSample } from "./price-history";
 

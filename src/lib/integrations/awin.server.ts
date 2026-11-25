@@ -5,6 +5,7 @@ import {
   type AwinRelationship,
 } from "./awin";
 import { normalizeTransactions, transactionRange, summarizeTransactions } from "./awin-finance";
+import { normalizeAwinCoupons } from "../coupons/awin-coupons";
 
 function credentials() {
   const id = process.env["AWIN_PUBLISHER_ID"]?.trim() ?? "";
@@ -101,4 +102,30 @@ export async function awinFinancialReport(days: number) {
     duplicates: normalized.duplicates,
     namesUnavailable,
   };
+}
+
+/** API de ofertas tem caminho singular, diferente das demais APIs de publisher. */
+export async function listAwinCoupons(page: number) {
+  const c = credentials();
+  if (!c) throw new Error("Credenciais Awin não configuradas.");
+  const url = new URL("https://api.awin.com/publisher/" + c.id + "/promotions");
+  url.searchParams.set("accessToken", c.token);
+  const r = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + c.token,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      filters: { membership: "joined", regionCodes: ["BR"], status: "active", type: "voucher" },
+      pagination: { page, pageSize: 50 },
+    }),
+    redirect: "error",
+    signal: AbortSignal.timeout(15_000),
+    cache: "no-store",
+  });
+  if (!r.ok) throw new Error("Awin retornou HTTP " + r.status + ".");
+  const raw: unknown = await r.json();
+  return normalizeAwinCoupons(raw, c.id);
 }
