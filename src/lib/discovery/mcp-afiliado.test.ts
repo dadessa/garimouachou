@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { afToRow, PRESET_MODE } from "./mcp-afiliado";
+import { afToRow, convertedAffiliateLink, PRESET_MODE } from "./mcp-afiliado";
 
 const item = {
   title: "Fone JBL",
@@ -27,6 +27,22 @@ describe("afToRow", () => {
   });
   it("sem nome não vira oferta", () => {
     expect(afToRow({ ...item, title: "" }, true)).toBeNull();
+  });
+  it("rejeita URL insegura, desconto impossível e preço não finito", () => {
+    expect(afToRow({ ...item, url: "javascript:alert(1)" }, true)).toBeNull();
+    const r = afToRow({ ...item, discount_percent: 100, price_number: Infinity }, true)!;
+    expect(r.price_cents).toBeNull();
+    expect(r.discount_pct).toBeNull();
+    expect(r.original_price_cents).toBeNull();
+  });
+  it("não inventa preço anterior nem comissão de loja não monetizada", () => {
+    const r = afToRow({ ...item, commission_rate: 0.08 }, false)!;
+    expect(r.original_price_cents).toBeNull();
+    expect(r.commission_rate).toBeNull();
+  });
+  it("prefere o link de afiliada explícito e rejeita link cru", () => {
+    expect(convertedAffiliateLink(item.url, "https://www.awin1.com/cread.php?awinmid=1", "https://short.example/abc")).toBe("https://www.awin1.com/cread.php?awinmid=1");
+    expect(convertedAffiliateLink(item.url, item.url, "http://example.com")).toBeNull();
   });
   it("atalho de tendência pesquisa por mais vendidos", () => {
     expect(PRESET_MODE["Encontrar produtos em tendência"]).toBe("tendencia");

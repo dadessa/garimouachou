@@ -12,6 +12,21 @@ export interface AfItem {
   site?: string;
 }
 export const AF_VALID_HOURS = 6;
+
+/** Dados externos não são confiáveis: apenas URLs HTTPS sem credenciais ou porta alternativa. */
+export function safeHttps(value: unknown): value is string {
+  if (typeof value !== "string" || /[\s\\]/.test(value)) return false;
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" && !!u.hostname && !u.username && !u.password && !u.port;
+  } catch { return false; }
+}
+
+export function convertedAffiliateLink(original: string, affiliate: unknown, final: unknown): string | null {
+  // Preferir o link de afiliada explícito (evita depender de encurtador adicional).
+  for (const v of [affiliate, final]) if (safeHttps(v) && v !== original) return v;
+  return null;
+}
 export type Mode = "oportunidades" | "tendencia" | "comissao" | "baratos" | "comparar";
 
 export const MODE_SEARCH: Record<Mode, { sort: string; priceMax?: number }> = {
@@ -45,31 +60,32 @@ export const DEFAULT_KEYWORDS = [
  * pela conta (link convertido); catálogo público fica sem link de afiliada e não pode ser publicado.
  */
 export function afToRow(it: AfItem, monetized: boolean, now = new Date()) {
-  if (!it.title || !it.url) return null;
+  if (typeof it.title !== "string" || !it.title.trim() || !safeHttps(it.url)) return null;
   const price =
-    typeof it.price_number === "number" && it.price_number > 0
+    typeof it.price_number === "number" && Number.isFinite(it.price_number) && it.price_number >= 0.01 && it.price_number <= 21_474_836.47
       ? Math.round(it.price_number * 100)
       : null;
   const disc =
-    typeof it.discount_percent === "number" && it.discount_percent > 0 ? it.discount_percent : null;
+    typeof it.discount_percent === "number" && it.discount_percent > 0 && it.discount_percent < 100 ? it.discount_percent : null;
   const comm =
-    typeof it.commission_rate === "number" && it.commission_rate > 0
+    monetized && typeof it.commission_rate === "number" && it.commission_rate > 0 && it.commission_rate <= 1
       ? Math.round(it.commission_rate * 10000) / 100
       : null;
   const aff =
-    monetized && it.affiliate_url && it.affiliate_url !== it.url ? it.affiliate_url : null;
+    monetized ? convertedAffiliateLink(it.url, it.affiliate_url, null) : null;
   return {
     marketplace_slug: (it.site ?? "outro").toLowerCase(),
     external_id: it.url,
-    name: it.title.slice(0, 200),
-    image_url: it.image_url && /^https:\/\//.test(it.image_url) ? it.image_url : null,
+    name: it.title.trim().slice(0, 200),
+    image_url: safeHttps(it.image_url) ? it.image_url : null,
     affiliate_url: aff,
     price_cents: price,
-    original_price_cents: price != null && disc ? Math.round(price / (1 - disc / 100)) : null,
+    // Desconto percentual arredondado não comprova o preço anterior.
+    original_price_cents: null,
     discount_pct: disc,
     commission_rate: comm,
-    sales: typeof it.sales === "number" ? it.sales : null,
-    rating: typeof it.rating === "number" ? Math.round(it.rating * 10) / 10 : null,
+    sales: typeof it.sales === "number" && Number.isSafeInteger(it.sales) && it.sales >= 0 && it.sales <= 2_147_483_647 ? it.sales : null,
+    rating: typeof it.rating === "number" && it.rating >= 0 && it.rating <= 5 ? Math.round(it.rating * 10) / 10 : null,
     signals: monetized ? [] : ["sem_comissao_na_conta"],
     source: "mcp_afiliado",
     fetched_at: now.toISOString(),

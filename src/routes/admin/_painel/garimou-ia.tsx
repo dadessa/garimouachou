@@ -72,7 +72,7 @@ function GarimouIA() {
         <h1 className="text-2xl font-extrabold text-navy">Garimou IA</h1>
         <p className="text-sm text-muted-foreground">
           Agente comercial que consulta o Radar, o catálogo e o desempenho. Ele só recomenda: nada é
-          cadastrado sem a sua aprovação.
+          cadastrado sem a sua aprovação. Os atalhos de pesquisa funcionam sem chamar o modelo de IA.
         </p>
       </div>
       <Chat />
@@ -223,6 +223,7 @@ function Chat() {
                     <input
                       type="checkbox"
                       aria-label={`Selecionar ${c.nome}`}
+                      disabled={!c.tem_link_afiliada || c.vencido || c.no_catalogo}
                       checked={picked.has(c.id)}
                       onChange={(e) => toggle(c.id, e.target.checked)}
                     />
@@ -270,8 +271,8 @@ function Chat() {
                       <p className="text-muted-foreground">
                         Fonte: {c.fonte} · {new Date(c.consultado_em).toLocaleString("pt-BR")}
                       </p>
-                      <Button size="sm" onClick={() => startImport([c.id])}>
-                        Incluir no catálogo
+                      <Button size="sm" disabled={!c.tem_link_afiliada || c.vencido || c.no_catalogo} onClick={() => startImport([c.id])}>
+                        {c.no_catalogo ? "Já no catálogo" : "Incluir no catálogo"}
                       </Button>
                     </div>
                   </li>

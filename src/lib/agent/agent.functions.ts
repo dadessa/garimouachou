@@ -59,8 +59,33 @@ export const askAgent = createServerFn({ method: "POST" })
         limitations: [],
         noIntegration: false,
       };
-    const { runAgent } = await import("./agent.server");
     try {
+      // Atalhos comerciais usam a API e o ranking determinístico, sem chamar o modelo pago.
+      const mode = Object.hasOwn(PRESET_MODE, data.question.trim())
+        ? PRESET_MODE[data.question.trim()]
+        : undefined;
+      if (mode) {
+        const svc = await import("./services.server");
+        const r = await svc.discoverExternal(context.supabase, mode);
+        await svc.audit(context.supabase, context.userId, "painel", "agent_run", {
+          pergunta: data.question.slice(0, 200), ferramentas: ["discover_products"], modo: "sem_ia",
+        });
+        const novos = r.cards.filter((c) => !c.no_catalogo && !c.vencido && c.tem_link_afiliada).length;
+        return {
+          error: null as string | null,
+          answer: r.semIntegracao
+            ? "Pesquisa externa indisponível. Confira as integrações e as limitações abaixo."
+            : r.cards.length
+              ? `Pesquisa real concluída: ${r.cards.length} oportunidades exibidas, ${novos} novas com link de afiliada. Revise os dados nos cards antes de incluir no catálogo. Pesquisa e classificação sem uso do modelo de IA.`
+              : "Nenhuma oportunidade válida retornou das fontes consultadas. Confira as limitações e tente outras categorias.",
+          cards: r.cards,
+          tools: ["discover_products"],
+          sources: r.fontes.map((f) => `${f.fonte}: ${f.status} (${f.itens})`),
+          limitations: r.limitacoes,
+          noIntegration: r.semIntegracao,
+        };
+      }
+      const { runAgent } = await import("./agent.server");
       return {
         error: null as string | null,
         ...(await runAgent(
@@ -68,7 +93,7 @@ export const askAgent = createServerFn({ method: "POST" })
           context.userId,
           data.question,
           data.history,
-          PRESET_MODE[data.question.trim()],
+          undefined,
         )),
       };
     } catch (e) {

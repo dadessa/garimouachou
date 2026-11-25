@@ -1,4 +1,4 @@
-import type { AfItem } from "./mcp-afiliado";
+import { convertedAffiliateLink, safeHttps, type AfItem } from "./mcp-afiliado";
 
 const BASE = "https://mcpdoafiliado.com/api/v1";
 export const afConfigured = () => !!process.env["MCP_AFILIADO_API_KEY"];
@@ -48,7 +48,8 @@ export const searchProducts = (a: {
 
 /** Gera links de afiliada da conta (só onde o MCP do Afiliado tem rota autorizada). */
 export async function convertLinks(urls: string[]) {
-  if (!urls.length) return new Map<string, string>();
+  const input = [...new Set(urls.filter(safeHttps))].slice(0, 150);
+  if (!input.length) return new Map<string, string>();
   const r = await call<{
     items: {
       ok: boolean;
@@ -57,12 +58,17 @@ export async function convertLinks(urls: string[]) {
       affiliate_url?: string | null;
       final_url?: string | null;
     }[];
-  }>("/convert-links", { urls: urls.slice(0, 150) });
+  }>("/convert-links", { urls: input });
   const m = new Map<string, string>();
-  (r.items ?? []).forEach((it, i) => {
-    const link = it.final_url || it.affiliate_url;
-    const src = it.url_original ?? it.url ?? urls[i];
-    if (it.ok && link && src) m.set(src, link);
+  const items = r.items ?? [];
+  const known = new Set(input);
+  items.forEach((it, i) => {
+    const explicit = it.url_original ?? it.url;
+    const src = explicit && known.has(explicit) ? explicit :
+      !explicit && items.length === input.length ? input[i] : undefined;
+    if (it.ok !== true || !src) return;
+    const link = convertedAffiliateLink(src, it.affiliate_url, it.final_url);
+    if (link) m.set(src, link);
   });
   return m;
 }
