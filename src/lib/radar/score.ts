@@ -125,7 +125,9 @@ export function scoreAll(items: RadarInput[], weights: Weights, today = new Date
   for (const g of groups.values()) {
     const salesN = minMax(g.map((i) => i.sales));
     const searchN = minMax(g.map((i) => i.searchVolume));
-    const comm = g.map((i) => commissionCents(i.priceCents, totalRate(i.commissionRate, i.extraCommissionRate)));
+    const comm = g.map((i) =>
+      commissionCents(i.priceCents, totalRate(i.commissionRate, i.extraCommissionRate)),
+    );
     const commN = minMax(comm);
     const growthN = minMax(g.map((i) => i.growthPct));
     const priceN = minMax(g.map((i) => i.priceCents));

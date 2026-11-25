@@ -10,7 +10,7 @@ import { adminCategories, adminMarketplaces, adminProducts, isPriceStale } from 
 
 export const Route = createFileRoute("/admin/_painel/produtos/")({
   validateSearch: (search: Record<string, unknown>): { aba?: "aprovacao" } =>
-    search.aba === "aprovacao" ? { aba: "aprovacao" } : {},
+    search["aba"] === "aprovacao" ? { aba: "aprovacao" } : {},
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(adminProducts),
@@ -142,7 +142,10 @@ function ProductList() {
               // RLS exige papel admin e o gatilho valida novamente os requisitos de publicação.
               const { data, error } = await supabase
                 .from("products")
-                .update({ status: "published", ...(current.review_status === "pending" ? { review_status: "approved" } : {}) })
+                .update({
+                  status: "published",
+                  ...(current.review_status === "pending" ? { review_status: "approved" } : {}),
+                })
                 .eq("id", item.id)
                 .eq("status", "draft")
                 .eq("updated_at", item.updatedAt)
@@ -197,11 +200,33 @@ function ProductList() {
         </div>
       </div>
       <div className="mb-4 flex flex-wrap gap-2" aria-label="Visões de produtos">
-        <Button variant={aba !== "aprovacao" ? "default" : "outline"} onClick={() => { resetSelection(); setStatus(""); void navigate({ search: {} }); }}>Todos</Button>
-        <Button variant={aba === "aprovacao" ? "default" : "outline"} onClick={() => { resetSelection(); setStatus(""); void navigate({ search: { aba: "aprovacao" } }); }}>
-          Aguardando aprovação ({products.filter((p) => p.status === "draft" && p.review_status === "pending").length})
+        <Button
+          variant={aba !== "aprovacao" ? "default" : "outline"}
+          onClick={() => {
+            resetSelection();
+            setStatus("");
+            void navigate({ search: {} });
+          }}
+        >
+          Todos
         </Button>
-        <Link to="/admin/garimpo" className="inline-flex items-center rounded-full border border-input px-4 py-2 text-sm font-bold">Garimpo automático</Link>
+        <Button
+          variant={aba === "aprovacao" ? "default" : "outline"}
+          onClick={() => {
+            resetSelection();
+            setStatus("");
+            void navigate({ search: { aba: "aprovacao" } });
+          }}
+        >
+          Aguardando aprovação (
+          {products.filter((p) => p.status === "draft" && p.review_status === "pending").length})
+        </Button>
+        <Link
+          to="/admin/garimpo"
+          className="inline-flex items-center rounded-full border border-input px-4 py-2 text-sm font-bold"
+        >
+          Garimpo automático
+        </Link>
       </div>
       <div className="mb-4 flex flex-wrap gap-2">
         <Input
@@ -457,7 +482,9 @@ function ProductList() {
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${p.status === "published" ? "bg-yellow text-navy" : "bg-muted text-muted-foreground"}`}
                   >
-                    {p.status === "draft" && p.review_status === "pending" ? "Aguardando aprovação" : STATUS[p.status]}
+                    {p.status === "draft" && p.review_status === "pending"
+                      ? "Aguardando aprovação"
+                      : STATUS[p.status]}
                   </span>
                 </Link>
               </li>

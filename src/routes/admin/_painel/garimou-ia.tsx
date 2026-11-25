@@ -72,7 +72,8 @@ function GarimouIA() {
         <h1 className="text-2xl font-extrabold text-navy">Garimou IA</h1>
         <p className="text-sm text-muted-foreground">
           Agente comercial que consulta o Radar, o catálogo e o desempenho. Ele só recomenda: nada é
-          cadastrado sem a sua aprovação. Os atalhos de pesquisa funcionam sem chamar o modelo de IA.
+          cadastrado sem a sua aprovação. Os atalhos de pesquisa funcionam sem chamar o modelo de
+          IA.
         </p>
       </div>
       <Chat />
@@ -271,7 +272,11 @@ function Chat() {
                       <p className="text-muted-foreground">
                         Fonte: {c.fonte} · {new Date(c.consultado_em).toLocaleString("pt-BR")}
                       </p>
-                      <Button size="sm" disabled={!c.tem_link_afiliada || c.vencido || c.no_catalogo} onClick={() => startImport([c.id])}>
+                      <Button
+                        size="sm"
+                        disabled={!c.tem_link_afiliada || c.vencido || c.no_catalogo}
+                        onClick={() => startImport([c.id])}
+                      >
                         {c.no_catalogo ? "Já no catálogo" : "Incluir no catálogo"}
                       </Button>
                     </div>

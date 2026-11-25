@@ -64,8 +64,12 @@ export async function convertLinks(urls: string[]) {
   const known = new Set(input);
   items.forEach((it, i) => {
     const explicit = it.url_original ?? it.url;
-    const src = explicit && known.has(explicit) ? explicit :
-      !explicit && items.length === input.length ? input[i] : undefined;
+    const src =
+      explicit && known.has(explicit)
+        ? explicit
+        : !explicit && items.length === input.length
+          ? input[i]
+          : undefined;
     if (it.ok !== true || !src) return;
     const link = convertedAffiliateLink(src, it.affiliate_url, it.final_url);
     if (link) m.set(src, link);

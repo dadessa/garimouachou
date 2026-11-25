@@ -386,7 +386,11 @@ function ProductForm() {
     { label: "Endereço válido", ok: !slugErr },
   ];
   const discount =
-    priceCents && prevCents && !Number.isNaN(priceCents) && !Number.isNaN(prevCents) && prevCents > priceCents
+    priceCents &&
+    prevCents &&
+    !Number.isNaN(priceCents) &&
+    !Number.isNaN(prevCents) &&
+    prevCents > priceCents
       ? Math.round((1 - priceCents / prevCents) * 100)
       : null;
   const statusTone =
@@ -611,8 +615,8 @@ function ProductForm() {
             <fieldset className="space-y-3" disabled={!manualOk}>
               {!manualOk && (
                 <p className="rounded-lg bg-muted p-2 text-xs font-semibold text-muted-foreground">
-                  As regras da {mk?.name} não permitem preço digitado à mão. O preço fica oculto
-                  no site até existir uma integração oficial.
+                  As regras da {mk?.name} não permitem preço digitado à mão. O preço fica oculto no
+                  site até existir uma integração oficial.
                 </p>
               )}
               <div className="grid gap-3 sm:grid-cols-3">
@@ -796,7 +800,8 @@ function ProductForm() {
               ))}
             </ul>
             <p className="mt-2 text-xs text-muted-foreground">
-              Marketplace: {mk ? `${mk.name}${mk.is_active ? "" : " (desativado)"}` : "não escolhido"}
+              Marketplace:{" "}
+              {mk ? `${mk.name}${mk.is_active ? "" : " (desativado)"}` : "não escolhido"}
             </p>
           </PanelCard>
 

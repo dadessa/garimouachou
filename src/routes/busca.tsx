@@ -79,9 +79,7 @@ function SearchPage() {
               ? `Não achamos nada para “${search.q}” com esses filtros.`
               : "Nenhum achadinho com esses filtros."
           }
-          onClear={
-            search.q || search.cat || search.mk ? () => navigate({ search: {} }) : undefined
-          }
+          onClear={search.q || search.cat || search.mk ? () => navigate({ search: {} }) : undefined}
         />
       )}
     </div>

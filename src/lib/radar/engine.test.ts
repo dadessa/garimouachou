@@ -6,12 +6,30 @@ import { cleanTerm } from "@/lib/analytics/search-log";
 
 const now = new Date("2026-11-24T12:00:00Z");
 const op = (o: Partial<Opp>): Opp => ({
-  id: "a", marketplace_slug: "shopee", external_id: "1", name: "Produto", image_url: null, affiliate_url: "https://s.shopee.com.br/x",
-  category: "casa", price_cents: 10000, original_price_cents: null, commission_rate: 10, extra_commission_rate: null, discount_pct: null,
-  sales: 100, search_volume: null, growth_pct: 5, rating: 4.5, seasonal_dates: [], source: "manual",
-  fetched_at: now.toISOString(), valid_until: null, ...o,
+  id: "a",
+  marketplace_slug: "shopee",
+  external_id: "1",
+  name: "Produto",
+  image_url: null,
+  affiliate_url: "https://s.shopee.com.br/x",
+  category: "casa",
+  price_cents: 10000,
+  original_price_cents: null,
+  commission_rate: 10,
+  extra_commission_rate: null,
+  discount_pct: null,
+  sales: 100,
+  search_volume: null,
+  growth_pct: 5,
+  rating: 4.5,
+  seasonal_dates: [],
+  source: "manual",
+  fetched_at: now.toISOString(),
+  valid_until: null,
+  ...o,
 });
-const run = (ops: Opp[]) => buildRadar(ops, DEFAULT_WEIGHTS, { catalog: [], clicks: new Map(), snaps: [], now });
+const run = (ops: Opp[]) =>
+  buildRadar(ops, DEFAULT_WEIGHTS, { catalog: [], clicks: new Map(), snaps: [], now });
 
 describe("motor do radar", () => {
   it("comissão extra soma ao percentual base", () => {
@@ -24,25 +42,46 @@ describe("motor do radar", () => {
     expect(coveragePenalty(100, 1)).toBe(100);
   });
   it("produto com poucos indicadores não passa à frente de um completo", () => {
-    const rows = run([op({ id: "full", sales: 50 }), op({ id: "poor", external_id: "2", sales: null, growth_pct: null, rating: null, commission_rate: null, price_cents: null, category: "outra" })]);
+    const rows = run([
+      op({ id: "full", sales: 50 }),
+      op({
+        id: "poor",
+        external_id: "2",
+        sales: null,
+        growth_pct: null,
+        rating: null,
+        commission_rate: null,
+        price_cents: null,
+        category: "outra",
+      }),
+    ]);
     const best = applyView(rows, "melhores");
     expect(best[0]!.o.id).toBe("full");
   });
   it("ofertas vencidas nunca aparecem como oportunidade atual", () => {
-    const rows = run([op({ id: "v", valid_until: "2026-11-20T00:00:00Z" }), op({ id: "ok", external_id: "2" })]);
+    const rows = run([
+      op({ id: "v", valid_until: "2026-11-20T00:00:00Z" }),
+      op({ id: "ok", external_id: "2" }),
+    ]);
     expect(applyView(rows, "melhores").map((r) => r.o.id)).toEqual(["ok"]);
     expect(rows.find((r) => r.o.id === "v")!.s.expired).toBe(true);
   });
   it("crescimento vem do histórico quando a loja não informa", () => {
     expect(growthFromHistory(100, 150)).toBe(50);
     const rows = buildRadar([op({ growth_pct: null, sales: 150 })], DEFAULT_WEIGHTS, {
-      catalog: [], clicks: new Map(), now, snaps: [{ opportunity_id: "a", day: "2026-11-10", sales: 100, search_volume: null }],
+      catalog: [],
+      clicks: new Map(),
+      now,
+      snaps: [{ opportunity_id: "a", day: "2026-11-10", sales: 100, search_volume: null }],
     });
     expect(rows[0]!.growth).toBe(50);
     expect(rows[0]!.growthFromHistory).toBe(true);
   });
   it("classifica categoria pelo nome do produto", () => {
-    const cats = [{ id: "1", name: "Festas" }, { id: "2", name: "Cozinha" }];
+    const cats = [
+      { id: "1", name: "Festas" },
+      { id: "2", name: "Cozinha" },
+    ];
     expect(classifyCategory("Balão de festa metalizado", null, cats)?.id).toBe("1");
     expect(classifyCategory("Kit qualquer", "cozinha", cats)?.id).toBe("2");
     expect(classifyCategory("Item genérico", null, cats)).toBeNull();
@@ -56,9 +95,25 @@ describe("coleta", () => {
     expect(pagePlan(5000, 2) * 2).toBeLessThanOrEqual(MAX_REQUESTS_PER_RUN);
   });
   it("oferta da Shopee vira linha sem inventar dados", () => {
-    const r = shopeeToRow({ itemId: 9, shopId: 8, productName: "X", imageUrl: null, price: null, priceMin: "20.00", priceMax: null,
-      priceDiscountRate: 20, commissionRate: "0.08", sellerCommissionRate: "0.03", shopeeCommissionRate: "0.05", sales: null,
-      offerLink: "https://s.shopee.com.br/a", productLink: "" }, now);
+    const r = shopeeToRow(
+      {
+        itemId: 9,
+        shopId: 8,
+        productName: "X",
+        imageUrl: null,
+        price: null,
+        priceMin: "20.00",
+        priceMax: null,
+        priceDiscountRate: 20,
+        commissionRate: "0.08",
+        sellerCommissionRate: "0.03",
+        shopeeCommissionRate: "0.05",
+        sales: null,
+        offerLink: "https://s.shopee.com.br/a",
+        productLink: "",
+      },
+      now,
+    );
     expect(r.price_cents).toBe(2000);
     expect(r.original_price_cents).toBe(2500);
     expect(r.commission_rate).toBe(5);

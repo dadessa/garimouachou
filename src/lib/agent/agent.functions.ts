@@ -68,9 +68,13 @@ export const askAgent = createServerFn({ method: "POST" })
         const svc = await import("./services.server");
         const r = await svc.discoverExternal(context.supabase, mode);
         await svc.audit(context.supabase, context.userId, "painel", "agent_run", {
-          pergunta: data.question.slice(0, 200), ferramentas: ["discover_products"], modo: "sem_ia",
+          pergunta: data.question.slice(0, 200),
+          ferramentas: ["discover_products"],
+          modo: "sem_ia",
         });
-        const novos = r.cards.filter((c) => !c.no_catalogo && !c.vencido && c.tem_link_afiliada).length;
+        const novos = r.cards.filter(
+          (c) => !c.no_catalogo && !c.vencido && c.tem_link_afiliada,
+        ).length;
         return {
           error: null as string | null,
           answer: r.semIntegracao

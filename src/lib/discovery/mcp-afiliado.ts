@@ -19,10 +19,16 @@ export function safeHttps(value: unknown): value is string {
   try {
     const u = new URL(value);
     return u.protocol === "https:" && !!u.hostname && !u.username && !u.password && !u.port;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
-export function convertedAffiliateLink(original: string, affiliate: unknown, final: unknown): string | null {
+export function convertedAffiliateLink(
+  original: string,
+  affiliate: unknown,
+  final: unknown,
+): string | null {
   // Preferir o link de afiliada explícito (evita depender de encurtador adicional).
   for (const v of [affiliate, final]) if (safeHttps(v) && v !== original) return v;
   return null;
@@ -62,17 +68,24 @@ export const DEFAULT_KEYWORDS = [
 export function afToRow(it: AfItem, monetized: boolean, now = new Date()) {
   if (typeof it.title !== "string" || !it.title.trim() || !safeHttps(it.url)) return null;
   const price =
-    typeof it.price_number === "number" && Number.isFinite(it.price_number) && it.price_number >= 0.01 && it.price_number <= 21_474_836.47
+    typeof it.price_number === "number" &&
+    Number.isFinite(it.price_number) &&
+    it.price_number >= 0.01 &&
+    it.price_number <= 21_474_836.47
       ? Math.round(it.price_number * 100)
       : null;
   const disc =
-    typeof it.discount_percent === "number" && it.discount_percent > 0 && it.discount_percent < 100 ? it.discount_percent : null;
+    typeof it.discount_percent === "number" && it.discount_percent > 0 && it.discount_percent < 100
+      ? it.discount_percent
+      : null;
   const comm =
-    monetized && typeof it.commission_rate === "number" && it.commission_rate > 0 && it.commission_rate <= 1
+    monetized &&
+    typeof it.commission_rate === "number" &&
+    it.commission_rate > 0 &&
+    it.commission_rate <= 1
       ? Math.round(it.commission_rate * 10000) / 100
       : null;
-  const aff =
-    monetized ? convertedAffiliateLink(it.url, it.affiliate_url, null) : null;
+  const aff = monetized ? convertedAffiliateLink(it.url, it.affiliate_url, null) : null;
   return {
     marketplace_slug: (it.site ?? "outro").toLowerCase(),
     external_id: it.url,
@@ -84,8 +97,17 @@ export function afToRow(it: AfItem, monetized: boolean, now = new Date()) {
     original_price_cents: null,
     discount_pct: disc,
     commission_rate: comm,
-    sales: typeof it.sales === "number" && Number.isSafeInteger(it.sales) && it.sales >= 0 && it.sales <= 2_147_483_647 ? it.sales : null,
-    rating: typeof it.rating === "number" && it.rating >= 0 && it.rating <= 5 ? Math.round(it.rating * 10) / 10 : null,
+    sales:
+      typeof it.sales === "number" &&
+      Number.isSafeInteger(it.sales) &&
+      it.sales >= 0 &&
+      it.sales <= 2_147_483_647
+        ? it.sales
+        : null,
+    rating:
+      typeof it.rating === "number" && it.rating >= 0 && it.rating <= 5
+        ? Math.round(it.rating * 10) / 10
+        : null,
     signals: monetized ? [] : ["sem_comissao_na_conta"],
     source: "mcp_afiliado",
     fetched_at: now.toISOString(),

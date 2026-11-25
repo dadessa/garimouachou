@@ -64,7 +64,14 @@ export function useAdminImageUrl(url: string | null | undefined): string | null 
   return signed?.path === path ? signed.url : null;
 }
 
-export function AdminImg({ src, ...rest }: { src: string | null | undefined; alt: string; className?: string }) {
+export function AdminImg({
+  src,
+  ...rest
+}: {
+  src: string | null | undefined;
+  alt: string;
+  className?: string;
+}) {
   const u = useAdminImageUrl(src);
   return u ? createElement("img", { src: u, ...rest }) : null;
 }

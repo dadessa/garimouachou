@@ -23,7 +23,10 @@ export default defineMcp<AppContext>({
   createAppContext: async ({ auth: a }) => {
     const uid = a.getUserId();
     if (!uid || !a.getToken()) return { isAdmin: false };
-    const { data, error } = await supabaseForUser(a).rpc("has_role", { _user_id: uid, _role: "admin" });
+    const { data, error } = await supabaseForUser(a).rpc("has_role", {
+      _user_id: uid,
+      _role: "admin",
+    });
     if (error) throw new Error("role lookup failed");
     return { isAdmin: !!data };
   },

@@ -11,8 +11,7 @@ const shareMessage = (p: Product) => `Olha este achadinho: ${p.name}`;
 export const shareText = (p: Product) => `${shareMessage(p)}\n${productPageUrl(p.slug)}`;
 
 /** Endereço do WhatsApp com o texto já preenchido. */
-export const whatsappShareUrl = (text: string) =>
-  `https://wa.me/?text=${encodeURIComponent(text)}`;
+export const whatsappShareUrl = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
 
 /** Dados para o menu nativo de compartilhamento do celular. */
 export const nativeShareData = (p: Product) => ({

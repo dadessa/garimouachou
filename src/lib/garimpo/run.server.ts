@@ -20,13 +20,22 @@ type Run = Database["public"]["Tables"]["garimpo_runs"]["Row"];
 export async function loadSettings(sb: Sb): Promise<GarimpoSettings> {
   const { data } = await sb.from("garimpo_settings").select("*").eq("id", 1).maybeSingle();
   if (!data) throw new Error("Configuração do garimpo não encontrada.");
-  return { ...data, min_commission_pct: data.min_commission_pct, min_discount_pct: data.min_discount_pct };
+  return {
+    ...data,
+    min_commission_pct: data.min_commission_pct,
+    min_discount_pct: data.min_discount_pct,
+  };
 }
 
 async function releaseStale(sb: Sb) {
   await sb
     .from("garimpo_runs")
-    .update({ status: "failed", phase: "done", finished_at: new Date().toISOString(), errors: ["Execução interrompida."] })
+    .update({
+      status: "failed",
+      phase: "done",
+      finished_at: new Date().toISOString(),
+      errors: ["Execução interrompida."],
+    })
     .eq("status", "running")
     .lt("updated_at", new Date(Date.now() - STALE_RUN_MIN * 60_000).toISOString());
 }
@@ -52,10 +61,15 @@ export async function startGarimpo(sb: Sb, trigger: "manual" | "agendada") {
     try {
       const sites = af.searchableSites(await af.botInfo());
       const { data: cats } = await sb.from("categories").select("name").eq("is_active", true);
-      const kws = s.keywords.length ? s.keywords : [...d.DEFAULT_KEYWORDS, ...(cats ?? []).map((c) => c.name)];
+      const kws = s.keywords.length
+        ? s.keywords
+        : [...d.DEFAULT_KEYWORDS, ...(cats ?? []).map((c) => c.name)];
       plan = buildPlan(sites, kws, s);
       for (const x of sites)
-        sources.push({ fonte: `MCP do Afiliado · ${x.site}`, status: x.monetized ? "com comissão" : "sem comissão na conta" });
+        sources.push({
+          fonte: `MCP do Afiliado · ${x.site}`,
+          status: x.monetized ? "com comissão" : "sem comissão na conta",
+        });
       if (!sites.length) errors.push("Nenhuma loja pesquisável no MCP do Afiliado.");
     } catch (e) {
       errors.push(`MCP do Afiliado: ${(e as Error).message.slice(0, 160)}`);
@@ -115,7 +129,12 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
       let found = run.found;
       const ids = new Set(run.candidates);
       try {
-        const items = await af.searchProducts({ query: step.keyword, site: step.site, sort: "sales_desc", limit: 8 });
+        const items = await af.searchProducts({
+          query: step.keyword,
+          site: step.site,
+          sort: "sales_desc",
+          limit: 8,
+        });
         const rows = items
           .map((it) => d.afToRow({ ...it, site: it.site ?? step.site }, step.monetized))
           .filter((x): x is NonNullable<typeof x> => !!x);
@@ -152,17 +171,25 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
       // Gera links da conta só onde o MCP do Afiliado tem rota autorizada; falha = pendência.
       const errors = [...run.errors];
       const { data: opp, error: readError } = run.candidates.length
-        ? await sb.from("radar_opportunities").select("id,external_id,affiliate_url,signals").in("id", run.candidates)
+        ? await sb
+            .from("radar_opportunities")
+            .select("id,external_id,affiliate_url,signals")
+            .in("id", run.candidates)
         : { data: [], error: null };
       if (readError) throw new Error("Não foi possível consultar as oportunidades para conversão.");
-      const need = (opp ?? []).filter((o) => !o.affiliate_url && !o.signals.includes("sem_comissao_na_conta"));
+      const need = (opp ?? []).filter(
+        (o) => !o.affiliate_url && !o.signals.includes("sem_comissao_na_conta"),
+      );
       if (need.length) {
         try {
           const m = await af.convertLinks(need.map((o) => o.external_id));
           for (const o of need) {
             const link = m.get(o.external_id);
             if (link && link !== o.external_id && /^https:\/\//i.test(link)) {
-              const { error } = await sb.from("radar_opportunities").update({ affiliate_url: link }).eq("id", o.id);
+              const { error } = await sb
+                .from("radar_opportunities")
+                .update({ affiliate_url: link })
+                .eq("id", o.id);
               if (error) errors.push("Não foi possível salvar um link convertido no Radar.");
             }
           }
@@ -170,7 +197,12 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
           errors.push(`Conversão de links: ${(e as Error).message.slice(0, 120)}`);
         }
       }
-      await save({ phase: "create", cursor: 0, errors, requests: run.requests + (need.length ? 1 : 0) });
+      await save({
+        phase: "create",
+        cursor: 0,
+        errors,
+        requests: run.requests + (need.length ? 1 : 0),
+      });
     } else if (run.phase === "create") {
       await createBatch(sb, run, s, save);
     } else break;
@@ -178,10 +210,19 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
   return run;
 }
 
-async function createBatch(sb: Sb, run: Run, s: GarimpoSettings, save: (p: Partial<Run>) => Promise<void>) {
+async function createBatch(
+  sb: Sb,
+  run: Run,
+  s: GarimpoSettings,
+  save: (p: Partial<Run>) => Promise<void>,
+) {
   const { data: opp, error: readError } = run.candidates.length
-    ? await sb.from("radar_opportunities").select("*").in("id", run.candidates)
-        .order("sales", { ascending: false, nullsFirst: false }).order("id")
+    ? await sb
+        .from("radar_opportunities")
+        .select("*")
+        .in("id", run.candidates)
+        .order("sales", { ascending: false, nullsFirst: false })
+        .order("id")
     : { data: [], error: null };
   if (readError) throw new Error("Não foi possível consultar as oportunidades para pré-cadastro.");
   const list = opp ?? [];
@@ -190,7 +231,10 @@ async function createBatch(sb: Sb, run: Run, s: GarimpoSettings, save: (p: Parti
   const created = [...run.created_ids];
   const errors = [...run.errors];
   if (slice.length && queued < s.daily_limit) {
-    const [mks, cats] = await Promise.all([sb.from("marketplaces").select("*"), sb.from("categories").select("*")]);
+    const [mks, cats] = await Promise.all([
+      sb.from("marketplaces").select("*"),
+      sb.from("categories").select("*"),
+    ]);
     const noAi = async () => ({ error: null, description: "", tags: [] as string[] });
     for (const o of slice) {
       if (queued >= s.daily_limit) break;
@@ -199,7 +243,8 @@ async function createBatch(sb: Sb, run: Run, s: GarimpoSettings, save: (p: Parti
         continue;
       }
       if (!o.valid_until || !(new Date(o.valid_until).getTime() > Date.now())) {
-        if (errors.length < 30) errors.push(`${o.name.slice(0, 50)}: oferta vencida; consulte novamente.`);
+        if (errors.length < 30)
+          errors.push(`${o.name.slice(0, 50)}: oferta vencida; consulte novamente.`);
         continue;
       }
       const dr = emptyDraft(o.affiliate_url);
@@ -231,7 +276,9 @@ async function createBatch(sb: Sb, run: Run, s: GarimpoSettings, save: (p: Parti
   await save({
     cursor,
     queued,
-    unmonetized: done ? unmonetized + Math.max(0, list.slice(cursor).filter((o) => !o.affiliate_url).length) : unmonetized,
+    unmonetized: done
+      ? unmonetized + Math.max(0, list.slice(cursor).filter((o) => !o.affiliate_url).length)
+      : unmonetized,
     duplicates,
     created_ids: created,
     errors,

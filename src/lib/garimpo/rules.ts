@@ -38,7 +38,10 @@ export function nextRun(
   const t0 = new Date(now);
   t0.setUTCHours((s.run_hour + 3) % 24, 0, 0, 0);
   let t = t0.getTime() - 86_400_000;
-  const min = Math.max(now.getTime(), last ? last.getTime() + s.frequency_hours * 36e5 - 15 * 60_000 : 0);
+  const min = Math.max(
+    now.getTime(),
+    last ? last.getTime() + s.frequency_hours * 36e5 - 15 * 60_000 : 0,
+  );
   while (t < min) t += step;
   return new Date(t);
 }
@@ -55,11 +58,24 @@ export function isDue(s: GarimpoSettings, last: Date | null, now = new Date()) {
 
 /** Motivo do descarte pelos filtros configurados, ou null quando passa. Sem dado = não aprova filtro mínimo. */
 export function discardReason(c: Candidate, s: GarimpoSettings): string | null {
-  if (s.marketplaces.length && !s.marketplaces.includes(c.marketplace_slug)) return "loja fora da prioridade";
-  if (s.min_price_cents != null && (c.price_cents == null || c.price_cents < s.min_price_cents)) return "abaixo da faixa de preço";
-  if (s.max_price_cents != null && (c.price_cents == null || c.price_cents > s.max_price_cents)) return "acima da faixa de preço";
-  if (s.min_discount_pct != null && s.min_discount_pct > 0 && (c.discount_pct ?? 0) < s.min_discount_pct) return "desconto abaixo do mínimo";
-  if (s.min_commission_pct != null && s.min_commission_pct > 0 && (c.commission_rate ?? 0) < s.min_commission_pct) return "comissão abaixo do mínimo ou não informada";
+  if (s.marketplaces.length && !s.marketplaces.includes(c.marketplace_slug))
+    return "loja fora da prioridade";
+  if (s.min_price_cents != null && (c.price_cents == null || c.price_cents < s.min_price_cents))
+    return "abaixo da faixa de preço";
+  if (s.max_price_cents != null && (c.price_cents == null || c.price_cents > s.max_price_cents))
+    return "acima da faixa de preço";
+  if (
+    s.min_discount_pct != null &&
+    s.min_discount_pct > 0 &&
+    (c.discount_pct ?? 0) < s.min_discount_pct
+  )
+    return "desconto abaixo do mínimo";
+  if (
+    s.min_commission_pct != null &&
+    s.min_commission_pct > 0 &&
+    (c.commission_rate ?? 0) < s.min_commission_pct
+  )
+    return "comissão abaixo do mínimo ou não informada";
   return null;
 }
 
@@ -70,7 +86,9 @@ export function buildPlan(
   s: Pick<GarimpoSettings, "marketplaces" | "request_limit">,
   now = new Date(),
 ): PlanStep[] {
-  const pri = s.marketplaces.length ? sites.filter((x) => s.marketplaces.includes(x.site.toLowerCase())) : sites;
+  const pri = s.marketplaces.length
+    ? sites.filter((x) => s.marketplaces.includes(x.site.toLowerCase()))
+    : sites;
   const ordered = [...pri].sort((a, b) => Number(b.monetized) - Number(a.monetized));
   const kws = [...new Set(keywords.map((k) => k.trim()).filter(Boolean))];
   if (!ordered.length || !kws.length) return [];

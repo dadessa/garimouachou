@@ -13,8 +13,10 @@ export function pagePlan(maxItems: number, sorts: number) {
   return Math.max(1, Math.min(perSort, Math.floor(MAX_REQUESTS_PER_RUN / sorts)));
 }
 
-const pct = (v: string | null | undefined) => (v == null || v === "" || isNaN(Number(v)) ? null : Math.round(Number(v) * 10000) / 100);
-const cents = (v: string | null | undefined) => (v == null || v === "" || isNaN(Number(v)) ? null : Math.round(Number(v) * 100));
+const pct = (v: string | null | undefined) =>
+  v == null || v === "" || isNaN(Number(v)) ? null : Math.round(Number(v) * 10000) / 100;
+const cents = (v: string | null | undefined) =>
+  v == null || v === "" || isNaN(Number(v)) ? null : Math.round(Number(v) * 100);
 
 /** Converte uma oferta da Shopee em linha do Radar, só com campos que a API devolveu. */
 export function shopeeToRow(n: ShopeeOffer, now: Date) {

@@ -37,4 +37,9 @@ export default tseslint.config(
     },
   },
   eslintPluginPrettier,
+  // Arquivos gerados pelo Lovable: preservar a saída original e manter as demais regras.
+  {
+    files: ["src/integrations/supabase/types.ts", "src/integrations/supabase/previewAuthStorage.ts"],
+    rules: { "prettier/prettier": "off" },
+  },
 );

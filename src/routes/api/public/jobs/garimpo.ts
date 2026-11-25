@@ -22,7 +22,8 @@ export const Route = createFileRoute("/api/public/jobs/garimpo")({
               .order("started_at", { ascending: false })
               .limit(1)
               .maybeSingle();
-            if (!isDue(s, last ? new Date(last.started_at) : null)) return Response.json({ skipped: true });
+            if (!isDue(s, last ? new Date(last.started_at) : null))
+              return Response.json({ skipped: true });
             run = (await g.startGarimpo(supabaseAdmin, "agendada")).run;
           }
           if (!run) return Response.json({ skipped: true });

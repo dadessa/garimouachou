@@ -22,7 +22,11 @@ export function BannerCarousel({ banners: all }: { banners: Banner[] }) {
   const go = (i: number) =>
     ref.current?.scrollTo({ left: i * ref.current.clientWidth, behavior: "smooth" });
   return (
-    <section aria-roledescription="carrossel" aria-label="Promoções" className="mx-auto max-w-6xl px-4 pt-5">
+    <section
+      aria-roledescription="carrossel"
+      aria-label="Promoções"
+      className="mx-auto max-w-6xl px-4 pt-5"
+    >
       <div
         ref={ref}
         className="flex snap-x snap-mandatory overflow-x-auto rounded-2xl [scrollbar-width:none]"

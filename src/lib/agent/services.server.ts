@@ -711,7 +711,9 @@ export async function discoverExternal(
   if (rows.size) {
     // As buscas nem sempre devolvem o link monetizado. Converter apenas produtos de lojas
     // reconhecidas como monetizadas pela própria conta; falha não gera link fictício.
-    const need = [...rows.values()].filter((r) => !r.affiliate_url && !r.signals.includes("sem_comissao_na_conta"));
+    const need = [...rows.values()].filter(
+      (r) => !r.affiliate_url && !r.signals.includes("sem_comissao_na_conta"),
+    );
     if (need.length) {
       try {
         const converted = await af.convertLinks([...new Set(need.map((r) => r.external_id))]);
@@ -719,14 +721,18 @@ export async function discoverExternal(
         const missing = need.filter((r) => !r.affiliate_url).length;
         if (missing) limitacoes.push(`${missing} produto(s) sem link monetizado após a conversão.`);
       } catch {
-        limitacoes.push("A conversão de links falhou. Os produtos sem link continuam como pendência.");
+        limitacoes.push(
+          "A conversão de links falhou. Os produtos sem link continuam como pendência.",
+        );
       }
     }
     const { error } = await sb
       .from("radar_opportunities")
       .upsert([...rows.values()], { onConflict: "marketplace_slug,external_id" });
     if (error) {
-      limitacoes.push("Produtos encontrados, mas não foi possível gravá-los no Radar. Nenhuma inclusão foi preparada.");
+      limitacoes.push(
+        "Produtos encontrados, mas não foi possível gravá-los no Radar. Nenhuma inclusão foi preparada.",
+      );
       return { cards: [], fontes, limitacoes, semIntegracao: false };
     }
   }

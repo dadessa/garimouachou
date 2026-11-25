@@ -11,7 +11,9 @@ async function assertAdmin(ctx: { supabase: SupabaseClient<Database>; userId: st
 /** Garimpar agora: inicia (ou retoma) e avança ~20s; a tela chama de novo até terminar. */
 export const garimparAgora = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { runId?: string }) => ({ runId: typeof d?.runId === "string" ? d.runId : undefined }))
+  .inputValidator((d: { runId?: string }) => ({
+    runId: typeof d?.runId === "string" ? d.runId : undefined,
+  }))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const g = await import("./run.server");

@@ -41,7 +41,13 @@ describe("afToRow", () => {
     expect(r.commission_rate).toBeNull();
   });
   it("prefere o link de afiliada explícito e rejeita link cru", () => {
-    expect(convertedAffiliateLink(item.url, "https://www.awin1.com/cread.php?awinmid=1", "https://short.example/abc")).toBe("https://www.awin1.com/cread.php?awinmid=1");
+    expect(
+      convertedAffiliateLink(
+        item.url,
+        "https://www.awin1.com/cread.php?awinmid=1",
+        "https://short.example/abc",
+      ),
+    ).toBe("https://www.awin1.com/cread.php?awinmid=1");
     expect(convertedAffiliateLink(item.url, item.url, "http://example.com")).toBeNull();
   });
   it("atalho de tendência pesquisa por mais vendidos", () => {

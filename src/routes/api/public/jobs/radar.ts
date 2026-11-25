@@ -8,7 +8,11 @@ export const Route = createFileRoute("/api/public/jobs/radar")({
         const authFailure = await authenticateCronRequest(request);
         if (authFailure) return authFailure;
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: st } = await supabaseAdmin.from("radar_settings").select("daily_enabled").eq("id", 1).maybeSingle();
+        const { data: st } = await supabaseAdmin
+          .from("radar_settings")
+          .select("daily_enabled")
+          .eq("id", 1)
+          .maybeSingle();
         if (!st?.daily_enabled) return Response.json({ skipped: "desligada" });
         const { runRadarRefresh } = await import("@/lib/radar/refresh.server");
         try {

@@ -54,12 +54,20 @@ function Home() {
     out.forEach((p) => shown.add(p.slug));
     return out;
   };
-  const weekly = pick(all.filter((p) => p.isWeeklyPick), 4);
-  const featured = pick(all.filter((p) => p.isFeatured), 4);
+  const weekly = pick(
+    all.filter((p) => p.isWeeklyPick),
+    4,
+  );
+  const featured = pick(
+    all.filter((p) => p.isFeatured),
+    4,
+  );
   const latest = all.filter((p) => !shown.has(p.slug)).slice(0, 8);
   // Categorias com mais produtos publicados primeiro.
   const count = (slug: string) => all.filter((p) => p.categorySlug === slug).length;
-  const cats = categories.filter((c) => count(c.slug) > 0).sort((a, b) => count(b.slug) - count(a.slug));
+  const cats = categories
+    .filter((c) => count(c.slug) > 0)
+    .sort((a, b) => count(b.slug) - count(a.slug));
   return (
     <>
       <section className="bg-yellow">

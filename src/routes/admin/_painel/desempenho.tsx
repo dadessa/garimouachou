@@ -65,13 +65,25 @@ const sel = "h-10 w-full rounded-md border border-input bg-background px-3 text-
 
 function Desempenho() {
   const [tab, setTab] = useState<"trafego" | "financeiro">("trafego");
-  return <>
-    <div className="mb-4 flex flex-wrap gap-2" aria-label="Visões de desempenho">
-      <Button variant={tab === "trafego" ? "default" : "outline"} onClick={() => setTab("trafego")}>Tráfego e cliques</Button>
-      <Button variant={tab === "financeiro" ? "default" : "outline"} onClick={() => setTab("financeiro")}>Central financeira</Button>
-    </div>
-    {tab === "trafego" ? <TrafficReport /> : <AffiliateFinance />}
-  </>;
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap gap-2" aria-label="Visões de desempenho">
+        <Button
+          variant={tab === "trafego" ? "default" : "outline"}
+          onClick={() => setTab("trafego")}
+        >
+          Tráfego e cliques
+        </Button>
+        <Button
+          variant={tab === "financeiro" ? "default" : "outline"}
+          onClick={() => setTab("financeiro")}
+        >
+          Central financeira
+        </Button>
+      </div>
+      {tab === "trafego" ? <TrafficReport /> : <AffiliateFinance />}
+    </>
+  );
 }
 
 function TrafficReport() {
@@ -144,7 +156,8 @@ function TrafficReport() {
         <div>
           <h1 className="text-2xl font-extrabold text-navy">Desempenho</h1>
           <p className="text-sm text-muted-foreground">
-            Cliques mostram interesse, não vendas. Consulte a aba Central financeira para transações disponíveis na Awin.
+            Cliques mostram interesse, não vendas. Consulte a aba Central financeira para transações
+            disponíveis na Awin.
           </p>
         </div>
         <Button variant="outline" onClick={exportCsv} disabled={!r}>

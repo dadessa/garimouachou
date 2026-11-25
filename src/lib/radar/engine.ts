@@ -23,11 +23,23 @@ export interface Opp {
   fetched_at: string;
   valid_until: string | null;
 }
-export interface Snap { opportunity_id: string; day: string; sales: number | null; search_volume: number | null }
-export interface CatalogRef { id: string; external_id: string | null; affiliate_url: string }
+export interface Snap {
+  opportunity_id: string;
+  day: string;
+  sales: number | null;
+  search_volume: number | null;
+}
+export interface CatalogRef {
+  id: string;
+  external_id: string | null;
+  affiliate_url: string;
+}
 
 export const norm = (s: string) =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 
 /** Classifica pela categoria informada; senão, pela palavra do nome da categoria no nome do produto. */
 export function classifyCategory<C extends { id: string; name: string; slug?: string }>(
@@ -77,12 +89,23 @@ export function buildRadar(
   }
   const prep = ops.map((o) => {
     const p = opts.catalog.find(
-      (c) => (c.external_id && c.external_id === o.external_id) || (!!o.affiliate_url && c.affiliate_url === o.affiliate_url),
+      (c) =>
+        (c.external_id && c.external_id === o.external_id) ||
+        (!!o.affiliate_url && c.affiliate_url === o.affiliate_url),
     );
     const past = oldest.get(o.id);
-    const hist = growthFromHistory(past?.sales ?? past?.search_volume, past?.sales != null ? o.sales : o.search_volume);
+    const hist = growthFromHistory(
+      past?.sales ?? past?.search_volume,
+      past?.sales != null ? o.sales : o.search_volume,
+    );
     const growth = o.growth_pct ?? hist;
-    return { o, catalogId: p?.id ?? null, growth, fromHist: o.growth_pct == null && hist != null, expired: isExpired(o, now) };
+    return {
+      o,
+      catalogId: p?.id ?? null,
+      growth,
+      fromHist: o.growth_pct == null && hist != null,
+      expired: isExpired(o, now),
+    };
   });
   const scores = scoreAll(
     prep.map(({ o, catalogId, growth, expired }) => ({
@@ -139,14 +162,27 @@ export function applyView(rows: RadarRow[], view: View): RadarRow[] {
   const by = (list: RadarRow[], g: (x: RadarRow) => number | null) =>
     list.filter((x) => g(x) != null).sort((a, b) => (g(b) ?? 0) - (g(a) ?? 0));
   switch (view) {
-    case "vendidos": return by(live, (x) => x.o.sales);
-    case "procurados": return by(live, (x) => x.o.search_volume);
-    case "crescimento": return by(live, (x) => x.growth).filter((x) => (x.growth ?? 0) > 0);
-    case "comissao": return by(live, (x) => x.s.commissionCents);
-    case "extra": return by(live, (x) => x.o.extra_commission_rate).filter((x) => (x.o.extra_commission_rate ?? 0) > 0);
-    case "sazonais": return by(live, (x) => x.s.values.seasonality ?? null).filter((x) => (x.s.values.seasonality ?? 0) > 0);
-    case "financeiro": return by(live, financialPotential);
-    case "novos": return by(live, (x) => x.s.score).filter((x) => !x.catalogId && x.s.confidence !== "baixa");
-    default: return by(live, (x) => x.s.score);
+    case "vendidos":
+      return by(live, (x) => x.o.sales);
+    case "procurados":
+      return by(live, (x) => x.o.search_volume);
+    case "crescimento":
+      return by(live, (x) => x.growth).filter((x) => (x.growth ?? 0) > 0);
+    case "comissao":
+      return by(live, (x) => x.s.commissionCents);
+    case "extra":
+      return by(live, (x) => x.o.extra_commission_rate).filter(
+        (x) => (x.o.extra_commission_rate ?? 0) > 0,
+      );
+    case "sazonais":
+      return by(live, (x) => x.s.values.seasonality ?? null).filter(
+        (x) => (x.s.values.seasonality ?? 0) > 0,
+      );
+    case "financeiro":
+      return by(live, financialPotential);
+    case "novos":
+      return by(live, (x) => x.s.score).filter((x) => !x.catalogId && x.s.confidence !== "baixa");
+    default:
+      return by(live, (x) => x.s.score);
   }
 }

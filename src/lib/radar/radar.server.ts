@@ -16,7 +16,9 @@ export async function askRadarAi(
     apiKey,
     headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
   });
-  const convo = history.map((h) => `${h.role === "user" ? "Administradora" : "Assistente"}: ${h.text}`).join("\n");
+  const convo = history
+    .map((h) => `${h.role === "user" ? "Administradora" : "Assistente"}: ${h.text}`)
+    .join("\n");
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
     maxRetries: 0,

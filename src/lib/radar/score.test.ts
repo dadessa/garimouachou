@@ -1,7 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_WEIGHTS, commissionCents, revenueScenarios, scoreAll, seasonality, type RadarInput } from "./score";
+import {
+  DEFAULT_WEIGHTS,
+  commissionCents,
+  revenueScenarios,
+  scoreAll,
+  seasonality,
+  type RadarInput,
+} from "./score";
 
-const base: RadarInput = { id: "a", marketplace: "shopee", category: "casa", priceCents: 10000, commissionRate: 10, sales: 100, searchVolume: null, growthPct: 10, rating: 5, seasonalDates: [], internalClicks: null };
+const base: RadarInput = {
+  id: "a",
+  marketplace: "shopee",
+  category: "casa",
+  priceCents: 10000,
+  commissionRate: 10,
+  sales: 100,
+  searchVolume: null,
+  growthPct: 10,
+  rating: 5,
+  seasonalDates: [],
+  internalClicks: null,
+};
 
 describe("radar score", () => {
   it("pesos padrão do briefing somam 100", () => {
@@ -14,7 +33,10 @@ describe("radar score", () => {
     expect(commissionCents(null, 7.5)).toBeNull();
   });
   it("indicador ausente baixa a confiança e é sinalizado", () => {
-    const r = scoreAll([{ ...base, rating: null, growthPct: null, commissionRate: null }], DEFAULT_WEIGHTS).get("a")!;
+    const r = scoreAll(
+      [{ ...base, rating: null, growthPct: null, commissionRate: null }],
+      DEFAULT_WEIGHTS,
+    ).get("a")!;
     expect(r.missing).toContain("rating");
     expect(r.missing).toContain("commission");
     expect(r.confidence).toBe("baixa");
