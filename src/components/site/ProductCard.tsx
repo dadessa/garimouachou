@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import type { Product } from "@/lib/catalog/types";
-import { displayablePrice } from "@/lib/price";
 import { OfferButton } from "./OfferButton";
 import { PriceBlock } from "./PriceBlock";
 import { ProductImage } from "./ProductImage";
@@ -14,7 +13,6 @@ export function MarketplaceBadge({ name }: { name: string }) {
 }
 
 export function ProductCard({ product, preview }: { product: Product; preview?: boolean }) {
-  const hasPrice = displayablePrice(product, product.marketplace) !== null;
   const img = <ProductImage src={product.imageUrl} alt={product.imageAlt} />;
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition hover:-translate-y-0.5 hover:shadow-lift">
@@ -26,7 +24,9 @@ export function ProductCard({ product, preview }: { product: Product; preview?: 
         </Link>
       )}
       <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
-        <MarketplaceBadge name={product.marketplace.name} />
+        <div>
+          <MarketplaceBadge name={product.marketplace.name} />
+        </div>
         <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-bold leading-snug sm:text-base sm:min-h-[2.75rem]">
           {preview ? (
             product.name || "Sem nome"
@@ -36,13 +36,12 @@ export function ProductCard({ product, preview }: { product: Product; preview?: 
             </Link>
           )}
         </h3>
-        <div className="min-h-6">
-          {hasPrice ? (
-            <PriceBlock product={product} />
-          ) : (
-            <p className="text-xs font-semibold text-muted-foreground">Confira o preço na loja</p>
-          )}
-        </div>
+        <PriceBlock product={product} />
+        {product.shortDescription && (
+          <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+            {product.shortDescription}
+          </p>
+        )}
         <div className="mt-auto pt-1">
           <OfferButton product={product} className="w-full" />
           <p className="mt-1.5 text-center text-[11px] text-muted-foreground">

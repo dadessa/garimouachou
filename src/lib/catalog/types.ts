@@ -1,3 +1,4 @@
+import { withoutOfferPrice } from "@/lib/offer-copy";
 import type { MarketplaceAdapter } from "@/lib/marketplaces/types";
 import type { PriceInfo } from "@/lib/price";
 
@@ -92,14 +93,14 @@ export function toProduct(r: ProductRow): Product | null {
   if (!r.categories || !r.marketplaces) return null;
   return {
     slug: r.slug,
-    name: r.name,
-    shortDescription: r.short_description,
+    name: withoutOfferPrice(r.name) || "Achadinho",
+    shortDescription: withoutOfferPrice(r.short_description),
     categorySlug: r.categories.slug,
     categoryName: r.categories.name,
     marketplace: toMarketplace(r.marketplaces),
     affiliateUrl: r.affiliate_url,
     imageUrl: r.main_image_url,
-    imageAlt: r.main_image_alt ?? r.name,
+    imageAlt: withoutOfferPrice(r.main_image_alt ?? r.name),
     isFeatured: r.is_featured,
     isWeeklyPick: r.is_weekly_pick,
     publishedAt: r.published_at,

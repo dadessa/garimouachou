@@ -1,3 +1,4 @@
+import { withoutOfferPrice } from "@/lib/offer-copy";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState, type ReactNode } from "react";
@@ -202,8 +203,8 @@ function ProductForm() {
     () =>
       mk && {
         slug: f.slug || "previa",
-        name: f.name,
-        shortDescription: f.description,
+        name: withoutOfferPrice(f.name),
+        shortDescription: withoutOfferPrice(f.description),
         categorySlug: cat?.slug ?? "",
         categoryName: cat?.name ?? "Sem categoria",
         marketplace: toMarketplace(mk),
@@ -427,9 +428,10 @@ function ProductForm() {
         >
           <FormCard n={1} title="Informações básicas">
             <div className={field}>
-              <Label htmlFor="nome">Nome</Label>
+              <Label htmlFor="nome">Título do achadinho</Label>
               <Input
                 id="nome"
+                aria-describedby="nome-dica"
                 value={f.name}
                 maxLength={150}
                 onChange={(e) =>
@@ -440,6 +442,9 @@ function ProductForm() {
                   }))
                 }
               />
+              <p id="nome-dica" className="text-xs text-muted-foreground">
+                Use marca, modelo e uma característica importante. Preencha o preço no campo próprio.
+              </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className={field}>
@@ -524,14 +529,18 @@ function ProductForm() {
               </Button>
             </div>
             <div className={field}>
-              <Label htmlFor="desc">Descrição curta</Label>
+              <Label htmlFor="desc">Por que vale o garimpo?</Label>
               <Textarea
                 id="desc"
+                aria-describedby="desc-dica"
                 rows={3}
                 maxLength={400}
                 value={f.description}
                 onChange={(e) => set("description", e.target.value)}
               />
+              <p id="desc-dica" className="text-xs text-muted-foreground">
+                Escreva uma frase com uma vantagem concreta para quem vai comprar.
+              </p>
             </div>
             <div className={field}>
               <Label htmlFor="tags">Etiquetas (separadas por vírgula)</Label>
