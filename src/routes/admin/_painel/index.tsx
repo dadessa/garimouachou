@@ -1,16 +1,30 @@
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { refreshRadar } from "@/lib/radar/radar.functions";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { adminMarketplaces, adminProducts, isPriceStale } from "@/lib/admin/api";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import {
+  adminCategories,
+  adminMarketplaces,
+  adminProducts,
+  isPriceStale,
+  type MarketplaceRow,
+  type ProductRow,
+} from "@/lib/admin/api";
+import { importOne } from "@/lib/import/importer";
+import { emptyDraft } from "@/lib/import/rules";
+import { isAllowedAffiliateUrl } from "@/lib/marketplaces/types";
+import { formatBRL } from "@/lib/price";
+import { classifyCategory } from "@/lib/radar/engine";
 
 export const Route = createFileRoute("/admin/_painel/")({
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(adminProducts),
       context.queryClient.ensureQueryData(adminMarketplaces),
+      context.queryClient.ensureQueryData(adminCategories),
     ]),
   head: () => ({
     meta: [
@@ -51,7 +65,9 @@ async function loadDailyDemand(day: string) {
     demandSections.map(async ({ key, title }) => {
       const { data, error } = await supabase
         .from("radar_opportunities")
-        .select("id,name,marketplace_slug,source,fetched_at,growth_pct,search_volume,sales")
+        .select(
+          "id,name,marketplace_slug,source,fetched_at,growth_pct,search_volume,sales,external_id,affiliate_url,category",
+        )
         .gte("fetched_at", `${day}T00:00:00-03:00`)
         .lte("fetched_at", now)
         .or(`valid_until.is.null,valid_until.gt.${now}`)
@@ -66,7 +82,198 @@ async function loadDailyDemand(day: string) {
   );
 }
 
-function DailyDemand({ marketplaces }: { marketplaces: Map<string, string> }) {
+type DemandGroups = Awaited<ReturnType<typeof loadDailyDemand>>;
+
+function ReviewQueue({
+  groups,
+  products,
+  marketplaces,
+}: {
+  groups: DemandGroups;
+  products: ProductRow[];
+  marketplaces: MarketplaceRow[];
+}) {
+  const { data: categories } = useSuspenseQuery(adminCategories);
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const pending = products.filter((p) => p.status === "draft" && p.review_status === "pending");
+  const bySlug = new Map(marketplaces.map((m) => [m.slug, m]));
+  const byId = new Map(marketplaces.map((m) => [m.id, m]));
+  const candidates = new Map<
+    string,
+    { item: DemandGroups[number]["items"][number]; reasons: string[] }
+  >();
+  for (const { key, items } of groups) {
+    for (const item of items) {
+      const amount = numberFormat.format(item[key] ?? 0);
+      const metric = {
+        growth_pct: `+${amount}% de crescimento na procura`,
+        search_volume: `${amount} buscas informadas`,
+        sales: `${amount} vendas informadas`,
+      }[key];
+      const existing = candidates.get(item.id);
+      if (existing) existing.reasons.push(metric);
+      else candidates.set(item.id, { item, reasons: [metric] });
+    }
+  }
+  const items = [...candidates.values()].filter(({ item }) => {
+    const mk = bySlug.get(item.marketplace_slug);
+    return !products.some(
+      (p) =>
+        (p.marketplace_id === mk?.id && p.external_id === item.external_id) ||
+        p.affiliate_url === item.affiliate_url,
+    );
+  });
+  const prepare = useMutation({
+    mutationFn: async (item: DemandGroups[number]["items"][number]) => {
+      const mk = bySlug.get(item.marketplace_slug);
+      if (
+        !mk ||
+        !item.affiliate_url ||
+        !isAllowedAffiliateUrl(item.affiliate_url, mk.allowed_domains)
+      )
+        throw new Error("Este item precisa de um link de afiliada autorizado.");
+      const draft = emptyDraft(item.affiliate_url);
+      draft.name = item.name;
+      draft.externalId = item.external_id;
+      draft.categoryId = classifyCategory(item.name, item.category, categories)?.id ?? null;
+      const result = await importOne(
+        draft,
+        { publish: false, reviewPending: true, defaultCategoryId: null, useAi: false },
+        {
+          mks: [mk],
+          cats: categories,
+          genCopy: async () => ({ error: null, description: "", tags: [] }),
+        },
+      );
+      if (!result.productId) throw new Error(result.message);
+      return result.productId;
+    },
+    onSuccess: async (id) => {
+      await qc.invalidateQueries({ queryKey: adminProducts.queryKey });
+      await navigate({ to: "/admin/produtos/$id", params: { id } });
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
+  return (
+    <section
+      aria-labelledby="daily-review-title"
+      className="mt-5 rounded-xl border border-border p-4"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 id="daily-review-title" className="font-extrabold text-navy">
+          Fila de revisão
+        </h3>
+        <Link to="/admin/desempenho" className="text-sm font-bold text-navy underline">
+          Acompanhar resultados
+        </Link>
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Abra a oferta, confira o preço e o destino do link de afiliada e decida no cadastro se vale
+        publicar.
+      </p>
+      {!pending.length && !items.length && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          A fila está vazia. Atualize o Radar ou cadastre um produto com seu link de afiliada.
+        </p>
+      )}
+      <ul className="mt-2 divide-y divide-border">
+        {pending.slice(0, 5).map((product) => {
+          const mk = product.marketplace_id ? byId.get(product.marketplace_id) : undefined;
+          const validLink = mk && isAllowedAffiliateUrl(product.affiliate_url, mk.allowed_domains);
+          const match = [...candidates.values()].find(
+            ({ item }) =>
+              (item.marketplace_slug === mk?.slug && item.external_id === product.external_id) ||
+              item.affiliate_url === product.affiliate_url,
+          );
+          const price = product.current_price_cents;
+          return (
+            <li key={product.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+              <div className="min-w-0">
+                <p className="break-words text-sm font-bold">{product.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {match?.reasons.join(" · ") ?? "Rascunho aguardando revisão"}
+                  {" · "}
+                  {price != null && !isPriceStale(product, mk)
+                    ? `Preço registrado: ${formatBRL(price)}`
+                    : "Conferir preço na loja"}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 text-sm font-bold text-navy">
+                {validLink && (
+                  <a
+                    href={product.affiliate_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    Abrir oferta
+                  </a>
+                )}
+                <Link to="/admin/produtos/$id" params={{ id: product.id }} className="underline">
+                  Revisar rascunho
+                </Link>
+              </div>
+            </li>
+          );
+        })}
+        {items.slice(0, 5).map(({ item, reasons }) => {
+          const mk = bySlug.get(item.marketplace_slug);
+          const url =
+            mk &&
+            item.affiliate_url &&
+            isAllowedAffiliateUrl(item.affiliate_url, mk.allowed_domains)
+              ? item.affiliate_url
+              : null;
+          return (
+            <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+              <div className="min-w-0">
+                <p className="break-words text-sm font-bold">{item.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {reasons.join(" · ")} · {sourceNames[item.source] ?? item.source}
+                </p>
+                {!url && (
+                  <p className="text-xs text-muted-foreground">Link de afiliada pendente.</p>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-sm font-bold text-navy">
+                {url ? (
+                  <>
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="underline">
+                      Abrir oferta
+                    </a>
+                    <Button
+                      variant="outline"
+                      disabled={prepare.isPending}
+                      onClick={() => prepare.mutate(item)}
+                    >
+                      {prepare.isPending && prepare.variables?.id === item.id
+                        ? "Preparando…"
+                        : "Preparar revisão"}
+                    </Button>
+                  </>
+                ) : (
+                  <Link to="/admin/produtos/$id" params={{ id: "novo" }} className="underline">
+                    Cadastrar com meu link
+                  </Link>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function DailyDemand({
+  marketplaces,
+  products,
+}: {
+  marketplaces: MarketplaceRow[];
+  products: ProductRow[];
+}) {
   const day = dateFormat.format(new Date());
   const refresh = useServerFn(refreshRadar);
   const demand = useQuery({
@@ -80,6 +287,7 @@ function DailyDemand({ marketplaces }: { marketplaces: Map<string, string> }) {
   });
 
   const hasItems = demand.data?.some(({ items }) => items.length > 0);
+  const marketplaceNames = new Map(marketplaces.map((m) => [m.slug, m.name]));
 
   return (
     <section
@@ -134,6 +342,7 @@ function DailyDemand({ marketplaces }: { marketplaces: Map<string, string> }) {
           fontes conectadas.
         </p>
       )}
+      <ReviewQueue groups={demand.data ?? []} products={products} marketplaces={marketplaces} />
       {hasItems && (
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
           {demand.data?.map(({ key, title, items }) => (
@@ -153,7 +362,7 @@ function DailyDemand({ marketplaces }: { marketplaces: Map<string, string> }) {
                       </strong>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {marketplaces.get(item.marketplace_slug) ?? item.marketplace_slug} ·{" "}
+                      {marketplaceNames.get(item.marketplace_slug) ?? item.marketplace_slug} ·{" "}
                       {sourceNames[item.source] ?? item.source} ·{" "}
                       <time dateTime={item.fetched_at}>
                         {observationTime.format(new Date(item.fetched_at))}
@@ -198,7 +407,7 @@ function Overview() {
           Novo produto
         </Link>
       </div>
-      <DailyDemand marketplaces={new Map(mks.map((m) => [m.slug, m.name]))} />
+      <DailyDemand marketplaces={mks} products={products} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {cards.map((c) => (
           <div
