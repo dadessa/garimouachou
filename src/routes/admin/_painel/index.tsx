@@ -127,7 +127,11 @@ function ReviewQueue({
   const prepare = useMutation({
     mutationFn: async (item: DemandGroups[number]["items"][number]) => {
       const mk = bySlug.get(item.marketplace_slug);
-      if (!mk || !item.affiliate_url || !isAllowedAffiliateUrl(item.affiliate_url, mk.allowed_domains))
+      if (
+        !mk ||
+        !item.affiliate_url ||
+        !isAllowedAffiliateUrl(item.affiliate_url, mk.allowed_domains)
+      )
         throw new Error("Este item precisa de um link de afiliada autorizado.");
       const draft = emptyDraft(item.affiliate_url);
       draft.name = item.name;
@@ -153,7 +157,10 @@ function ReviewQueue({
   });
 
   return (
-    <section aria-labelledby="daily-review-title" className="mt-5 rounded-xl border border-border p-4">
+    <section
+      aria-labelledby="daily-review-title"
+      className="mt-5 rounded-xl border border-border p-4"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 id="daily-review-title" className="font-extrabold text-navy">
           Fila de revisão
@@ -214,7 +221,9 @@ function ReviewQueue({
         {items.slice(0, 5).map(({ item, reasons }) => {
           const mk = bySlug.get(item.marketplace_slug);
           const url =
-            mk && item.affiliate_url && isAllowedAffiliateUrl(item.affiliate_url, mk.allowed_domains)
+            mk &&
+            item.affiliate_url &&
+            isAllowedAffiliateUrl(item.affiliate_url, mk.allowed_domains)
               ? item.affiliate_url
               : null;
           return (
@@ -224,7 +233,9 @@ function ReviewQueue({
                 <p className="text-xs text-muted-foreground">
                   {reasons.join(" · ")} · {sourceNames[item.source] ?? item.source}
                 </p>
-                {!url && <p className="text-xs text-muted-foreground">Link de afiliada pendente.</p>}
+                {!url && (
+                  <p className="text-xs text-muted-foreground">Link de afiliada pendente.</p>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-3 text-sm font-bold text-navy">
                 {url ? (
