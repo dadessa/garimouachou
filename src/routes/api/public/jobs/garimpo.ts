@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/public/jobs/garimpo")({
           }
           if (!run) return Response.json({ skipped: true });
           const r = await g.stepGarimpo(supabaseAdmin, run.id, 2_500);
-          return Response.json({ status: r.status, phase: r.phase });
+          return Response.json({ status: r.run.status, phase: r.run.phase, busy: r.busy });
         } catch (e) {
           console.error("Garimpo agendado:", (e as Error).message);
           return Response.json({ error: "falhou" }, { status: 500 });

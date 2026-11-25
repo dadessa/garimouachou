@@ -4,6 +4,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { classifyCategory } from "@/lib/radar/engine";
 import { emptyDraft } from "@/lib/import/rules";
 import { importOneWith } from "@/lib/import/importer-core";
+import { claimStepLease, hasStepLease, stepLeaseUntil, StepLeaseLostError } from "./step-lock";
 import {
   CREATE_PER_STEP,
   STALE_RUN_MIN,
@@ -28,7 +29,7 @@ export async function loadSettings(sb: Sb): Promise<GarimpoSettings> {
 }
 
 async function releaseStale(sb: Sb) {
-  await sb
+  const { error } = await sb
     .from("garimpo_runs")
     .update({
       status: "failed",
@@ -38,11 +39,17 @@ async function releaseStale(sb: Sb) {
     })
     .eq("status", "running")
     .lt("updated_at", new Date(Date.now() - STALE_RUN_MIN * 60_000).toISOString());
+  if (error) throw new Error("Não foi possível verificar execuções interrompidas.");
 }
 
 export async function activeRun(sb: Sb) {
   await releaseStale(sb);
-  const { data } = await sb.from("garimpo_runs").select("*").eq("status", "running").maybeSingle();
+  const { data, error } = await sb
+    .from("garimpo_runs")
+    .select("*")
+    .eq("status", "running")
+    .maybeSingle();
+  if (error) throw new Error("Não foi possível consultar o garimpo ativo.");
   return data;
 }
 
@@ -94,33 +101,100 @@ export async function startGarimpo(sb: Sb, trigger: "manual" | "agendada") {
   return { run, busy: false };
 }
 
-/** Avança a execução até o orçamento de tempo acabar. Cada passo grava o progresso. */
+/** Cada chamada disputa uma concessão temporária (lease) persistida em updated_at.
+ * A atualização condicional é atômica no Postgres e funciona entre instâncias do servidor.
+ */
 export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
-  const t0 = Date.now();
-  const { data: r0 } = await sb.from("garimpo_runs").select("*").eq("id", runId).maybeSingle();
-  if (!r0) throw new Error("Execução não encontrada.");
-  let run: Run = r0;
-  if (run.status !== "running") return run;
-  const s = await loadSettings(sb);
-  const save = async (patch: Partial<Run>) => {
+  const { data: r0, error: readError } = await sb
+    .from("garimpo_runs")
+    .select("*")
+    .eq("id", runId)
+    .maybeSingle();
+  if (readError || !r0) throw new Error("Execução não encontrada.");
+  if (r0.status !== "running") return { run: r0, busy: false };
+  const leased = await claimStepLease(r0, async (expected, until) => {
     const { data, error } = await sb
       .from("garimpo_runs")
-      .update({ ...patch, updated_at: new Date().toISOString() })
+      .update({ updated_at: until })
       .eq("id", runId)
+      .eq("status", "running")
+      .eq("updated_at", expected)
       .select("*")
-      .single();
-    if (error) throw new Error("Não foi possível registrar o progresso.");
+      .maybeSingle();
+    if (error) throw new Error("Não foi possível obter a trava do garimpo.");
+    return data;
+  });
+  if (!leased) return { run: r0, busy: true };
+
+  let run: Run = leased;
+  const save = async (patch: Partial<Run>) => {
+    if (!hasStepLease(run.updated_at)) throw new StepLeaseLostError();
+    const finished = patch.status != null && patch.status !== "running";
+    const { data, error } = await sb
+      .from("garimpo_runs")
+      .update({
+        ...patch,
+        updated_at: finished ? new Date().toISOString() : stepLeaseUntil(run.updated_at),
+      })
+      .eq("id", runId)
+      .eq("status", "running")
+      .eq("updated_at", run.updated_at)
+      .select("*")
+      .maybeSingle();
+    if (error || !data) throw new StepLeaseLostError();
     run = data;
   };
+  const ensureLease = async () => {
+    if (!hasStepLease(run.updated_at)) throw new StepLeaseLostError();
+    // Renovar antes de efeitos externos quando estiver perto do vencimento.
+    if (new Date(run.updated_at).getTime() - Date.now() < 60_000) await save({});
+  };
+  try {
+    await advanceGarimpo(sb, () => run, save, ensureLease, budgetMs);
+    return { run, busy: false };
+  } catch (e) {
+    if (e instanceof StepLeaseLostError) return { run, busy: true };
+    throw e;
+  } finally {
+    // Nunca liberar a trava de outro worker. Se o processo cair, ela vence sozinha.
+    if (run.status === "running") {
+      try {
+        const { error } = await sb
+          .from("garimpo_runs")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", runId)
+          .eq("status", "running")
+          .eq("updated_at", run.updated_at);
+        if (error) console.error("Garimpo: não foi possível liberar a trava.");
+      } catch {
+        console.error("Garimpo: a trava será liberada por expiração.");
+      }
+    }
+  }
+}
+
+async function advanceGarimpo(
+  sb: Sb,
+  current: () => Run,
+  save: (patch: Partial<Run>) => Promise<void>,
+  ensureLease: () => Promise<void>,
+  budgetMs: number,
+) {
+  const t0 = Date.now();
+  const s = await loadSettings(sb);
+  let run = current();
   const af = await import("@/lib/discovery/mcp-afiliado.server");
   const d = await import("@/lib/discovery/mcp-afiliado");
   const plan = run.plan as PlanStep[];
 
   while (Date.now() - t0 < budgetMs && run.status === "running") {
+    await ensureLease();
+    run = current();
     if (run.phase === "search") {
       const step = plan[run.cursor];
       if (!step) {
         await save({ phase: "convert", cursor: 0 });
+        run = current();
         continue;
       }
       const errors = [...run.errors];
@@ -148,6 +222,7 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
           return !why;
         });
         if (keep.length) {
+          await ensureLease();
           const { data: saved, error } = await sb
             .from("radar_opportunities")
             .upsert(keep, { onConflict: "marketplace_slug,external_id" })
@@ -156,6 +231,7 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
           else saved?.forEach((x) => ids.add(x.id));
         }
       } catch (e) {
+        if (e instanceof StepLeaseLostError) throw e;
         errors.push(`${step.site}/${step.keyword}: ${(e as Error).message.slice(0, 120)}`);
       }
       await save({
@@ -186,6 +262,7 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
           for (const o of need) {
             const link = m.get(o.external_id);
             if (link && link !== o.external_id && /^https:\/\//i.test(link)) {
+              await ensureLease();
               const { error } = await sb
                 .from("radar_opportunities")
                 .update({ affiliate_url: link })
@@ -194,6 +271,7 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
             }
           }
         } catch (e) {
+          if (e instanceof StepLeaseLostError) throw e;
           errors.push(`Conversão de links: ${(e as Error).message.slice(0, 120)}`);
         }
       }
@@ -204,10 +282,10 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
         requests: run.requests + (need.length ? 1 : 0),
       });
     } else if (run.phase === "create") {
-      await createBatch(sb, run, s, save);
+      await createBatch(sb, run, s, save, ensureLease);
     } else break;
+    run = current();
   }
-  return run;
 }
 
 async function createBatch(
@@ -215,6 +293,7 @@ async function createBatch(
   run: Run,
   s: GarimpoSettings,
   save: (p: Partial<Run>) => Promise<void>,
+  ensureLease: () => Promise<void>,
 ) {
   const { data: opp, error: readError } = run.candidates.length
     ? await sb
@@ -228,13 +307,21 @@ async function createBatch(
   const list = opp ?? [];
   const slice = list.slice(run.cursor, run.cursor + CREATE_PER_STEP);
   let { queued, unmonetized, duplicates } = run;
-  const created = [...run.created_ids];
+  // Recupera cadastros gravados antes de uma interrupção no checkpoint da execução.
+  const { data: existing, error: existingError } = await sb
+    .from("products")
+    .select("id")
+    .eq("garimpo_run_id", run.id);
+  if (existingError) throw new Error("Não foi possível reconciliar os pré-cadastros.");
+  const created = [...new Set([...run.created_ids, ...(existing ?? []).map((p) => p.id)])];
+  queued = Math.max(queued, created.length);
   const errors = [...run.errors];
   if (slice.length && queued < s.daily_limit) {
     const [mks, cats] = await Promise.all([
       sb.from("marketplaces").select("*"),
       sb.from("categories").select("*"),
     ]);
+    if (mks.error || cats.error) throw new Error("Não foi possível consultar lojas e categorias.");
     const noAi = async () => ({ error: null, description: "", tags: [] as string[] });
     for (const o of slice) {
       if (queued >= s.daily_limit) break;
@@ -255,16 +342,20 @@ async function createBatch(
       dr.priceCents = o.valid_until && new Date(o.valid_until) > new Date() ? o.price_cents : null;
       dr.priceCheckedAt = o.fetched_at;
       dr.categoryId = classifyCategory(o.name, o.category, cats.data ?? [])?.id ?? null;
+      await ensureLease();
       const out = await importOneWith(
         sb,
         dr,
         { publish: false, defaultCategoryId: null, useAi: false, garimpoRunId: run.id },
         { mks: mks.data ?? [], cats: cats.data ?? [], genCopy: noAi },
       );
-      if (out.status === "duplicate") duplicates++;
-      else if (out.status === "created" && out.productId) {
-        created.push(out.productId);
-        queued++;
+      if (out.status === "duplicate") {
+        if (!out.productId || !created.includes(out.productId)) duplicates++;
+      } else if (out.status === "created" && out.productId) {
+        if (!created.includes(out.productId)) {
+          created.push(out.productId);
+          queued++;
+        }
       } else if (out.status === "error") {
         // Loja não cadastrada no catálogo etc.: oportunidade fica no Radar como pendência.
         if (errors.length < 30) errors.push(`${o.name.slice(0, 50)}: ${out.message}`);

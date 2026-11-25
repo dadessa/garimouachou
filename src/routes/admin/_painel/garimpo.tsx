@@ -110,6 +110,10 @@ function Garimpo() {
         const r = await run({ data: id ? { runId: id } : {} });
         id = r.id;
         await qc.invalidateQueries({ queryKey: ["admin", "garimpo"] });
+        if (r.busy) {
+          toast.info("Outra chamada está processando este garimpo. Acompanhe o progresso.");
+          break;
+        }
         if (r.status !== "running") {
           if (r.status === "failed")
             toast.error("Garimpo terminou com falha. Confira o histórico.");

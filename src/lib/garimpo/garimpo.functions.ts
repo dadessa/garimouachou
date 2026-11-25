@@ -23,6 +23,6 @@ export const garimparAgora = createServerFn({ method: "POST" })
       if (!r.run) throw new Error("Não foi possível iniciar o garimpo.");
       id = r.run.id;
     }
-    const run = await g.stepGarimpo(context.supabase, id, 20_000);
-    return { id: run.id, status: run.status, phase: run.phase };
+    const { run, busy } = await g.stepGarimpo(context.supabase, id, 20_000);
+    return { id: run.id, status: run.status, phase: run.phase, busy };
   });
