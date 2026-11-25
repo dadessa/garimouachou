@@ -11,7 +11,9 @@ import { publishMissing } from "@/lib/publish-rules";
 import { adminCategories, adminMarketplaces, adminProducts, isPriceStale } from "@/lib/admin/api";
 
 export const Route = createFileRoute("/admin/_painel/produtos/")({
-  validateSearch: (search: Record<string, unknown>): { aba?: "aprovacao" | "precos" | "comparar" } =>
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { aba?: "aprovacao" | "precos" | "comparar" } =>
     search["aba"] === "aprovacao" || search["aba"] === "precos" || search["aba"] === "comparar"
       ? { aba: search["aba"] }
       : {},

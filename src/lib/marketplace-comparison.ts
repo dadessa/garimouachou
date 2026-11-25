@@ -20,6 +20,7 @@ export type ComparisonOffer = {
   valid_until: string | null;
   source: string;
   signals: string[];
+  rating?: number | null;
 };
 
 export type ComparisonStore = {
@@ -43,7 +44,9 @@ export function normalizeGtin(raw: string): string | null {
 /** Somente códigos explicitamente rotulados no anúncio, nunca números de modelo. */
 export function declaredGtins(title: string) {
   const codes = new Set<string>();
-  for (const m of title.matchAll(/\b(?:EAN|GTIN|UPC)(?:[- ](?:8|12|13|14|A))?\s*[:=]?\s*(\d{8,14})(?!\d)/gi)) {
+  for (const m of title.matchAll(
+    /\b(?:EAN|GTIN|UPC)(?:[- ](?:8|12|13|14|A))?\s*[:=]?\s*(\d{8,14})(?!\d)/gi,
+  )) {
     const code = normalizeGtin(m[1] ?? "");
     if (code) codes.add(code);
   }
@@ -70,6 +73,7 @@ export function offerFingerprint(o: ComparisonOffer) {
     o.valid_until,
     o.price_cents,
     o.affiliate_url,
+    o.rating ?? null,
   ]);
 }
 
@@ -90,7 +94,11 @@ export function identityMatches(
   return true;
 }
 
-export function offerEligibility(o: ComparisonOffer, store: ComparisonStore | undefined, now: Date) {
+export function offerEligibility(
+  o: ComparisonOffer,
+  store: ComparisonStore | undefined,
+  now: Date,
+) {
   if (!store?.is_active || !supportsPriceHistory(o.marketplace_slug, o.source)) {
     return "Fonte ou loja não elegível";
   }

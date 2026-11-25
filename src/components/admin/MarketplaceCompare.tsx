@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { adminMarketplaces } from "@/lib/admin/api";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/price";
+import { GarimouScorePanel } from "@/components/admin/GarimouScorePanel";
 import {
   compareOffers,
   declaredGtins,
@@ -42,7 +43,7 @@ export function MarketplaceCompare() {
       const r = await supabase
         .from("radar_opportunities")
         .select(
-          "id,marketplace_slug,external_id,name,affiliate_url,price_cents,fetched_at,valid_until,source,signals",
+          "id,marketplace_slug,external_id,name,affiliate_url,price_cents,fetched_at,valid_until,source,signals,rating",
         )
         .ilike("name", "%" + term.replace(/[%_\\]/g, "") + "%")
         .order("fetched_at", { ascending: false })
@@ -52,7 +53,7 @@ export function MarketplaceCompare() {
     },
   });
 
-  const candidates = q.data ?? [];
+  const candidates = q.isError ? [] : (q.data ?? []);
   const comparison = compareOffers(candidates, stores, reference, confirmed, now);
   const ready = identityReady(reference);
 
@@ -113,7 +114,9 @@ export function MarketplaceCompare() {
         )}
       </section>
       <section className={box}>
-        <h2 className="mb-3 font-extrabold text-navy">2. Buscar e confirmar ofertas equivalentes</h2>
+        <h2 className="mb-3 font-extrabold text-navy">
+          2. Buscar e confirmar ofertas equivalentes
+        </h2>
         <form
           className="flex flex-wrap gap-2"
           onSubmit={(e) => {
@@ -138,8 +141,8 @@ export function MarketplaceCompare() {
           <Button disabled={query.trim().length < 2 || q.isFetching}>Buscar no Radar</Button>
         </form>
         <p className="mt-2 text-xs text-muted-foreground">
-          Até 100 registros recentes por busca. Atualize o Radar para obter novas observações.
-          A disponibilidade não é informada pelas fontes atuais.
+          Até 100 registros recentes por busca. Atualize o Radar para obter novas observações. A
+          disponibilidade não é informada pelas fontes atuais.
         </p>
         {q.isError && <p className="mt-2 text-sm text-destructive">Falha ao consultar o Radar.</p>}
         {term && q.isFetching && <p className="mt-2 text-sm">Consultando registros...</p>}
@@ -213,7 +216,8 @@ export function MarketplaceCompare() {
                           });
                         }}
                       />
-                      Conferi marca, modelo, condição, quantidade e todas as variações deste anúncio.
+                      Conferi marca, modelo, condição, quantidade e todas as variações deste
+                      anúncio.
                     </label>
                     {ready && !eligible && (
                       <p className="text-xs text-muted-foreground">
@@ -275,6 +279,7 @@ export function MarketplaceCompare() {
           comissão efetiva não confirmada. Nenhuma publicação ou alteração de produto é realizada.
         </p>
       </section>
+      <GarimouScorePanel offers={comparison.offers} stores={stores} now={now} />
     </div>
   );
 }
