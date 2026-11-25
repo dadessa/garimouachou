@@ -32,7 +32,7 @@ import { friendlyError } from "@/lib/admin/errors";
 import { AdminImg, removeImages, uploadImage, useAdminImageUrl } from "@/lib/admin/storage";
 import { toMarketplace, type Product } from "@/lib/catalog/types";
 import { matchAffiliateDomain } from "@/lib/marketplaces/types";
-import { formatBRL } from "@/lib/price";
+import { displayablePrice, formatBRL } from "@/lib/price";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 import { generateCopy } from "@/lib/admin/ai.functions";
@@ -253,6 +253,16 @@ function ProductForm() {
     if (nextStatus === "published" && missing.length) {
       setShowMissing(true);
       toast.error("Ainda falta preencher alguns itens para publicar.");
+      return;
+    }
+    if (
+      nextStatus === "published" &&
+      (f.weekly || f.featured) &&
+      preview &&
+      priceCents != null &&
+      !displayablePrice(preview, preview.marketplace)
+    ) {
+      toast.error("Confira o preço na loja ou limpe o valor antes de salvar este destaque.");
       return;
     }
     setBusy(true);

@@ -23,8 +23,7 @@ export const Route = createFileRoute("/")({
       { title: "Garimou Achou! — Achadinhos e ofertas garimpadas" },
       {
         name: "description",
-        content:
-          "A gente garimpa os melhores achadinhos da Amazon, Shopee, Mercado Livre e Magalu. Você aproveita.",
+        content: "Achadinhos selecionados pela nossa equipe. Compre direto na loja da oferta.",
       },
       { property: "og:title", content: "Garimou Achou! — Achadinhos e ofertas garimpadas" },
       { property: "og:description", content: "A gente garimpa. Você aproveita." },
@@ -77,8 +76,8 @@ function Home() {
             A gente garimpa os melhores achadinhos. Você aproveita.
           </h1>
           <p className="mt-2 max-w-[62ch] text-sm font-semibold leading-snug text-navy md:text-lg lg:text-xl">
-            Produtos escolhidos no Mercado Livre, Shopee e outras lojas. Você compra direto no site
-            da loja.
+            Nossa seleção de achadinhos muda ao longo da semana. Você compra direto na loja da
+            oferta.
           </p>
           <div className="mt-4 max-w-[760px]">
             <SearchForm id="busca-home" large />
