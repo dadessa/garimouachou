@@ -9,7 +9,7 @@ export async function fetchGoogleTrends() {
   try {
     const response = await fetch(FEED, {
       headers: { Accept: "application/rss+xml, application/xml, text/xml" },
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(6000),
       cache: "no-store",
     });

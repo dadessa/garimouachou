@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tansta
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { refreshRadar } from "@/lib/radar/radar.functions";
+import { dailyGoogleTrends, refreshRadar } from "@/lib/radar/radar.functions";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -267,6 +267,66 @@ function ReviewQueue({
   );
 }
 
+function GoogleTrendsPanel() {
+  const fetchTrends = useServerFn(dailyGoogleTrends);
+  const trends = useQuery({
+    queryKey: ["admin", "google-trends-br"],
+    queryFn: () => fetchTrends(),
+    staleTime: 10 * 60_000,
+  });
+  const result = trends.data;
+
+  return (
+    <section
+      aria-labelledby="google-trends-title"
+      className="mt-5 rounded-xl border border-border p-4"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 id="google-trends-title" className="font-extrabold text-navy">
+          Pesquisas em alta no Google Brasil
+        </h3>
+        <Link to="/admin/garimpo" className="text-sm font-bold text-navy underline">
+          Abrir Garimpo
+        </Link>
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Volume estimado de buscas no Google. As vendas são medidas pelas fontes do Radar.
+      </p>
+      {trends.isPending && <p role="status">Consultando o Google Trends…</p>}
+      {(trends.isError || result?.ok === false) && (
+        <p role="status" className="mt-2 text-sm text-muted-foreground">
+          Google Trends indisponível no momento.
+        </p>
+      )}
+      {result?.ok && (
+        <>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Consultado em{" "}
+            <time dateTime={result.checkedAt}>
+              {dateFormat.format(new Date(result.checkedAt))} às{" "}
+              {observationTime.format(new Date(result.checkedAt))}
+            </time>
+          </p>
+          <p className="mt-2 text-sm">
+            <strong>Termos para garimpar</strong>{" "}
+            {result.keywords.length
+              ? result.keywords.join(", ")
+              : "Nenhuma tendência recente correspondeu às categorias de produto reconhecidas."}
+          </p>
+          <ul className="mt-2 divide-y divide-border text-sm">
+            {result.trends.map((trend) => (
+              <li key={trend.title} className="flex justify-between gap-3 py-2">
+                <span className="min-w-0 break-words">{trend.title}</span>
+                {trend.traffic && <span className="shrink-0">{trend.traffic} buscas</span>}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+  );
+}
+
 function DailyDemand({
   marketplaces,
   products,
@@ -342,6 +402,7 @@ function DailyDemand({
           fontes conectadas.
         </p>
       )}
+      <GoogleTrendsPanel />
       <ReviewQueue groups={demand.data ?? []} products={products} marketplaces={marketplaces} />
       {hasItems && (
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
