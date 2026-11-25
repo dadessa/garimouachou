@@ -15,7 +15,9 @@ export function hasStepLease(updatedAt: string, now = Date.now()) {
 
 export function stepLeaseUntil(previous: string, now = Date.now()) {
   const prior = new Date(previous).getTime();
-  return new Date(Math.max(now + STEP_LEASE_MS, Number.isFinite(prior) ? prior + 1 : 0)).toISOString();
+  return new Date(
+    Math.max(now + STEP_LEASE_MS, Number.isFinite(prior) ? prior + 1 : 0),
+  ).toISOString();
 }
 
 /** O callback deve executar UPDATE ... WHERE updated_at = expected AND status = 'running'

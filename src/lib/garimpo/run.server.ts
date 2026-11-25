@@ -71,7 +71,26 @@ export async function startGarimpo(sb: Sb, trigger: "manual" | "agendada") {
       const kws = s.keywords.length
         ? s.keywords
         : [...d.DEFAULT_KEYWORDS, ...(cats ?? []).map((c) => c.name)];
-      plan = buildPlan(sites, kws, s);
+      let trending: string[] = [];
+      if (!s.keywords.length) {
+        const { fetchGoogleTrends } = await import("@/lib/discovery/google-trends.server");
+        const trends = await fetchGoogleTrends();
+        trending = trends.keywords;
+        sources.push({
+          fonte: "Google Trends BR (RSS)",
+          status: trends.ok
+            ? trending.length
+              ? `Consultado em ${trends.checkedAt}; termos comerciais: ${trending.join(", ")}`
+              : "Consultado; sem termos comerciais elegíveis"
+            : "Indisponível; usando palavras-chave padrão",
+        });
+      } else {
+        sources.push({
+          fonte: "Google Trends BR (RSS)",
+          status: "Não consultado: palavras-chave manuais configuradas",
+        });
+      }
+      plan = buildPlan(sites, kws, s, new Date(), trending);
       for (const x of sites)
         sources.push({
           fonte: `MCP do Afiliado · ${x.site}`,

@@ -669,12 +669,29 @@ export async function discoverExternal(
     .select("priority_categories,max_price_cents")
     .eq("id", 1)
     .maybeSingle();
-  const kws = keyword?.trim()
-    ? [keyword.trim().slice(0, 60)]
-    : (prefs?.priority_categories?.length ? prefs.priority_categories : d.DEFAULT_KEYWORDS).slice(
-        0,
-        3,
+  const fallback = prefs?.priority_categories?.length
+    ? prefs.priority_categories
+    : d.DEFAULT_KEYWORDS;
+  let kws = keyword?.trim() ? [keyword.trim().slice(0, 60)] : fallback.slice(0, 3);
+  if (mode === "tendencia" && !keyword?.trim()) {
+    const { fetchGoogleTrends } = await import("@/lib/discovery/google-trends.server");
+    const trends = await fetchGoogleTrends();
+    fontes.push({
+      fonte: "Google Trends BR (RSS)",
+      status: trends.ok ? "consultada" : "indisponível",
+      itens: trends.keywords.length,
+    });
+    if (trends.keywords.length) {
+      kws = [...new Set([...trends.keywords, ...fallback])].slice(0, 3);
+      limitacoes.push("Termos em alta no Google: " + trends.keywords.join(", ") + ".");
+    } else {
+      limitacoes.push(
+        trends.ok
+          ? "Nenhum termo comercial elegível no feed; usadas as categorias padrão."
+          : "Google Trends indisponível; usadas as categorias padrão.",
       );
+    }
+  }
   const cfg = d.MODE_SEARCH[mode];
   const priceMax =
     cfg.priceMax ?? (prefs?.max_price_cents != null ? prefs.max_price_cents / 100 : undefined);
@@ -750,7 +767,7 @@ export async function discoverExternal(
   };
   if (mode === "tendencia")
     limitacoes.push(
-      "Tendência medida por vendas informadas pela loja; Google Trends não tem API oficial disponível.",
+      "Google Trends mede interesse em pesquisas, não vendas. O ranking dos produtos usa dados das lojas.",
     );
   return {
     cards: ranked.resultado as ReturnType<typeof card>[],

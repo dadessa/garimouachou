@@ -85,17 +85,21 @@ export function buildPlan(
   keywords: string[],
   s: Pick<GarimpoSettings, "marketplaces" | "request_limit">,
   now = new Date(),
+  priorityKeywords: string[] = [],
 ): PlanStep[] {
   const pri = s.marketplaces.length
     ? sites.filter((x) => s.marketplaces.includes(x.site.toLowerCase()))
     : sites;
   const ordered = [...pri].sort((a, b) => Number(b.monetized) - Number(a.monetized));
-  const kws = [...new Set(keywords.map((k) => k.trim()).filter(Boolean))];
-  if (!ordered.length || !kws.length) return [];
+  const priority = [...new Set(priorityKeywords.map((k) => k.trim()).filter(Boolean))];
+  const kws = [...new Set(keywords.map((k) => k.trim()).filter(Boolean))].filter(
+    (k) => !priority.includes(k),
+  );
+  if (!ordered.length || (!kws.length && !priority.length)) return [];
   const day = Math.floor(now.getTime() / 86_400_000);
   const rot = kws.map((_, i) => kws[(i + day) % kws.length]!);
   const plan: PlanStep[] = [];
-  for (const keyword of rot)
+  for (const keyword of [...priority, ...rot])
     for (const x of ordered) {
       if (plan.length >= s.request_limit) return plan;
       plan.push({ site: x.site, keyword, monetized: x.monetized });

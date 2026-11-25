@@ -188,6 +188,10 @@ function Garimpo() {
             Pesquisa produtos reais nas lojas conectadas e cria pré-cadastros. Nada é publicado sem
             a sua aprovação.
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Sem palavras-chave manuais, prioriza termos comerciais do Google Trends Brasil (RSS).
+            Interesse de pesquisa não representa vendas.
+          </p>
         </div>
         <Button
           onClick={go}
@@ -333,7 +337,7 @@ function Garimpo() {
           {field("daily_limit", "Produtos por garimpo (até 50)", "20", "number")}
           {field("request_limit", "Limite de consultas (até 40)", "12", "number")}
           {field("marketplaces", "Lojas prioritárias", "kabum, magalu (vazio = todas)")}
-          {field("keywords", "Categorias / palavras-chave", "vazio = categorias do site")}
+          {field("keywords", "Categorias / palavras-chave", "vazio = Google Trends + categorias")}
           {field("min_price", "Preço mínimo (R$)", "")}
           {field("max_price", "Preço máximo (R$)", "")}
           {field("min_commission", "Comissão mínima (%)", "")}
