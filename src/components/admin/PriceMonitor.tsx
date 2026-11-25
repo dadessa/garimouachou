@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { adminMarketplaces, adminProducts, isPriceStale } from "@/lib/admin/api";
 import { supabase } from "@/integrations/supabase/client";
-import { formatBRL } from "@/lib/price";
+import { effectivePriceHours, formatBRL } from "@/lib/price";
+import { PriceHistoryChart } from "@/components/site/PriceHistoryChart";
 import {
   isObservationCurrent,
   summarizePriceHistory,
@@ -202,7 +203,7 @@ export function PriceMonitor() {
               <p className="text-sm">
                 {isObservationCurrent(
                   history.data.observation,
-                  marketplace?.price_max_age_hours ?? 0,
+                  effectivePriceHours(marketplace?.price_max_age_hours ?? 0, "api"),
                 )
                   ? "Última oferta observada: " + money(history.data.observation.price_cents)
                   : "Última oferta sem preço válido para exibição."}
@@ -212,6 +213,7 @@ export function PriceMonitor() {
                 {new Date(history.data.observation.fetched_at).toLocaleString("pt-BR")}. O catálogo
                 só é atualizado após uma consulta individual confirmada.
               </p>
+              <PriceHistoryChart points={history.data.summary.points} />
               <div className="mt-3 max-h-72 overflow-auto">
                 {history.data.summary.points.length ? (
                   <table className="w-full text-left text-sm">

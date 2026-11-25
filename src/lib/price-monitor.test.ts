@@ -39,8 +39,12 @@ describe("monitoramento de produtos publicados", () => {
   });
 
   it("não renova preço vencido ou com validade insuficiente", () => {
-    expect(catalogPricePatch({ ...row, valid_until: "2026-11-25T13:59:00Z" }, 24, null, now)).toBeNull();
-    expect(catalogPricePatch({ ...row, valid_until: "2026-11-25T15:00:00Z" }, 24, null, now)).toBeNull();
+    expect(
+      catalogPricePatch({ ...row, valid_until: "2026-11-25T13:59:00Z" }, 24, null, now),
+    ).toBeNull();
+    expect(
+      catalogPricePatch({ ...row, valid_until: "2026-11-25T15:00:00Z" }, 24, null, now),
+    ).toBeNull();
   });
 
   it("não sobrescreve observações mais recentes", () => {

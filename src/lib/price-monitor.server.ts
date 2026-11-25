@@ -36,8 +36,7 @@ export async function monitorPublishedPrices(sb: Sb) {
   const eligible = (stores ?? []).filter(
     (m) =>
       supportsPriceHistory(m.slug, "mcp_afiliado") &&
-      (sites.some((s) => s.site === m.slug) ||
-        (m.slug === "shopee" && shopee.shopeeConfigured())),
+      (sites.some((s) => s.site === m.slug) || (m.slug === "shopee" && shopee.shopeeConfigured())),
   );
   if (!eligible.length) {
     return { requests, checked, updated, errors, status: "Sem fontes de preço conectadas" };
@@ -77,11 +76,7 @@ export async function monitorPublishedPrices(sb: Sb) {
     }
     try {
       let rows: PriceObservation[] = [];
-      if (
-        mk.slug === "shopee" &&
-        /^\d+:\d+$/.test(p.external_id) &&
-        shopee.shopeeConfigured()
-      ) {
+      if (mk.slug === "shopee" && /^\d+:\d+$/.test(p.external_id) && shopee.shopeeConfigured()) {
         requests++;
         checked++;
         const response = await shopee.shopeeRadarPage({

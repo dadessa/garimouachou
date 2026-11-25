@@ -56,7 +56,8 @@ export async function runRadarRefresh(sb: Sb, trigger: "manual" | "agendada") {
       status: result.status,
       count: result.updated,
     });
-    if (result.errors) errors.push("Monitoramento: " + result.errors + " falha(s) na consulta ou gravação.");
+    if (result.errors)
+      errors.push("Monitoramento: " + result.errors + " falha(s) na consulta ou gravação.");
   } catch {
     errors.push("Não foi possível executar o monitoramento individual de preços.");
     report.push({ source: "Monitoramento de preços", status: "Falha", count: 0 });
