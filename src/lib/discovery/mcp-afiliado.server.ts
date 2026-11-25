@@ -13,12 +13,14 @@ async function call<T>(path: string, body?: unknown, timeoutMs = 20_000): Promis
     ...(body ? { body: JSON.stringify(body) } : {}),
     signal: AbortSignal.timeout(timeoutMs),
   });
-  const j = (await res.json().catch(() => ({}))) as {
+  const j = (await res.json().catch(() => null)) as ({
     success?: boolean;
     message?: string;
     error?: string;
-  } & T;
-  if (!res.ok || j.success === false) throw new Error(j.message ?? j.error ?? `HTTP ${res.status}`);
+  } & T) | null;
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${j?.message ?? j?.error ?? "falha na consulta"}`);
+  if (!j || typeof j !== "object") throw new Error("Resposta inválida do MCP do Afiliado.");
+  if (j.success === false) throw new Error(j.message ?? j.error ?? "Falha na consulta.");
   return j;
 }
 
@@ -47,7 +49,11 @@ export const searchProducts = (
     price_max?: number;
   },
   timeoutMs?: number,
-) => call<{ items: AfItem[] }>("/search-products", a, timeoutMs).then((r) => r.items ?? []);
+) =>
+  call<{ items: AfItem[] }>("/search-products", a, timeoutMs).then((r) => {
+    if (!Array.isArray(r.items)) throw new Error("Resposta sem lista de produtos.");
+    return r.items.filter((item) => item && typeof item === "object");
+  });
 
 /** Gera links de afiliada da conta (só onde o MCP do Afiliado tem rota autorizada). */
 export async function convertLinks(urls: string[]) {

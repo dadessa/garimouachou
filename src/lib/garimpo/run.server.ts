@@ -13,6 +13,8 @@ import {
   isSearchBlocked,
   discardReason,
   runStatusOf,
+  searchSources,
+  type SearchSource,
   type GarimpoSettings,
   type PlanStep,
 } from "./rules";
@@ -21,8 +23,8 @@ type Sb = SupabaseClient<Database>;
 type Run = Database["public"]["Tables"]["garimpo_runs"]["Row"];
 
 export async function loadSettings(sb: Sb): Promise<GarimpoSettings> {
-  const { data } = await sb.from("garimpo_settings").select("*").eq("id", 1).maybeSingle();
-  if (!data) throw new Error("Configuração do garimpo não encontrada.");
+  const { data, error } = await sb.from("garimpo_settings").select("*").eq("id", 1).maybeSingle();
+  if (error || !data) throw new Error("Configuração do garimpo não encontrada.");
   return {
     ...data,
     min_commission_pct: data.min_commission_pct,
@@ -65,46 +67,53 @@ export async function startGarimpo(sb: Sb, trigger: "manual" | "agendada") {
   const errors: string[] = [];
   let plan: PlanStep[] = [];
   const sources: { fonte: string; status: string }[] = [];
-  if (!af.afConfigured()) errors.push("MCP do Afiliado não configurado.");
-  else {
+  const shopee = await import("@/lib/marketplaces/shopee.server");
+  let mcpSites: SearchSource[] = [];
+  if (af.afConfigured()) {
     try {
-      const sites = af.searchableSites(await af.botInfo());
-      const { data: cats } = await sb.from("categories").select("name").eq("is_active", true);
-      const kws = s.keywords.length
-        ? s.keywords
-        : [...d.DEFAULT_KEYWORDS, ...(cats ?? []).map((c) => c.name)];
-      let trending: string[] = [];
-      if (!s.keywords.length) {
-        const { fetchGoogleTrends } = await import("@/lib/discovery/google-trends.server");
-        const trends = await fetchGoogleTrends();
-        trending = trends.keywords;
-        sources.push({
-          fonte: "Google Trends BR (RSS)",
-          status: trends.ok
-            ? trending.length
-              ? `Consultado em ${trends.checkedAt}; termos comerciais: ${trending.join(", ")}`
-              : "Consultado; sem termos comerciais elegíveis"
-            : "Indisponível; usando palavras-chave padrão",
-        });
-      } else {
-        sources.push({
-          fonte: "Google Trends BR (RSS)",
-          status: "Não consultado: palavras-chave manuais configuradas",
-        });
-      }
-      plan = buildPlan(sites, kws, s, new Date(), trending);
-      for (const x of sites)
-        sources.push({
-          fonte: `MCP do Afiliado · ${x.site}`,
-          status: x.monetized ? "com comissão" : "sem comissão na conta",
-        });
-      if (!sites.length) errors.push("Nenhuma loja pesquisável no MCP do Afiliado.");
-      else if (!plan.length)
-        errors.push("Nenhuma loja pesquisável corresponde à configuração. Revise Lojas prioritárias.");
-    } catch (e) {
-      errors.push(`MCP do Afiliado: ${(e as Error).message.slice(0, 160)}`);
+      mcpSites = af.searchableSites(await af.botInfo(8000));
+    } catch {
+      errors.push("MCP do Afiliado: não foi possível consultar as lojas da conta.");
     }
+  } else {
+    sources.push({ fonte: "MCP do Afiliado", status: "Não configurado" });
   }
+  const sites = searchSources(mcpSites, shopee.shopeeConfigured());
+  const { data: cats } = await sb.from("categories").select("name").eq("is_active", true);
+  const kws = s.keywords.length
+    ? s.keywords
+    : [...d.DEFAULT_KEYWORDS, ...(cats ?? []).map((c) => c.name)];
+  let trending: string[] = [];
+  if (!s.keywords.length) {
+    const { fetchGoogleTrends } = await import("@/lib/discovery/google-trends.server");
+    const trends = await fetchGoogleTrends();
+    trending = trends.keywords;
+    sources.push({
+      fonte: "Google Trends BR (RSS)",
+      status: trends.ok
+        ? trending.length
+          ? `Consultado em ${trends.checkedAt}; termos comerciais: ${trending.join(", ")}`
+          : "Consultado; sem termos comerciais elegíveis"
+        : "Indisponível; usando palavras-chave padrão",
+    });
+  } else {
+    sources.push({
+      fonte: "Google Trends BR (RSS)",
+      status: "Não consultado: palavras-chave manuais configuradas",
+    });
+  }
+  plan = buildPlan(sites, kws, s, new Date(), trending);
+  for (const x of sites)
+    sources.push({
+      fonte: x.provider === "shopee_api" ? "Shopee API oficial" : `MCP do Afiliado · ${x.site}`,
+      status: x.monetized ? "com comissão" : "sem comissão na conta",
+    });
+  if (!sites.length)
+    errors.push("Nenhuma fonte pesquisável disponível. Confira as integrações.");
+  else if (!plan.length)
+    errors.push(
+      "Nenhuma loja pesquisável corresponde à configuração. Revise Lojas prioritárias.",
+    );
   const failed = !plan.length;
   const { data: run, error } = await sb
     .from("garimpo_runs")
@@ -231,19 +240,57 @@ async function advanceGarimpo(
       let discarded = run.discarded;
       let found = run.found;
       const ids = new Set(run.candidates);
+      let successful = false;
       try {
-        const items = await af.searchProducts({
-          query: step.keyword,
-          site: step.site,
-          sort: "sales_desc",
-          limit: 8,
-        });
-        const rows = items
-          .map((it) => d.afToRow({ ...it, site: it.site ?? step.site }, step.monetized))
-          .filter((x): x is NonNullable<typeof x> => !!x);
+        let rows: Database["public"]["Tables"]["radar_opportunities"]["Insert"][];
+        if (step.provider === "shopee_api") {
+          const shopee = await import("@/lib/marketplaces/shopee.server");
+          const { shopeeToRow } = await import("@/lib/radar/collect");
+          const result = await shopee.shopeeRadarPage({
+            keyword: step.keyword,
+            page: 1,
+            sortType: shopee.SHOPEE_SORT.maisVendidos,
+            limit: 8,
+            timeoutMs: 10_000,
+          });
+          if (!Array.isArray(result?.nodes)) throw new Error("Resposta inválida da Shopee.");
+          rows = result.nodes
+            .filter((n) => typeof n.productName === "string" && n.productName.trim())
+            .map((n) => {
+              const row = shopeeToRow(n, new Date());
+              return {
+                ...row,
+                affiliate_url: d.safeHttps(n.offerLink) ? n.offerLink : null,
+                original_price_cents: null,
+                signals: [],
+              };
+            });
+        } else {
+          const items = await af.searchProducts(
+            {
+              query: step.keyword,
+              site: step.site,
+              sort: "sales_desc",
+              limit: 8,
+            },
+            10_000,
+          );
+          rows = items
+            .filter((it) => !it.site || it.site.toLowerCase() === step.site.toLowerCase())
+            .map((it) => d.afToRow({ ...it, site: step.site }, step.monetized))
+            .filter((x): x is NonNullable<typeof x> => !!x);
+        }
         found += rows.length;
         const keep = rows.filter((x) => {
-          const why = discardReason(x, s);
+          const why = discardReason(
+            {
+              marketplace_slug: x.marketplace_slug,
+              price_cents: x.price_cents ?? null,
+              discount_pct: x.discount_pct ?? null,
+              commission_rate: x.commission_rate ?? null,
+            },
+            s,
+          );
           if (why) {
             discarded++;
             reasons[why] = (reasons[why] ?? 0) + 1;
@@ -257,15 +304,25 @@ async function advanceGarimpo(
             .upsert(keep, { onConflict: "marketplace_slug,external_id" })
             .select("id");
           if (error) errors.push(`${step.site}/${step.keyword}: falha ao gravar no Radar.`);
-          else saved?.forEach((x) => ids.add(x.id));
-        }
+          else {
+            saved?.forEach((x) => ids.add(x.id));
+            successful = true;
+          }
+        } else successful = true;
       } catch (e) {
         if (e instanceof StepLeaseLostError) throw e;
         const message = e instanceof Error ? e.message : "";
         const blocked = blockedSearchMessage(step.site, message);
         errors.push(blocked ?? `${step.site}/${step.keyword}: falha na consulta à fonte.`);
       }
+      const sources = run.sources as { fonte: string; status: string; successes?: number }[];
+      const source = step.provider === "shopee_api" ? "Shopee API oficial" : `MCP do Afiliado · ${step.site}`;
       await save({
+        sources: sources.map((item) =>
+          item.fonte === source && successful
+            ? { ...item, successes: (item.successes ?? 0) + 1 }
+            : item,
+        ),
         cursor: run.cursor + 1,
         requests: run.requests + 1,
         found,
@@ -280,12 +337,15 @@ async function advanceGarimpo(
       const { data: opp, error: readError } = run.candidates.length
         ? await sb
             .from("radar_opportunities")
-            .select("id,external_id,affiliate_url,signals")
+            .select("id,external_id,affiliate_url,signals,source")
             .in("id", run.candidates)
         : { data: [], error: null };
       if (readError) throw new Error("Não foi possível consultar as oportunidades para conversão.");
       const need = (opp ?? []).filter(
-        (o) => !o.affiliate_url && !o.signals.includes("sem_comissao_na_conta"),
+        (o) =>
+          o.source === "mcp_afiliado" &&
+          !o.affiliate_url &&
+          !o.signals.includes("sem_comissao_na_conta"),
       );
       if (need.length) {
         try {
@@ -411,7 +471,12 @@ async function createBatch(
     ...(done
       ? {
           phase: "done",
-          status: runStatusOf(errors.length, queued, run.found),
+          status: runStatusOf(
+            errors.length,
+            queued,
+            run.found,
+            (run.sources as { successes?: number }[]).reduce((n, x) => n + (x.successes ?? 0), 0),
+          ),
           finished_at: new Date().toISOString(),
         }
       : {}),

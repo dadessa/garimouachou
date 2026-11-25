@@ -18,7 +18,24 @@ export interface Candidate {
   discount_pct: number | null;
   commission_rate: number | null;
 }
-export type PlanStep = { site: string; keyword: string; monetized: boolean };
+export type SearchSource = {
+  site: string;
+  monetized: boolean;
+  provider?: "mcp_afiliado" | "shopee_api";
+};
+export type PlanStep = SearchSource & { keyword: string };
+
+/** Prefere a API oficial quando configurada, sem depender do MCP ou duplicar consultas à Shopee. */
+export function searchSources(sites: SearchSource[], directShopee: boolean): SearchSource[] {
+  const result = new Map<string, SearchSource>();
+  for (const source of sites) {
+    const site = source.site.trim().toLowerCase();
+    if (!site || result.has(site)) continue;
+    result.set(site, { ...source, site });
+  }
+  if (directShopee) result.set("shopee", { site: "shopee", monetized: true, provider: "shopee_api" });
+  return [...result.values()];
+}
 
 /** Execução interrompida há mais que isto é considerada falha (libera a trava). */
 export const STALE_RUN_MIN = 30;
@@ -81,7 +98,7 @@ export function discardReason(c: Candidate, s: GarimpoSettings): string | null {
 
 /** Plano de consultas: lojas × palavras-chave, rotacionado por dia e limitado por requisições. */
 export function buildPlan(
-  sites: { site: string; monetized: boolean }[],
+  sites: SearchSource[],
   keywords: string[],
   s: Pick<GarimpoSettings, "marketplaces" | "request_limit">,
   now = new Date(),
@@ -102,17 +119,17 @@ export function buildPlan(
   for (const keyword of [...priority, ...rot])
     for (const x of ordered) {
       if (plan.length >= s.request_limit) return plan;
-      plan.push({ site: x.site, keyword, monetized: x.monetized });
+      plan.push({ ...x, keyword });
     }
   return plan;
 }
 
-export const runStatusOf = (errors: number, created: number, found: number) =>
-  errors === 0 ? "ok" : created || found ? "partial" : "failed";
+export const runStatusOf = (errors: number, created: number, found: number, successful = 0) =>
+  errors === 0 ? "ok" : created || found || successful ? "partial" : "failed";
 
 /** Bloqueios explícitos do provedor: não insistir nem tentar contornar a proteção. */
 export function blockedSearchMessage(site: string, message: string): string | null {
-  if (!/anti[- ]?bot|captcha|KABUM_PROXY_BASE|\bHTTP\s+(?:403|429)\b/i.test(message)) {
+  if (!/anti[- ]?bot|captcha|KABUM_PROXY_BASE|\bHTTP\s+(?:401|403|429)\b|\[(?:401|403|429)\]/i.test(message)) {
     return null;
   }
   return `[${site.toLowerCase()}] Busca suspensa nesta execução: acesso bloqueado ou limitado pela fonte.`;

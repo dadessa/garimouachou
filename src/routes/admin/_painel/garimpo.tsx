@@ -342,7 +342,7 @@ function Garimpo() {
           </label>
           {field("daily_limit", "Produtos por garimpo (até 50)", "20", "number")}
           {field("request_limit", "Limite de consultas (até 40)", "12", "number")}
-          {field("marketplaces", "Lojas prioritárias", "mercadolivre, shopee (vazio = todas)")}
+          {field("marketplaces", "Lojas prioritárias", "vazio = todas as lojas pesquisáveis")}
           {field("keywords", "Categorias / palavras-chave", "vazio = Google Trends + categorias")}
           {field("min_price", "Preço mínimo (R$)", "")}
           {field("max_price", "Preço máximo (R$)", "")}
@@ -352,8 +352,8 @@ function Garimpo() {
         <p className="mt-2 text-xs text-muted-foreground">
           Uma loja bloqueada é suspensa durante a execução. Deixe Lojas prioritárias vazio para
           consultar todas as fontes pesquisáveis. Comissão mínima descarta produtos cuja loja não
-          informa comissão. Descrições não são
-          geradas automaticamente: use “Gerar com IA” ao revisar.
+          informa comissão. Descrições não são geradas automaticamente: use “Gerar com IA” ao
+          revisar.
         </p>
         <Button className="mt-3" onClick={() => save()}>
           Salvar configuração

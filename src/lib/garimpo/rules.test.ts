@@ -5,6 +5,8 @@ import {
   discardReason,
   isDue,
   isSearchBlocked,
+  runStatusOf,
+  searchSources,
   type GarimpoSettings,
 } from "./rules";
 
@@ -98,5 +100,31 @@ describe("isolamento de fontes indisponíveis", () => {
     const errors = [blockedSearchMessage("kabum", "HTTP 403")!];
     expect(plan.filter((p) => !isSearchBlocked(p.site, errors))).toHaveLength(2);
     expect(buildPlan(sites, ["fone"], { ...s, marketplaces: ["shopee"] })).toEqual([]);
+  });
+});
+
+describe("fontes independentes e conclusão do garimpo", () => {
+  it("permite planejar pela API Shopee sem MCP configurado", () => {
+    const sources = searchSources([], true);
+    expect(buildPlan(sources, ["fone"], s)).toEqual([
+      { site: "shopee", monetized: true, provider: "shopee_api", keyword: "fone" },
+    ]);
+  });
+
+  it("não duplica Shopee quando existem duas integrações", () => {
+    expect(searchSources([{ site: "Shopee", monetized: false }], true)).toEqual([
+      { site: "shopee", monetized: true, provider: "shopee_api" },
+    ]);
+  });
+
+  it("distingue consulta vazia válida de todas as fontes com erro", () => {
+    expect(runStatusOf(1, 0, 0, 1)).toBe("partial");
+    expect(runStatusOf(1, 0, 0, 0)).toBe("failed");
+    expect(runStatusOf(0, 0, 0, 1)).toBe("ok");
+  });
+
+  it("reconhece respostas de acesso limitado da API oficial", () => {
+    expect(blockedSearchMessage("shopee", "Shopee [403]: acesso negado")).not.toBeNull();
+    expect(blockedSearchMessage("kabum", "HTTP 429: limite")).not.toBeNull();
   });
 });
