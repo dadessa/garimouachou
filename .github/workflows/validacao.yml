@@ -1,0 +1,89 @@
+name: Validação do Garimou Achou
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validacao-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualidade:
+    name: Qualidade do código
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      # Dados fictícios apenas para build/teste. Nenhuma credencial de produção.
+      VITE_SUPABASE_URL: https://ci.example.invalid
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.13"
+
+      - name: Instalar dependências do lockfile
+        id: install
+        run: bun install --frozen-lockfile
+
+      # Executar todos os diagnósticos mesmo se um anterior falhar.
+      # Não usar continue-on-error: qualquer falha reprova a execução.
+      - name: TypeScript
+        id: types
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: ./node_modules/.bin/tsc --noEmit
+
+      - name: ESLint
+        id: lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run lint
+
+      - name: Testes unitários e de rotas
+        id: tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run test
+
+      - name: Build de produção
+        id: build
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run build
+
+      - name: Resumo da validação
+        if: ${{ always() }}
+        env:
+          INSTALL_RESULT: ${{ steps.install.outcome }}
+          TYPES_RESULT: ${{ steps.types.outcome }}
+          LINT_RESULT: ${{ steps.lint.outcome }}
+          TESTS_RESULT: ${{ steps.tests.outcome }}
+          BUILD_RESULT: ${{ steps.build.outcome }}
+        run: |
+          {
+            echo "## Validação do Garimou Achou!"
+            echo "| Etapa | Resultado |"
+            echo "| --- | --- |"
+            echo "| Dependências | $INSTALL_RESULT |"
+            echo "| TypeScript | $TYPES_RESULT |"
+            echo "| ESLint | $LINT_RESULT |"
+            echo "| Testes | $TESTS_RESULT |"
+            echo "| Build | $BUILD_RESULT |"
+            echo ""
+            echo "Esta execução valida o código, sem publicar ou acessar credenciais de produção."
+          } >> "$GITHUB_STEP_SUMMARY"
