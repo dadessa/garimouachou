@@ -47,9 +47,11 @@ export function CouponShelf({
             <p className="text-sm font-bold">{benefit(c)}</p>
             <p className="break-all rounded-lg border border-dashed p-2 font-mono">{c.code}</p>
             <p className="text-xs">
-              Válido até {new Date(c.endsAt).toLocaleString("pt-BR", {
+              Válido até{" "}
+              {new Date(c.endsAt).toLocaleString("pt-BR", {
                 timeZone: "America/Sao_Paulo",
-              })} (Brasília).
+              })}{" "}
+              (Brasília).
             </p>
             {c.minimumCents !== null && (
               <p className="text-xs">Compra mínima: {formatBRL(c.minimumCents)}</p>

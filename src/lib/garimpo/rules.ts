@@ -109,3 +109,21 @@ export function buildPlan(
 
 export const runStatusOf = (errors: number, created: number, found: number) =>
   errors === 0 ? "ok" : created || found ? "partial" : "failed";
+
+/** Bloqueios explícitos do provedor: não insistir nem tentar contornar a proteção. */
+export function blockedSearchMessage(site: string, message: string): string | null {
+  if (!/anti[- ]?bot|captcha|KABUM_PROXY_BASE|\bHTTP\s+(?:403|429)\b/i.test(message)) {
+    return null;
+  }
+  return `[${site.toLowerCase()}] Busca suspensa nesta execução: acesso bloqueado ou limitado pela fonte.`;
+}
+
+/** Compatível com erros históricos de execuções iniciadas antes desta correção. */
+export function isSearchBlocked(site: string, errors: string[]) {
+  const key = site.toLowerCase();
+  return errors.some(
+    (error) =>
+      error.startsWith(`[${key}] Busca suspensa nesta execução:`) ||
+      (error.toLowerCase().startsWith(key + "/") && !!blockedSearchMessage(key, error)),
+  );
+}

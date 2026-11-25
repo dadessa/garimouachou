@@ -58,6 +58,9 @@ describe("cupons", () => {
     expect(result.coupons[0]?.amount).toBeNull();
     expect(result.coupons[0]?.approved).toBe(false);
     expect(activeCoupons(result.coupons, now)).toEqual([]);
-    expect(normalizeAwinCoupons([{ ...row, voucher: { code: "X", exclusive: true } }], "12", now).coupons).toEqual([]);
+    expect(
+      normalizeAwinCoupons([{ ...row, voucher: { code: "X", exclusive: true } }], "12", now)
+        .coupons,
+    ).toEqual([]);
   });
 });

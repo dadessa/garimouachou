@@ -1,7 +1,6 @@
 import { couponSchema, couponIssues, type Coupon } from "./rules";
 
-const obj = (v: unknown) =>
-  v && typeof v === "object" ? (v as Record<string, unknown>) : {};
+const obj = (v: unknown) => (v && typeof v === "object" ? (v as Record<string, unknown>) : {});
 const str = (v: unknown) => (typeof v === "string" ? v : "");
 const utc = (v: unknown) => {
   const s = str(v);

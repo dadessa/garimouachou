@@ -24,5 +24,5 @@ export const garimparAgora = createServerFn({ method: "POST" })
       id = r.run.id;
     }
     const { run, busy } = await g.stepGarimpo(context.supabase, id, 20_000);
-    return { id: run.id, status: run.status, phase: run.phase, busy };
+    return { id: run.id, status: run.status, phase: run.phase, busy, errors: run.errors };
   });

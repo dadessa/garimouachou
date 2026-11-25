@@ -92,8 +92,8 @@ export function CouponAdmin() {
       <h2 className="text-lg font-extrabold text-navy">Central de Cupons</h2>
       <p className="text-xs text-muted-foreground">
         Importe cupons das parcerias Awin no Brasil ou registros JSON. Revise os códigos, regras e
-        links antes de selecionar. Nesta versão, a publicação é realizada pelo registro revisado
-        no Git; os rascunhos desta tela não são persistidos.
+        links antes de selecionar. Nesta versão, a publicação é realizada pelo registro revisado no
+        Git; os rascunhos desta tela não são persistidos.
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <label className="flex items-center gap-2 text-sm">
@@ -127,12 +127,18 @@ export function CouponAdmin() {
           Revisar registros
         </Button>
       </details>
-      {message && <p role="status" className="text-sm">{message}</p>}
+      {message && (
+        <p role="status" className="text-sm">
+          {message}
+        </p>
+      )}
       {rows.map((c) => {
         const errors = issues(c);
         return (
           <article key={c.id} className="space-y-2 rounded-xl border border-border p-3">
-            <p className="font-bold">{c.merchant} — {c.title}</p>
+            <p className="font-bold">
+              {c.merchant} — {c.title}
+            </p>
             <p className="break-all font-mono text-sm">{c.code}</p>
             <p className="text-xs">Vencimento: {new Date(c.endsAt).toLocaleString("pt-BR")}</p>
             <p className="whitespace-pre-wrap break-words text-xs">{c.terms}</p>
@@ -142,7 +148,9 @@ export function CouponAdmin() {
                 <select
                   className="rounded-lg border bg-background p-2"
                   value={c.kind}
-                  onChange={(e) => edit(c.id, { kind: e.target.value as Coupon["kind"], amount: null })}
+                  onChange={(e) =>
+                    edit(c.id, { kind: e.target.value as Coupon["kind"], amount: null })
+                  }
                 >
                   <option value="other">Condições específicas</option>
                   <option value="percent">Percentual</option>
@@ -156,7 +164,9 @@ export function CouponAdmin() {
                   <Input
                     type="number"
                     value={c.amount ?? ""}
-                    onChange={(e) => edit(c.id, { amount: e.target.value ? Number(e.target.value) : null })}
+                    onChange={(e) =>
+                      edit(c.id, { amount: e.target.value ? Number(e.target.value) : null })
+                    }
                   />
                 </label>
               )}
@@ -166,7 +176,9 @@ export function CouponAdmin() {
                   type="number"
                   min={0}
                   value={c.minimumCents ?? ""}
-                  onChange={(e) => edit(c.id, { minimumCents: e.target.value ? Number(e.target.value) : null })}
+                  onChange={(e) =>
+                    edit(c.id, { minimumCents: e.target.value ? Number(e.target.value) : null })
+                  }
                 />
               </label>
               <label className="grid gap-1 text-xs">
@@ -177,7 +189,11 @@ export function CouponAdmin() {
                   onChange={(e) => edit(c.id, { marketplace: e.target.value, productSlug: "" })}
                 >
                   <option value="">Anunciante independente</option>
-                  {marketplaces.map((m) => <option key={m.slug} value={m.slug}>{m.name}</option>)}
+                  {marketplaces.map((m) => (
+                    <option key={m.slug} value={m.slug}>
+                      {m.name}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label className="grid gap-1 text-xs">
@@ -196,7 +212,9 @@ export function CouponAdmin() {
                 checked={selected.includes(c.id)}
                 disabled={errors.length > 0}
                 onChange={(e) =>
-                  setSelected((old) => e.target.checked ? [...old, c.id] : old.filter((x) => x !== c.id))
+                  setSelected((old) =>
+                    e.target.checked ? [...old, c.id] : old.filter((x) => x !== c.id),
+                  )
                 }
               />
               Conferi as regras, o benefício, o destino e a autorização de divulgação.

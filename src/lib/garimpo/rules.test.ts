@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildPlan, discardReason, isDue, type GarimpoSettings } from "./rules";
+import {
+  blockedSearchMessage,
+  buildPlan,
+  discardReason,
+  isDue,
+  isSearchBlocked,
+  type GarimpoSettings,
+} from "./rules";
 
 const s: GarimpoSettings = {
   enabled: true,
@@ -58,5 +65,38 @@ describe("garimpo", () => {
     );
     expect(p).toHaveLength(4);
     expect(p[0]!.site).toBe("shopee");
+  });
+});
+
+describe("isolamento de fontes indisponíveis", () => {
+  it("suspende somente a loja que sofreu bloqueio explícito", () => {
+    const message = blockedSearchMessage(
+      "kabum",
+      "Busca da Kabum indisponível (proteção anti-bot bloqueou o servidor).",
+    );
+    expect(message).not.toBeNull();
+    expect(isSearchBlocked("kabum", [message!])).toBe(true);
+    expect(isSearchBlocked("mercadolivre", [message!])).toBe(false);
+  });
+
+  it("reconhece o histórico de uma execução anterior à atualização", () => {
+    const errors = ["kabum/Presentes: proteção anti-bot bloqueou o servidor"];
+    expect(isSearchBlocked("kabum", errors)).toBe(true);
+    expect(isSearchBlocked("shopee", errors)).toBe(false);
+  });
+
+  it("não suspende a loja por uma falha genérica", () => {
+    expect(blockedSearchMessage("kabum", "Tempo de consulta excedido")).toBeNull();
+  });
+
+  it("mantém as outras consultas e respeita a seleção de lojas", () => {
+    const sites = [
+      { site: "kabum", monetized: false },
+      { site: "mercadolivre", monetized: true },
+    ];
+    const plan = buildPlan(sites, ["fone", "smartwatch"], s);
+    const errors = [blockedSearchMessage("kabum", "HTTP 403")!];
+    expect(plan.filter((p) => !isSearchBlocked(p.site, errors))).toHaveLength(2);
+    expect(buildPlan(sites, ["fone"], { ...s, marketplaces: ["shopee"] })).toEqual([]);
   });
 });

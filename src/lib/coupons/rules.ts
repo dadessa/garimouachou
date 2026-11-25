@@ -9,7 +9,10 @@ export const couponSchema = z.object({
   source: z.enum(["awin", "manual"]),
   merchant: z.string().trim().min(1).max(160),
   marketplace: z.string().max(60),
-  productSlug: z.string().max(120).regex(/^[a-z0-9-]*$/),
+  productSlug: z
+    .string()
+    .max(120)
+    .regex(/^[a-z0-9-]*$/),
   title: z.string().trim().min(1).max(300),
   code: z.string().trim().min(1).max(100),
   terms: z.string().trim().min(1).max(10000),
@@ -21,7 +24,10 @@ export const couponSchema = z.object({
   destination: z.string().max(2000),
   affiliateUrl: z.string().min(1).max(4000),
   advertiserId: z.number().int().positive().nullable(),
-  publisherId: z.string().regex(/^\d{1,15}$/).nullable(),
+  publisherId: z
+    .string()
+    .regex(/^\d{1,15}$/)
+    .nullable(),
   approved: z.boolean(),
 });
 

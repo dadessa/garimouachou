@@ -116,7 +116,7 @@ function Garimpo() {
         }
         if (r.status !== "running") {
           if (r.status === "failed")
-            toast.error("Garimpo terminou com falha. Confira o histórico.");
+            toast.error(r.errors[0] ?? "Garimpo terminou com falha. Confira as integrações.");
           else if (r.status === "partial") toast.warning("Garimpo concluído com pendências.");
           else toast.success("Garimpo concluído.");
           break;
@@ -277,6 +277,12 @@ function Garimpo() {
               .map((s) => `${s.fonte} — ${s.status}`)
               .join(" · ") || "nenhuma"}
           </p>
+          {last.status === "failed" && (
+            <p className="mt-2 text-sm text-destructive" role="alert">
+              Nenhuma oferta processada com sucesso. Confira as integrações e as lojas prioritárias.
+              Se uma loja estiver bloqueada, selecione outras fontes pesquisáveis.
+            </p>
+          )}
           {last.errors.length > 0 && (
             <ul className="mt-2 list-disc pl-5 text-xs text-destructive">
               {last.errors.slice(0, 8).map((e, i) => (
@@ -336,7 +342,7 @@ function Garimpo() {
           </label>
           {field("daily_limit", "Produtos por garimpo (até 50)", "20", "number")}
           {field("request_limit", "Limite de consultas (até 40)", "12", "number")}
-          {field("marketplaces", "Lojas prioritárias", "kabum, magalu (vazio = todas)")}
+          {field("marketplaces", "Lojas prioritárias", "mercadolivre, shopee (vazio = todas)")}
           {field("keywords", "Categorias / palavras-chave", "vazio = Google Trends + categorias")}
           {field("min_price", "Preço mínimo (R$)", "")}
           {field("max_price", "Preço máximo (R$)", "")}
@@ -344,7 +350,9 @@ function Garimpo() {
           {field("min_discount", "Desconto mínimo (%)", "")}
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Comissão mínima descarta produtos cuja loja não informa comissão. Descrições não são
+          Uma loja bloqueada é suspensa durante a execução. Deixe Lojas prioritárias vazio para
+          consultar todas as fontes pesquisáveis. Comissão mínima descarta produtos cuja loja não
+          informa comissão. Descrições não são
           geradas automaticamente: use “Gerar com IA” ao revisar.
         </p>
         <Button className="mt-3" onClick={() => save()}>

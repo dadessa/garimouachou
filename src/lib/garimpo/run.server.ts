@@ -9,6 +9,8 @@ import {
   CREATE_PER_STEP,
   STALE_RUN_MIN,
   buildPlan,
+  blockedSearchMessage,
+  isSearchBlocked,
   discardReason,
   runStatusOf,
   type GarimpoSettings,
@@ -97,6 +99,8 @@ export async function startGarimpo(sb: Sb, trigger: "manual" | "agendada") {
           status: x.monetized ? "com comissão" : "sem comissão na conta",
         });
       if (!sites.length) errors.push("Nenhuma loja pesquisável no MCP do Afiliado.");
+      else if (!plan.length)
+        errors.push("Nenhuma loja pesquisável corresponde à configuração. Revise Lojas prioritárias.");
     } catch (e) {
       errors.push(`MCP do Afiliado: ${(e as Error).message.slice(0, 160)}`);
     }
@@ -217,6 +221,12 @@ async function advanceGarimpo(
         continue;
       }
       const errors = [...run.errors];
+      if (isSearchBlocked(step.site, errors)) {
+        // A suspensão fica no checkpoint, inclusive entre chamadas manuais e agendadas.
+        await save({ cursor: run.cursor + 1 });
+        run = current();
+        continue;
+      }
       const reasons = { ...(run.discard_reasons as Record<string, number>) };
       let discarded = run.discarded;
       let found = run.found;
@@ -251,7 +261,9 @@ async function advanceGarimpo(
         }
       } catch (e) {
         if (e instanceof StepLeaseLostError) throw e;
-        errors.push(`${step.site}/${step.keyword}: ${(e as Error).message.slice(0, 120)}`);
+        const message = e instanceof Error ? e.message : "";
+        const blocked = blockedSearchMessage(step.site, message);
+        errors.push(blocked ?? `${step.site}/${step.keyword}: falha na consulta à fonte.`);
       }
       await save({
         cursor: run.cursor + 1,
@@ -344,7 +356,11 @@ async function createBatch(
     const noAi = async () => ({ error: null, description: "", tags: [] as string[] });
     for (const o of slice) {
       if (queued >= s.daily_limit) break;
-      if (!o.affiliate_url || o.affiliate_url === o.external_id) {
+      if (
+        !o.affiliate_url ||
+        o.affiliate_url === o.external_id ||
+        o.signals.includes("sem_comissao_na_conta")
+      ) {
         unmonetized++;
         continue;
       }
