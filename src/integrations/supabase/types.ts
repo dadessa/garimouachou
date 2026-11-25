@@ -282,6 +282,123 @@ export type Database = {
         }
         Relationships: []
       }
+      garimpo_runs: {
+        Row: {
+          candidates: string[]
+          created_ids: string[]
+          cursor: number
+          discard_reasons: Json
+          discarded: number
+          duplicates: number
+          errors: string[]
+          finished_at: string | null
+          found: number
+          id: string
+          phase: string
+          plan: Json
+          queued: number
+          requests: number
+          sources: Json
+          started_at: string
+          status: string
+          trigger: string
+          unmonetized: number
+          updated_at: string
+        }
+        Insert: {
+          candidates?: string[]
+          created_ids?: string[]
+          cursor?: number
+          discard_reasons?: Json
+          discarded?: number
+          duplicates?: number
+          errors?: string[]
+          finished_at?: string | null
+          found?: number
+          id?: string
+          phase?: string
+          plan?: Json
+          queued?: number
+          requests?: number
+          sources?: Json
+          started_at?: string
+          status?: string
+          trigger: string
+          unmonetized?: number
+          updated_at?: string
+        }
+        Update: {
+          candidates?: string[]
+          created_ids?: string[]
+          cursor?: number
+          discard_reasons?: Json
+          discarded?: number
+          duplicates?: number
+          errors?: string[]
+          finished_at?: string | null
+          found?: number
+          id?: string
+          phase?: string
+          plan?: Json
+          queued?: number
+          requests?: number
+          sources?: Json
+          started_at?: string
+          status?: string
+          trigger?: string
+          unmonetized?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      garimpo_settings: {
+        Row: {
+          daily_limit: number
+          enabled: boolean
+          frequency_hours: number
+          id: number
+          keywords: string[]
+          marketplaces: string[]
+          max_price_cents: number | null
+          min_commission_pct: number | null
+          min_discount_pct: number | null
+          min_price_cents: number | null
+          request_limit: number
+          run_hour: number
+          updated_at: string
+        }
+        Insert: {
+          daily_limit?: number
+          enabled?: boolean
+          frequency_hours?: number
+          id?: number
+          keywords?: string[]
+          marketplaces?: string[]
+          max_price_cents?: number | null
+          min_commission_pct?: number | null
+          min_discount_pct?: number | null
+          min_price_cents?: number | null
+          request_limit?: number
+          run_hour?: number
+          updated_at?: string
+        }
+        Update: {
+          daily_limit?: number
+          enabled?: boolean
+          frequency_hours?: number
+          id?: number
+          keywords?: string[]
+          marketplaces?: string[]
+          max_price_cents?: number | null
+          min_commission_pct?: number | null
+          min_discount_pct?: number | null
+          min_price_cents?: number | null
+          request_limit?: number
+          run_hour?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       import_approvals: {
         Row: {
           created_at: string
@@ -429,6 +546,7 @@ export type Database = {
           created_at: string
           current_price_cents: number | null
           external_id: string | null
+          garimpo_run_id: string | null
           id: string
           is_featured: boolean
           is_weekly_pick: boolean
@@ -436,10 +554,12 @@ export type Database = {
           main_image_url: string | null
           marketplace_id: string | null
           name: string
+          origin: string
           previous_price_cents: number | null
           price_checked_at: string | null
           price_source: Database["public"]["Enums"]["price_source"]
           published_at: string | null
+          review_status: string | null
           seo_description: string | null
           seo_title: string | null
           short_description: string
@@ -455,6 +575,7 @@ export type Database = {
           created_at?: string
           current_price_cents?: number | null
           external_id?: string | null
+          garimpo_run_id?: string | null
           id?: string
           is_featured?: boolean
           is_weekly_pick?: boolean
@@ -462,10 +583,12 @@ export type Database = {
           main_image_url?: string | null
           marketplace_id?: string | null
           name?: string
+          origin?: string
           previous_price_cents?: number | null
           price_checked_at?: string | null
           price_source?: Database["public"]["Enums"]["price_source"]
           published_at?: string | null
+          review_status?: string | null
           seo_description?: string | null
           seo_title?: string | null
           short_description?: string
@@ -481,6 +604,7 @@ export type Database = {
           created_at?: string
           current_price_cents?: number | null
           external_id?: string | null
+          garimpo_run_id?: string | null
           id?: string
           is_featured?: boolean
           is_weekly_pick?: boolean
@@ -488,10 +612,12 @@ export type Database = {
           main_image_url?: string | null
           marketplace_id?: string | null
           name?: string
+          origin?: string
           previous_price_cents?: number | null
           price_checked_at?: string | null
           price_source?: Database["public"]["Enums"]["price_source"]
           published_at?: string | null
+          review_status?: string | null
           seo_description?: string | null
           seo_title?: string | null
           short_description?: string
@@ -773,6 +899,7 @@ export type Database = {
           created_at: string
           current_price_cents: number | null
           external_id: string | null
+          garimpo_run_id: string | null
           id: string
           is_featured: boolean
           is_weekly_pick: boolean
@@ -780,10 +907,12 @@ export type Database = {
           main_image_url: string | null
           marketplace_id: string | null
           name: string
+          origin: string
           previous_price_cents: number | null
           price_checked_at: string | null
           price_source: Database["public"]["Enums"]["price_source"]
           published_at: string | null
+          review_status: string | null
           seo_description: string | null
           seo_title: string | null
           short_description: string

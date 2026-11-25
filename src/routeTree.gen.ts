@@ -33,6 +33,7 @@ import { Route as AdminPainelBannersRouteImport } from './routes/admin/_painel/b
 import { Route as AdminPainelCategoriasRouteImport } from './routes/admin/_painel/categorias'
 import { Route as AdminPainelDesempenhoRouteImport } from './routes/admin/_painel/desempenho'
 import { Route as AdminPainelGarimouIaRouteImport } from './routes/admin/_painel/garimou-ia'
+import { Route as AdminPainelGarimpoRouteImport } from './routes/admin/_painel/garimpo'
 import { Route as AdminPainelImportarRouteImport } from './routes/admin/_painel/importar'
 import { Route as AdminPainelIntegracoesRouteImport } from './routes/admin/_painel/integracoes'
 import { Route as AdminPainelMarketplacesRouteImport } from './routes/admin/_painel/marketplaces'
@@ -41,6 +42,7 @@ import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as AdminPainelProdutosIndexRouteImport } from './routes/admin/_painel/produtos.index'
 import { Route as AdminPainelProdutosIdRouteImport } from './routes/admin/_painel/produtos.$id'
 import { Route as ApiPublicJobsDailyPlanRouteImport } from './routes/api/public/jobs/daily-plan'
+import { Route as ApiPublicJobsGarimpoRouteImport } from './routes/api/public/jobs/garimpo'
 import { Route as ApiPublicJobsRadarRouteImport } from './routes/api/public/jobs/radar'
 
 const IndexRoute = IndexRouteImport.update({
@@ -164,6 +166,11 @@ const AdminPainelGarimouIaRoute = AdminPainelGarimouIaRouteImport.update({
   path: '/garimou-ia',
   getParentRoute: () => AdminPainelRoute,
 } as any)
+const AdminPainelGarimpoRoute = AdminPainelGarimpoRouteImport.update({
+  id: '/garimpo',
+  path: '/garimpo',
+  getParentRoute: () => AdminPainelRoute,
+} as any)
 const AdminPainelImportarRoute = AdminPainelImportarRouteImport.update({
   id: '/importar',
   path: '/importar',
@@ -205,6 +212,11 @@ const ApiPublicJobsDailyPlanRoute = ApiPublicJobsDailyPlanRouteImport.update({
   path: '/api/public/jobs/daily-plan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicJobsGarimpoRoute = ApiPublicJobsGarimpoRouteImport.update({
+  id: '/api/public/jobs/garimpo',
+  path: '/api/public/jobs/garimpo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicJobsRadarRoute = ApiPublicJobsRadarRouteImport.update({
   id: '/api/public/jobs/radar',
   path: '/api/public/jobs/radar',
@@ -235,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/admin/categorias': typeof AdminPainelCategoriasRoute
   '/admin/desempenho': typeof AdminPainelDesempenhoRoute
   '/admin/garimou-ia': typeof AdminPainelGarimouIaRoute
+  '/admin/garimpo': typeof AdminPainelGarimpoRoute
   '/admin/importar': typeof AdminPainelImportarRoute
   '/admin/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
@@ -243,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminPainelIndexRoute
   '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
   '/api/public/jobs/daily-plan': typeof ApiPublicJobsDailyPlanRoute
+  '/api/public/jobs/garimpo': typeof ApiPublicJobsGarimpoRoute
   '/api/public/jobs/radar': typeof ApiPublicJobsRadarRoute
   '/admin/produtos/': typeof AdminPainelProdutosIndexRoute
 }
@@ -269,6 +283,7 @@ export interface FileRoutesByTo {
   '/admin/categorias': typeof AdminPainelCategoriasRoute
   '/admin/desempenho': typeof AdminPainelDesempenhoRoute
   '/admin/garimou-ia': typeof AdminPainelGarimouIaRoute
+  '/admin/garimpo': typeof AdminPainelGarimpoRoute
   '/admin/importar': typeof AdminPainelImportarRoute
   '/admin/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/marketplaces': typeof AdminPainelMarketplacesRoute
@@ -277,6 +292,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminPainelIndexRoute
   '/admin/produtos/$id': typeof AdminPainelProdutosIdRoute
   '/api/public/jobs/daily-plan': typeof ApiPublicJobsDailyPlanRoute
+  '/api/public/jobs/garimpo': typeof ApiPublicJobsGarimpoRoute
   '/api/public/jobs/radar': typeof ApiPublicJobsRadarRoute
   '/admin/produtos': typeof AdminPainelProdutosIndexRoute
 }
@@ -305,6 +321,7 @@ export interface FileRoutesById {
   '/admin/_painel/categorias': typeof AdminPainelCategoriasRoute
   '/admin/_painel/desempenho': typeof AdminPainelDesempenhoRoute
   '/admin/_painel/garimou-ia': typeof AdminPainelGarimouIaRoute
+  '/admin/_painel/garimpo': typeof AdminPainelGarimpoRoute
   '/admin/_painel/importar': typeof AdminPainelImportarRoute
   '/admin/_painel/integracoes': typeof AdminPainelIntegracoesRoute
   '/admin/_painel/marketplaces': typeof AdminPainelMarketplacesRoute
@@ -313,6 +330,7 @@ export interface FileRoutesById {
   '/admin/_painel/': typeof AdminPainelIndexRoute
   '/admin/_painel/produtos/$id': typeof AdminPainelProdutosIdRoute
   '/api/public/jobs/daily-plan': typeof ApiPublicJobsDailyPlanRoute
+  '/api/public/jobs/garimpo': typeof ApiPublicJobsGarimpoRoute
   '/api/public/jobs/radar': typeof ApiPublicJobsRadarRoute
   '/admin/_painel/produtos/': typeof AdminPainelProdutosIndexRoute
 }
@@ -342,6 +360,7 @@ export interface FileRouteTypes {
     | '/admin/categorias'
     | '/admin/desempenho'
     | '/admin/garimou-ia'
+    | '/admin/garimpo'
     | '/admin/importar'
     | '/admin/integracoes'
     | '/admin/marketplaces'
@@ -350,6 +369,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/produtos/$id'
     | '/api/public/jobs/daily-plan'
+    | '/api/public/jobs/garimpo'
     | '/api/public/jobs/radar'
     | '/admin/produtos/'
   fileRoutesByTo: FileRoutesByTo
@@ -376,6 +396,7 @@ export interface FileRouteTypes {
     | '/admin/categorias'
     | '/admin/desempenho'
     | '/admin/garimou-ia'
+    | '/admin/garimpo'
     | '/admin/importar'
     | '/admin/integracoes'
     | '/admin/marketplaces'
@@ -384,6 +405,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/produtos/$id'
     | '/api/public/jobs/daily-plan'
+    | '/api/public/jobs/garimpo'
     | '/api/public/jobs/radar'
     | '/admin/produtos'
   id:
@@ -411,6 +433,7 @@ export interface FileRouteTypes {
     | '/admin/_painel/categorias'
     | '/admin/_painel/desempenho'
     | '/admin/_painel/garimou-ia'
+    | '/admin/_painel/garimpo'
     | '/admin/_painel/importar'
     | '/admin/_painel/integracoes'
     | '/admin/_painel/marketplaces'
@@ -419,6 +442,7 @@ export interface FileRouteTypes {
     | '/admin/_painel/'
     | '/admin/_painel/produtos/$id'
     | '/api/public/jobs/daily-plan'
+    | '/api/public/jobs/garimpo'
     | '/api/public/jobs/radar'
     | '/admin/_painel/produtos/'
   fileRoutesById: FileRoutesById
@@ -445,6 +469,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
   ApiPublicJobsDailyPlanRoute: typeof ApiPublicJobsDailyPlanRoute
+  ApiPublicJobsGarimpoRoute: typeof ApiPublicJobsGarimpoRoute
   ApiPublicJobsRadarRoute: typeof ApiPublicJobsRadarRoute
 }
 
@@ -618,6 +643,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPainelGarimouIaRouteImport
       parentRoute: typeof AdminPainelRoute
     }
+    '/admin/_painel/garimpo': {
+      id: '/admin/_painel/garimpo'
+      path: '/garimpo'
+      fullPath: '/admin/garimpo'
+      preLoaderRoute: typeof AdminPainelGarimpoRouteImport
+      parentRoute: typeof AdminPainelRoute
+    }
     '/admin/_painel/importar': {
       id: '/admin/_painel/importar'
       path: '/importar'
@@ -674,6 +706,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicJobsDailyPlanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/jobs/garimpo': {
+      id: '/api/public/jobs/garimpo'
+      path: '/api/public/jobs/garimpo'
+      fullPath: '/api/public/jobs/garimpo'
+      preLoaderRoute: typeof ApiPublicJobsGarimpoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/jobs/radar': {
       id: '/api/public/jobs/radar'
       path: '/api/public/jobs/radar'
@@ -689,6 +728,7 @@ interface AdminPainelRouteChildren {
   AdminPainelCategoriasRoute: typeof AdminPainelCategoriasRoute
   AdminPainelDesempenhoRoute: typeof AdminPainelDesempenhoRoute
   AdminPainelGarimouIaRoute: typeof AdminPainelGarimouIaRoute
+  AdminPainelGarimpoRoute: typeof AdminPainelGarimpoRoute
   AdminPainelImportarRoute: typeof AdminPainelImportarRoute
   AdminPainelIntegracoesRoute: typeof AdminPainelIntegracoesRoute
   AdminPainelMarketplacesRoute: typeof AdminPainelMarketplacesRoute
@@ -703,6 +743,7 @@ const AdminPainelRouteChildren: AdminPainelRouteChildren = {
   AdminPainelCategoriasRoute: AdminPainelCategoriasRoute,
   AdminPainelDesempenhoRoute: AdminPainelDesempenhoRoute,
   AdminPainelGarimouIaRoute: AdminPainelGarimouIaRoute,
+  AdminPainelGarimpoRoute: AdminPainelGarimpoRoute,
   AdminPainelImportarRoute: AdminPainelImportarRoute,
   AdminPainelIntegracoesRoute: AdminPainelIntegracoesRoute,
   AdminPainelMarketplacesRoute: AdminPainelMarketplacesRoute,
@@ -739,6 +780,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
   ApiPublicJobsDailyPlanRoute: ApiPublicJobsDailyPlanRoute,
+  ApiPublicJobsGarimpoRoute: ApiPublicJobsGarimpoRoute,
   ApiPublicJobsRadarRoute: ApiPublicJobsRadarRoute,
 }
 export const routeTree = rootRouteImport
