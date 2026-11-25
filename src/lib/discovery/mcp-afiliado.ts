@@ -114,3 +114,31 @@ export function afToRow(it: AfItem, monetized: boolean, now = new Date()) {
     valid_until: new Date(now.getTime() + AF_VALID_HOURS * 36e5).toISOString(),
   };
 }
+
+/** Não pressupõe que o provedor devolve os itens na mesma ordem da requisição. */
+export function mapConvertedLinks(
+  input: string[],
+  items: {
+    ok: boolean;
+    url_original?: string;
+    url?: string;
+    affiliate_url?: string | null;
+    final_url?: string | null;
+  }[],
+) {
+  const known = new Set(input);
+  const result = new Map<string, string>();
+  const conflicts = new Set<string>();
+  for (const item of items) {
+    if (!item || item.ok !== true) continue;
+    const src = item.url_original ?? item.url;
+    if (!src || !known.has(src) || conflicts.has(src)) continue;
+    const link = convertedAffiliateLink(src, item.affiliate_url, item.final_url);
+    if (!link) continue;
+    if (result.has(src) && result.get(src) !== link) {
+      result.delete(src);
+      conflicts.add(src);
+    } else result.set(src, link);
+  }
+  return result;
+}

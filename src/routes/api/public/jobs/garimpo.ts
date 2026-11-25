@@ -15,13 +15,14 @@ export const Route = createFileRoute("/api/public/jobs/garimpo")({
           let run = await g.activeRun(supabaseAdmin);
           if (!run) {
             const s = await g.loadSettings(supabaseAdmin);
-            const { data: last } = await supabaseAdmin
+            const { data: last, error: lastError } = await supabaseAdmin
               .from("garimpo_runs")
               .select("started_at")
               .eq("trigger", "agendada")
               .order("started_at", { ascending: false })
               .limit(1)
               .maybeSingle();
+            if (lastError) throw new Error("Não foi possível consultar o último agendamento.");
             if (!isDue(s, last ? new Date(last.started_at) : null))
               return Response.json({ skipped: true });
             run = (await g.startGarimpo(supabaseAdmin, "agendada")).run;

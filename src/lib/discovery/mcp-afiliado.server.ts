@@ -1,4 +1,4 @@
-import { convertedAffiliateLink, safeHttps, type AfItem } from "./mcp-afiliado";
+import { mapConvertedLinks, safeHttps, type AfItem } from "./mcp-afiliado";
 
 const BASE = "https://mcpdoafiliado.com/api/v1";
 export const afConfigured = () => !!process.env["MCP_AFILIADO_API_KEY"];
@@ -13,12 +13,15 @@ async function call<T>(path: string, body?: unknown, timeoutMs = 20_000): Promis
     ...(body ? { body: JSON.stringify(body) } : {}),
     signal: AbortSignal.timeout(timeoutMs),
   });
-  const j = (await res.json().catch(() => null)) as ({
-    success?: boolean;
-    message?: string;
-    error?: string;
-  } & T) | null;
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${j?.message ?? j?.error ?? "falha na consulta"}`);
+  const j = (await res.json().catch(() => null)) as
+    | ({
+        success?: boolean;
+        message?: string;
+        error?: string;
+      } & T)
+    | null;
+  if (!res.ok)
+    throw new Error(`HTTP ${res.status}: ${j?.message ?? j?.error ?? "falha na consulta"}`);
   if (!j || typeof j !== "object") throw new Error("Resposta inválida do MCP do Afiliado.");
   if (j.success === false) throw new Error(j.message ?? j.error ?? "Falha na consulta.");
   return j;
@@ -68,22 +71,8 @@ export async function convertLinks(urls: string[]) {
       final_url?: string | null;
     }[];
   }>("/convert-links", { urls: input });
-  const m = new Map<string, string>();
-  const items = r.items ?? [];
-  const known = new Set(input);
-  items.forEach((it, i) => {
-    const explicit = it.url_original ?? it.url;
-    const src =
-      explicit && known.has(explicit)
-        ? explicit
-        : !explicit && items.length === input.length
-          ? input[i]
-          : undefined;
-    if (it.ok !== true || !src) return;
-    const link = convertedAffiliateLink(src, it.affiliate_url, it.final_url);
-    if (link) m.set(src, link);
-  });
-  return m;
+  if (!Array.isArray(r.items)) throw new Error("Resposta sem lista de links.");
+  return mapConvertedLinks(input, r.items);
 }
 export const convertibleProviders = (b: BotInfo) =>
   (b.convertible_routes?.by_provider ?? []).map((p) => p.provider);

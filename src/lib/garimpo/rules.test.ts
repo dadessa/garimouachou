@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   blockedSearchMessage,
   buildPlan,
+  deduplicateOffers,
   discardReason,
   isDue,
   isSearchBlocked,
@@ -126,5 +127,18 @@ describe("fontes independentes e conclusão do garimpo", () => {
   it("reconhece respostas de acesso limitado da API oficial", () => {
     expect(blockedSearchMessage("shopee", "Shopee [403]: acesso negado")).not.toBeNull();
     expect(blockedSearchMessage("kabum", "HTTP 429: limite")).not.toBeNull();
+  });
+});
+
+describe("persistência do garimpo", () => {
+  it("remove chaves repetidas do lote sem misturar lojas", () => {
+    const a = { marketplace_slug: "shopee", external_id: "1" };
+    const b = { marketplace_slug: "magalu", external_id: "1" };
+    expect(deduplicateOffers([a, a, b])).toEqual([a, b]);
+  });
+
+  it("não considera sucesso quando encontrou produtos mas todas as gravações falharam", () => {
+    expect(runStatusOf(1, 0, 8, 0)).toBe("failed");
+    expect(runStatusOf(1, 1, 8, 0)).toBe("partial");
   });
 });

@@ -4,6 +4,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { classifyCategory } from "@/lib/radar/engine";
 import { emptyDraft } from "@/lib/import/rules";
 import { importOneWith } from "@/lib/import/importer-core";
+import { matchAffiliateDomain } from "@/lib/marketplaces/types";
 import { claimStepLease, hasStepLease, stepLeaseUntil, StepLeaseLostError } from "./step-lock";
 import {
   CREATE_PER_STEP,
@@ -12,6 +13,7 @@ import {
   blockedSearchMessage,
   isSearchBlocked,
   discardReason,
+  deduplicateOffers,
   runStatusOf,
   searchSources,
   type SearchSource,
@@ -108,12 +110,9 @@ export async function startGarimpo(sb: Sb, trigger: "manual" | "agendada") {
       fonte: x.provider === "shopee_api" ? "Shopee API oficial" : `MCP do Afiliado · ${x.site}`,
       status: x.monetized ? "com comissão" : "sem comissão na conta",
     });
-  if (!sites.length)
-    errors.push("Nenhuma fonte pesquisável disponível. Confira as integrações.");
+  if (!sites.length) errors.push("Nenhuma fonte pesquisável disponível. Confira as integrações.");
   else if (!plan.length)
-    errors.push(
-      "Nenhuma loja pesquisável corresponde à configuração. Revise Lojas prioritárias.",
-    );
+    errors.push("Nenhuma loja pesquisável corresponde à configuração. Revise Lojas prioritárias.");
   const failed = !plan.length;
   const { data: run, error } = await sb
     .from("garimpo_runs")
@@ -173,7 +172,8 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
       .eq("updated_at", run.updated_at)
       .select("*")
       .maybeSingle();
-    if (error || !data) throw new StepLeaseLostError();
+    if (error) throw new Error("Não foi possível gravar o checkpoint do garimpo.");
+    if (!data) throw new StepLeaseLostError();
     run = data;
   };
   const ensureLease = async () => {
@@ -186,7 +186,15 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
     return { run, busy: false };
   } catch (e) {
     if (e instanceof StepLeaseLostError) return { run, busy: true };
-    throw e;
+    // Preserva o cursor para retomar, sem declarar sucesso nem perder o diagnóstico.
+    try {
+      await save({
+        errors: [...run.errors, "Etapa interrompida por falha de processamento ou gravação."].slice(-30),
+      });
+    } catch {
+      console.error("Garimpo: não foi possível registrar a interrupção.");
+    }
+    throw new Error("Garimpo interrompido. Confira o histórico e tente Continuar garimpo.");
   } finally {
     // Nunca liberar a trava de outro worker. Se o processo cair, ela vence sozinha.
     if (run.status === "running") {
@@ -255,7 +263,16 @@ async function advanceGarimpo(
           });
           if (!Array.isArray(result?.nodes)) throw new Error("Resposta inválida da Shopee.");
           rows = result.nodes
-            .filter((n) => typeof n.productName === "string" && n.productName.trim())
+            .filter(
+              (n) =>
+                n &&
+                typeof n.productName === "string" &&
+                n.productName.trim() &&
+                Number.isSafeInteger(n.shopId) &&
+                n.shopId > 0 &&
+                Number.isSafeInteger(n.itemId) &&
+                n.itemId > 0,
+            )
             .map((n) => {
               const row = shopeeToRow(n, new Date());
               return {
@@ -276,10 +293,15 @@ async function advanceGarimpo(
             10_000,
           );
           rows = items
-            .filter((it) => !it.site || it.site.toLowerCase() === step.site.toLowerCase())
+            .filter(
+              (it) =>
+                !it.site ||
+                (typeof it.site === "string" && it.site.toLowerCase() === step.site.toLowerCase()),
+            )
             .map((it) => d.afToRow({ ...it, site: step.site }, step.monetized))
             .filter((x): x is NonNullable<typeof x> => !!x);
         }
+        rows = deduplicateOffers(rows);
         found += rows.length;
         const keep = rows.filter((x) => {
           const why = discardReason(
@@ -316,7 +338,8 @@ async function advanceGarimpo(
         errors.push(blocked ?? `${step.site}/${step.keyword}: falha na consulta à fonte.`);
       }
       const sources = run.sources as { fonte: string; status: string; successes?: number }[];
-      const source = step.provider === "shopee_api" ? "Shopee API oficial" : `MCP do Afiliado · ${step.site}`;
+      const source =
+        step.provider === "shopee_api" ? "Shopee API oficial" : `MCP do Afiliado · ${step.site}`;
       await save({
         sources: sources.map((item) =>
           item.fonte === source && successful
@@ -429,6 +452,11 @@ async function createBatch(
           errors.push(`${o.name.slice(0, 50)}: oferta vencida; consulte novamente.`);
         continue;
       }
+      const mk = (mks.data ?? []).find((m) => m.slug === o.marketplace_slug && m.is_active);
+      if (!mk || !matchAffiliateDomain(o.affiliate_url, mk.allowed_domains)) {
+        unmonetized++;
+        continue;
+      }
       const dr = emptyDraft(o.affiliate_url);
       dr.name = o.name.slice(0, 200);
       dr.imageUrl = o.image_url;
@@ -442,7 +470,7 @@ async function createBatch(
         sb,
         dr,
         { publish: false, defaultCategoryId: null, useAi: false, garimpoRunId: run.id },
-        { mks: mks.data ?? [], cats: cats.data ?? [], genCopy: noAi },
+        { mks: [mk], cats: cats.data ?? [], genCopy: noAi },
       );
       if (out.status === "duplicate") {
         if (!out.productId || !created.includes(out.productId)) duplicates++;

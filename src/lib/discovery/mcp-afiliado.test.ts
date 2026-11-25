@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { afToRow, convertedAffiliateLink, PRESET_MODE } from "./mcp-afiliado";
+import { afToRow, convertedAffiliateLink, mapConvertedLinks, PRESET_MODE } from "./mcp-afiliado";
 
 const item = {
   title: "Fone JBL",
@@ -52,5 +52,40 @@ describe("afToRow", () => {
   });
   it("atalho de tendência pesquisa por mais vendidos", () => {
     expect(PRESET_MODE["Encontrar produtos em tendência"]).toBe("tendencia");
+  });
+});
+
+describe("conversão de links sem ambiguidade", () => {
+  const a = "https://shopee.com.br/a";
+  const b = "https://shopee.com.br/b";
+  const x = "https://s.shopee.com.br/x";
+  const y = "https://s.shopee.com.br/y";
+
+  it("associa pela URL original mesmo quando a ordem é invertida", () => {
+    const result = mapConvertedLinks(
+      [a, b],
+      [
+        { ok: true, url_original: b, affiliate_url: y },
+        { ok: true, url_original: a, affiliate_url: x },
+      ],
+    );
+    expect(result.get(a)).toBe(x);
+    expect(result.get(b)).toBe(y);
+  });
+
+  it("não adivinha a associação quando a resposta não identifica o original", () => {
+    expect(mapConvertedLinks([a], [{ ok: true, affiliate_url: x }]).size).toBe(0);
+  });
+
+  it("rejeita URLs desconhecidas e resultados conflitantes", () => {
+    const result = mapConvertedLinks(
+      [a],
+      [
+        { ok: true, url_original: b, affiliate_url: y },
+        { ok: true, url_original: a, affiliate_url: x },
+        { ok: true, url_original: a, affiliate_url: y },
+      ],
+    );
+    expect(result.size).toBe(0);
   });
 });

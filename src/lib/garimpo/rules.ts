@@ -33,7 +33,8 @@ export function searchSources(sites: SearchSource[], directShopee: boolean): Sea
     if (!site || result.has(site)) continue;
     result.set(site, { ...source, site });
   }
-  if (directShopee) result.set("shopee", { site: "shopee", monetized: true, provider: "shopee_api" });
+  if (directShopee)
+    result.set("shopee", { site: "shopee", monetized: true, provider: "shopee_api" });
   return [...result.values()];
 }
 
@@ -124,12 +125,28 @@ export function buildPlan(
   return plan;
 }
 
-export const runStatusOf = (errors: number, created: number, found: number, successful = 0) =>
-  errors === 0 ? "ok" : created || found || successful ? "partial" : "failed";
+export const runStatusOf = (errors: number, created: number, found: number, successful = found) =>
+  errors === 0 ? "ok" : created || successful ? "partial" : "failed";
+
+/** Postgres não aceita atualizar a mesma chave duas vezes no mesmo UPSERT. */
+export function deduplicateOffers<T extends { marketplace_slug: string; external_id: string }>(
+  rows: T[],
+): T[] {
+  const unique = new Map<string, T>();
+  for (const row of rows) {
+    const key = JSON.stringify([row.marketplace_slug, row.external_id]);
+    if (!unique.has(key)) unique.set(key, row);
+  }
+  return [...unique.values()];
+}
 
 /** Bloqueios explícitos do provedor: não insistir nem tentar contornar a proteção. */
 export function blockedSearchMessage(site: string, message: string): string | null {
-  if (!/anti[- ]?bot|captcha|KABUM_PROXY_BASE|\bHTTP\s+(?:401|403|429)\b|\[(?:401|403|429)\]/i.test(message)) {
+  if (
+    !/anti[- ]?bot|captcha|KABUM_PROXY_BASE|\bHTTP\s+(?:401|403|429)\b|\[(?:401|403|429)\]/i.test(
+      message,
+    )
+  ) {
     return null;
   }
   return `[${site.toLowerCase()}] Busca suspensa nesta execução: acesso bloqueado ou limitado pela fonte.`;
