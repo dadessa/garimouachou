@@ -1,5 +1,6 @@
 import { AdminImg } from "@/lib/admin/storage";
 import { PriceMonitor } from "@/components/admin/PriceMonitor";
+import { MarketplaceCompare } from "@/components/admin/MarketplaceCompare";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -10,8 +11,10 @@ import { publishMissing } from "@/lib/publish-rules";
 import { adminCategories, adminMarketplaces, adminProducts, isPriceStale } from "@/lib/admin/api";
 
 export const Route = createFileRoute("/admin/_painel/produtos/")({
-  validateSearch: (search: Record<string, unknown>): { aba?: "aprovacao" | "precos" } =>
-    search["aba"] === "aprovacao" || search["aba"] === "precos" ? { aba: search["aba"] } : {},
+  validateSearch: (search: Record<string, unknown>): { aba?: "aprovacao" | "precos" | "comparar" } =>
+    search["aba"] === "aprovacao" || search["aba"] === "precos" || search["aba"] === "comparar"
+      ? { aba: search["aba"] }
+      : {},
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(adminProducts),
@@ -41,6 +44,7 @@ type BatchResult = { id: string; name: string; ok: boolean; message: string };
 function ProductsView() {
   const { aba } = Route.useSearch();
   if (aba === "precos") return <PriceMonitor />;
+  if (aba === "comparar") return <MarketplaceCompare />;
   return <ProductList />;
 }
 
@@ -234,6 +238,13 @@ function ProductList() {
           className="inline-flex items-center rounded-full border border-input px-4 py-2 text-sm font-bold"
         >
           Histórico de preços
+        </Link>
+        <Link
+          to="/admin/produtos"
+          search={{ aba: "comparar" }}
+          className="inline-flex items-center rounded-full border border-input px-4 py-2 text-sm font-bold"
+        >
+          Comparar marketplaces
         </Link>
         <Link
           to="/admin/garimpo"

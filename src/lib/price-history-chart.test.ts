@@ -25,9 +25,7 @@ describe("gráfico de histórico de preços", () => {
   });
 
   it("descarta preços e datas inválidos", () => {
-    expect(
-      buildHistoryChart([point("2026-02-30", 100), point("2026-11-25", 0)]),
-    ).toEqual([]);
+    expect(buildHistoryChart([point("2026-02-30", 100), point("2026-11-25", 0)])).toEqual([]);
   });
 
   it("limita o eixo a 180 dias", () => {
