@@ -1,4 +1,5 @@
 import { AdminImg } from "@/lib/admin/storage";
+import { PriceMonitor } from "@/components/admin/PriceMonitor";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -9,8 +10,8 @@ import { publishMissing } from "@/lib/publish-rules";
 import { adminCategories, adminMarketplaces, adminProducts, isPriceStale } from "@/lib/admin/api";
 
 export const Route = createFileRoute("/admin/_painel/produtos/")({
-  validateSearch: (search: Record<string, unknown>): { aba?: "aprovacao" } =>
-    search["aba"] === "aprovacao" ? { aba: "aprovacao" } : {},
+  validateSearch: (search: Record<string, unknown>): { aba?: "aprovacao" | "precos" } =>
+    search["aba"] === "aprovacao" || search["aba"] === "precos" ? { aba: search["aba"] } : {},
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(adminProducts),
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/admin/_painel/produtos/")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  component: ProductList,
+  component: ProductsView,
 });
 
 const STATUS = { draft: "Rascunho", published: "Publicado", inactive: "Inativo" } as const;
@@ -36,6 +37,12 @@ const sel = "h-10 rounded-full border-2 border-input bg-background px-3 text-sm 
 const MAX_PUBLISH_BATCH = 50;
 type BatchItem = { id: string; name: string; updatedAt: string; missing: string[] };
 type BatchResult = { id: string; name: string; ok: boolean; message: string };
+
+function ProductsView() {
+  const { aba } = Route.useSearch();
+  if (aba === "precos") return <PriceMonitor />;
+  return <ProductList />;
+}
 
 function ProductList() {
   const qc = useQueryClient();
@@ -221,6 +228,13 @@ function ProductList() {
           Aguardando aprovação (
           {products.filter((p) => p.status === "draft" && p.review_status === "pending").length})
         </Button>
+        <Link
+          to="/admin/produtos"
+          search={{ aba: "precos" }}
+          className="inline-flex items-center rounded-full border border-input px-4 py-2 text-sm font-bold"
+        >
+          Histórico de preços
+        </Link>
         <Link
           to="/admin/garimpo"
           className="inline-flex items-center rounded-full border border-input px-4 py-2 text-sm font-bold"

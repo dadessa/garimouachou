@@ -97,7 +97,9 @@ export async function runRadarRefresh(sb: Sb, trigger: "manual" | "agendada") {
     try {
       const { discoverExternal } = await import("@/lib/agent/services.server");
       const r = await discoverExternal(sb, "tendencia", undefined, 30);
-      const n = r.fontes.reduce((a, f) => a + f.itens, 0);
+      const n = r.fontes
+        .filter((f) => f.fonte.startsWith("MCP do Afiliado"))
+        .reduce((a, f) => a + f.itens, 0);
       requests += r.fontes.length * 3 + 1;
       items += n;
       report.push({

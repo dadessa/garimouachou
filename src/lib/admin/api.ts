@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { validPriceCents } from "@/lib/price";
 
 export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
@@ -45,7 +46,8 @@ export function isPriceStale(
 ) {
   if (p.current_price_cents == null) return false;
   if (!p.price_checked_at || !mk) return true;
-  return (now.getTime() - new Date(p.price_checked_at).getTime()) / 36e5 > mk.price_max_age_hours;
+  const age = (now.getTime() - new Date(p.price_checked_at).getTime()) / 36e5;
+  return !validPriceCents(p.current_price_cents) || !(age >= 0 && age <= mk.price_max_age_hours);
 }
 
 /** Troca a ordem de dois itens vizinhos. */

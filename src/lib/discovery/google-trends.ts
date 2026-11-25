@@ -45,12 +45,20 @@ export function parseTrendsRss(xml: string, now = new Date()): Trend[] {
     const date = body.match(/<pubDate>([\s\S]*?)<\/pubDate>/i)?.[1] ?? "";
     const at = Date.parse(date);
     const age = now.getTime() - at;
-    if (!title || title.length > 120 || /[<>\x00-\x1f]/.test(title)) continue;
+    if (
+      !title ||
+      title.length > 120 ||
+      /[<>]/.test(title) ||
+      [...title].some((c) => c.charCodeAt(0) < 32)
+    )
+      continue;
     if (!(age >= -300_000 && age <= 48 * 36e5)) continue;
     const key = norm(title);
     if (!key || seen.has(key)) continue;
     seen.add(key);
-    const raw = decode(body.match(/<ht:approx_traffic>([\s\S]*?)<\/ht:approx_traffic>/i)?.[1] ?? "");
+    const raw = decode(
+      body.match(/<ht:approx_traffic>([\s\S]*?)<\/ht:approx_traffic>/i)?.[1] ?? "",
+    );
     result.push({
       title,
       traffic: /^[\d.,]+\+?$/.test(raw) ? raw : null,
