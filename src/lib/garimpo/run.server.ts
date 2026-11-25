@@ -189,7 +189,9 @@ export async function stepGarimpo(sb: Sb, runId: string, budgetMs: number) {
     // Preserva o cursor para retomar, sem declarar sucesso nem perder o diagnóstico.
     try {
       await save({
-        errors: [...run.errors, "Etapa interrompida por falha de processamento ou gravação."].slice(-30),
+        errors: [...run.errors, "Etapa interrompida por falha de processamento ou gravação."].slice(
+          -30,
+        ),
       });
     } catch {
       console.error("Garimpo: não foi possível registrar a interrupção.");
