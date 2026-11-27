@@ -16,7 +16,8 @@ import {
 import { importOne } from "@/lib/import/importer";
 import { emptyDraft } from "@/lib/import/rules";
 import { isAllowedAffiliateUrl } from "@/lib/marketplaces/types";
-import { formatBRL } from "@/lib/price";
+import { displayablePrice, formatBRL } from "@/lib/price";
+import { toMarketplace } from "@/lib/catalog/types";
 import { classifyCategory } from "@/lib/radar/engine";
 
 export const Route = createFileRoute("/admin/_painel/")({
@@ -327,6 +328,104 @@ function GoogleTrendsPanel() {
   );
 }
 
+function PriceReview({
+  products,
+  marketplaces,
+  now,
+}: {
+  products: ProductRow[];
+  marketplaces: MarketplaceRow[];
+  now: Date;
+}) {
+  const stores = new Map(marketplaces.map((store) => [store.id, store]));
+  const nearExpiry = new Date(now.getTime() + 3 * 3_600_000);
+  const review = products.flatMap((product) => {
+    if (product.status !== "published" || (!product.is_weekly_pick && !product.is_featured))
+      return [];
+    const store = product.marketplace_id ? stores.get(product.marketplace_id) : undefined;
+    if (!store?.is_active || !store.allow_manual_price || product.price_source === "api") return [];
+    const marketplace = toMarketplace(store);
+    const price = {
+      currentPrice: product.current_price_cents,
+      priceCheckedAt: product.price_checked_at,
+      priceSource: product.price_source,
+    };
+    const valid = displayablePrice(price, marketplace, now);
+    if (valid && displayablePrice(price, marketplace, nearExpiry)) return [];
+    const reason = valid
+      ? "Vence nas próximas 3 horas"
+      : product.current_price_cents == null
+        ? "Sem preço conferido"
+        : "Preço vencido ou sem conferência válida";
+    return [{ product, store, reason, valid: Boolean(valid) }];
+  });
+  review.sort((a, b) => Number(a.valid) - Number(b.valid));
+
+  return (
+    <section
+      aria-labelledby="price-review-title"
+      className="mt-5 rounded-xl border border-border p-4"
+    >
+      <h3 id="price-review-title" className="font-extrabold text-navy">
+        Preços para reconferir
+      </h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Confira na loja antes de confirmar um novo preço no cadastro.
+      </p>
+      {review.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Nenhum destaque com preço manual precisa de revisão agora.
+        </p>
+      ) : (
+        <ul className="mt-2 divide-y divide-border">
+          {review.map(({ product, store, reason }) => {
+            const checkedAt = new Date(product.price_checked_at ?? "");
+            const hasDate = Number.isFinite(checkedAt.getTime());
+            return (
+              <li
+                key={product.id}
+                className="flex flex-wrap items-center justify-between gap-2 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-bold">{product.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {store.name} · {reason}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Última conferência{" "}
+                    {hasDate ? (
+                      <time dateTime={checkedAt.toISOString()}>
+                        {dateFormat.format(checkedAt)} às {observationTime.format(checkedAt)}
+                      </time>
+                    ) : (
+                      "não registrada"
+                    )}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3 text-sm font-bold text-navy">
+                  {isAllowedAffiliateUrl(product.affiliate_url, store.allowed_domains) && (
+                    <a
+                      href={product.affiliate_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      Abrir na loja
+                    </a>
+                  )}
+                  <Link to="/admin/produtos/$id" params={{ id: product.id }} className="underline">
+                    Revisar preço
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function DailyDemand({
   marketplaces,
   products,
@@ -403,6 +502,7 @@ function DailyDemand({
         </p>
       )}
       <GoogleTrendsPanel />
+      <PriceReview products={products} marketplaces={marketplaces} now={new Date()} />
       <ReviewQueue groups={demand.data ?? []} products={products} marketplaces={marketplaces} />
       {hasItems && (
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
