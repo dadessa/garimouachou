@@ -1,3 +1,4 @@
+import { withoutOfferPrice } from "@/lib/offer-copy";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState, type ReactNode } from "react";
@@ -31,7 +32,7 @@ import { friendlyError } from "@/lib/admin/errors";
 import { AdminImg, removeImages, uploadImage, useAdminImageUrl } from "@/lib/admin/storage";
 import { toMarketplace, type Product } from "@/lib/catalog/types";
 import { matchAffiliateDomain } from "@/lib/marketplaces/types";
-import { formatBRL } from "@/lib/price";
+import { displayablePrice, formatBRL } from "@/lib/price";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 import { generateCopy } from "@/lib/admin/ai.functions";
@@ -202,8 +203,8 @@ function ProductForm() {
     () =>
       mk && {
         slug: f.slug || "previa",
-        name: f.name,
-        shortDescription: f.description,
+        name: withoutOfferPrice(f.name),
+        shortDescription: withoutOfferPrice(f.description),
         categorySlug: cat?.slug ?? "",
         categoryName: cat?.name ?? "Sem categoria",
         marketplace: toMarketplace(mk),
@@ -252,6 +253,16 @@ function ProductForm() {
     if (nextStatus === "published" && missing.length) {
       setShowMissing(true);
       toast.error("Ainda falta preencher alguns itens para publicar.");
+      return;
+    }
+    if (
+      nextStatus === "published" &&
+      (f.weekly || f.featured) &&
+      preview &&
+      priceCents != null &&
+      !displayablePrice(preview, preview.marketplace)
+    ) {
+      toast.error("Confira o preço na loja ou limpe o valor antes de salvar este destaque.");
       return;
     }
     setBusy(true);
@@ -427,9 +438,10 @@ function ProductForm() {
         >
           <FormCard n={1} title="Informações básicas">
             <div className={field}>
-              <Label htmlFor="nome">Nome</Label>
+              <Label htmlFor="nome">Título do achadinho</Label>
               <Input
                 id="nome"
+                aria-describedby="nome-dica"
                 value={f.name}
                 maxLength={150}
                 onChange={(e) =>
@@ -440,6 +452,10 @@ function ProductForm() {
                   }))
                 }
               />
+              <p id="nome-dica" className="text-xs text-muted-foreground">
+                Use marca, modelo e uma característica importante. Preencha o preço no campo
+                próprio.
+              </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className={field}>
@@ -524,14 +540,18 @@ function ProductForm() {
               </Button>
             </div>
             <div className={field}>
-              <Label htmlFor="desc">Descrição curta</Label>
+              <Label htmlFor="desc">Por que vale o garimpo?</Label>
               <Textarea
                 id="desc"
+                aria-describedby="desc-dica"
                 rows={3}
                 maxLength={400}
                 value={f.description}
                 onChange={(e) => set("description", e.target.value)}
               />
+              <p id="desc-dica" className="text-xs text-muted-foreground">
+                Escreva uma frase com uma vantagem concreta para quem vai comprar.
+              </p>
             </div>
             <div className={field}>
               <Label htmlFor="tags">Etiquetas (separadas por vírgula)</Label>

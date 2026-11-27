@@ -440,11 +440,19 @@ function RunsPanel({
     const n = Math.round(Number(m));
     if (!(n >= 10 && n <= 500))
       return void toast.error("O limite deve ficar entre 10 e 500 produtos.");
-    const { error } = await supabase
-      .from("radar_settings")
-      .update({ daily_enabled: d, max_items: n, updated_at: new Date().toISOString() })
-      .eq("id", 1);
-    if (error) toast.error("Não foi possível salvar.");
+    const settings = { daily_enabled: d, max_items: n, updated_at: new Date().toISOString() };
+    const update = () =>
+      supabase.from("radar_settings").update(settings).eq("id", 1).select("id").maybeSingle();
+    let { data, error } = await update();
+    if (!error && !data) {
+      const created = await supabase
+        .from("radar_settings")
+        .insert({ id: 1, weights: DEFAULT_WEIGHTS, ...settings })
+        .select("id")
+        .single();
+      ({ data, error } = created.error?.code === "23505" ? await update() : created);
+    }
+    if (error || !data) toast.error("Não foi possível salvar a atualização automática.");
     else {
       toast.success("Configuração salva.");
       onSaved();
