@@ -1,0 +1,31 @@
+name: Engineering quality
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: oven-sh/setup-bun@v2
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        if: always() && !cancelled()
+        run: npx --no-install tsc --noEmit
+      - name: Tests
+        if: always() && !cancelled()
+        run: npm test
+      - name: Build
+        if: always() && !cancelled()
+        run: npm run build
